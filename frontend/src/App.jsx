@@ -76,6 +76,7 @@ function App() {
                 <Route path="/teacher/classes/add" element={<ProtectedRoute role="teacher"><TeacherCreateClass/></ProtectedRoute>} />
                 <Route path="/teacher/classses/view-all" element={<ProtectedRoute role="teacher"><TeacherViewAllClass/></ProtectedRoute>} />
                 <Route path="/teacher/classes" element={<TeacherViewAllClass/>} />
+                
         <Route path="/teacher/classes/:classId/update" element={<TeacherUpdateClass />} />
 
         <Route path="/teacher/classes/uploadmaterials" element={<ProtectedRoute role="teacher"><UploadMaterials/></ProtectedRoute>} />
