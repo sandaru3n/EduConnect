@@ -36,6 +36,7 @@ function App() {
     return (
         <Router>
             <Routes>
+                
                 <Route path="/" element={<HomePage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/privacy-policy" element={<PageView />} />
