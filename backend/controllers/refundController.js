@@ -66,10 +66,22 @@ exports.updateRefundStatus = async (req, res) => {
         await refundRequest.save();
 
         if (status === 'Approved') {
-            await StudentSubscription.findByIdAndUpdate(refundRequest.subscriptionId, { status: 'Inactive' });
+            // Set the subscription to Inactive when refund is approved
+            const subscription = await StudentSubscription.findByIdAndUpdate(
+                refundRequest.subscriptionId,
+                { status: 'Inactive' },
+                { new: true }
+            );
+            if (!subscription) {
+                return res.status(404).json({ message: 'Subscription not found for update' });
+            }
         }
+        // If status is 'Rejected', no action is taken on the subscription
 
-        res.status(200).json({ message: `Refund request ${status.toLowerCase()} successfully`, refundRequest });
+        res.status(200).json({ 
+            message: `Refund request ${status.toLowerCase()} successfully`, 
+            refundRequest 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error updating refund status', error: error.message });

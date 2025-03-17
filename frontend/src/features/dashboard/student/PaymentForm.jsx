@@ -1,9 +1,8 @@
-//frontend/src/features/dashboard/student/PaymentForm.jsx
-
+// frontend/src/features/dashboard/student/PaymentForm.jsx
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import './PaymentForm.css'; // Import a separate CSS file for styling
+import './PaymentForm.css';
 
 const PaymentForm = () => {
     const [cardNumber, setCardNumber] = useState('');
@@ -19,13 +18,13 @@ const PaymentForm = () => {
             const config = {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
-            await axios.post('http://localhost:5000/api/payments/subscribe', {
+            const response = await axios.post('http://localhost:5000/api/payments/subscribe', {
                 classId,
                 cardNumber,
                 expiryDate,
                 cvv
             }, config);
-            alert('Subscription successful!');
+            alert(response.data.message); // "Subscription successful" or "Subscription reactivated successfully"
             navigate('/student/dashboard/my-classes');
         } catch (error) {
             console.error('Payment error:', error);

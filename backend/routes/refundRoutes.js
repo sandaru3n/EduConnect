@@ -1,7 +1,7 @@
 // backend/routes/refundRoutes.js
 const express = require('express');
 const router = express.Router();
-const { requestRefund, getRefundRequests, updateRefundStatus, getStudentRefundRequests } = require('../controllers/refundController');
+const { requestRefund, getRefundRequests, updateRefundStatus, getStudentRefundRequests, reactivateSubscription } = require('../controllers/refundController');
 const authMiddleware = require('../middleware/auth');
 
 router.post('/request', authMiddleware, requestRefund); // Student submits refund request

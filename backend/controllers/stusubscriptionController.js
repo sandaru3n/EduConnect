@@ -31,3 +31,19 @@ exports.getPaymentHistory = async (req, res) => {
         res.status(500).json({ message: 'Error fetching payment history' });
     }
 };
+
+//
+exports.getMyClasses = async (req, res) => {
+    try {
+        const studentSubscriptions = await StudentSubscription.find({ 
+            userId: req.user.id, 
+            status: 'Active' // Only return active subscriptions
+        });
+        const classIds = studentSubscriptions.map(sub => sub.classId);
+        const classes = await Class.find({ _id: { $in: classIds } }).populate('teacherId', 'name');
+        res.status(200).json(classes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching subscribed classes' });
+    }
+};
