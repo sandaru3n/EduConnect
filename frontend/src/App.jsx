@@ -71,6 +71,7 @@ function App() {
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
 
 
+
                 <Route path="/teacher/dashboard" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
                 <Route path="/teacher/classes/add" element={<ProtectedRoute role="teacher"><TeacherCreateClass/></ProtectedRoute>} />
                 <Route path="/teacher/classses/view-all" element={<ProtectedRoute role="teacher"><TeacherViewAllClass/></ProtectedRoute>} />
