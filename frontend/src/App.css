@@ -1,0 +1,6 @@
+body{font-family: "Raleway",serif;}
+.MuiBadge-badge {background: red !important;} 
+
+.ReactCollapse--collapse {
+    transition: height 300ms;
+  }

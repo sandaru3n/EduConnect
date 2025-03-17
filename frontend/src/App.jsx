@@ -1,0 +1,87 @@
+//frontend/src/App.jsx
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./features/home/HomePage";
+import PricingPage from "./features/home/PricingPage";
+import ContactPage from "./features/home/ContactPage";
+import AdminDashboard from "./features/dashboard/admin/AdminDashboard";
+import Subscription from "./features/dashboard/admin/Subscription";
+import TeacherDashboard from "./features/dashboard/teacher/TeacherDashboard";
+import StudentDashboard from "./features/dashboard/student/StudentDashboard";
+import InstituteDashboard from "./features/dashboard/institute/InstituteDashboard";
+import Login from "./features/auth/Login";
+import Register from "./features/auth/Register";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
+import PageView from "./features/home/PageView";
+import AdminPages from "./features/dashboard/admin/AdminPages";
+import AdminEditPage from "./features/dashboard/admin/AdminEditPage";
+import EditProfile from "./features/dashboard/admin/AdminEditProfile";
+import ManageLibrary from "./features/dashboard/admin/EBookUpload";
+
+
+import StudentLibrary from "./features/dashboard/student/eLibrary";
+import PaymentForm from "./features/dashboard/student/PaymentForm";
+import MyClasses from "./features/dashboard/student/MyClasses";
+ 
+import TeacherCreateClass  from "./features/dashboard/teacher/CreateClass";
+import TeacherViewAllClass from "./features/dashboard/teacher/ViewAllClasses";
+import TeacherUpdateClass from "./features/dashboard/teacher/UpdateClass";
+import UploadMaterials from "./features/dashboard/teacher/UploadMaterial";
+import ClassMaterial from "./features/dashboard/student/ClassMaterials";
+import AvailableClasses from "./features/dashboard/student/AvailableClasses";
+import PaymentHistory from "./features/dashboard/student/PaymentHistory";
+
+
+function App() {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/privacy-policy" element={<PageView />} />
+                <Route path="/terms-of-service" element={<PageView />} />
+                <Route path="/contact-us" element={<PageView />} />
+                <Route path="/about-us" element={<PageView />} />
+
+
+
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/:slug" element={<PageView />} />
+
+                {/* Protected Routes */}
+                <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+                
+                <Route path="/admin/subscription" element={<ProtectedRoute role="admin"><Subscription /></ProtectedRoute>} />
+                <Route path="/admin/library" element={<ProtectedRoute role="admin"><ManageLibrary /></ProtectedRoute>} />
+                <Route path="/admin/pages" element={<ProtectedRoute role="admin">< AdminPages/></ProtectedRoute>} />
+                
+                <Route path="/student/dashboard" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
+                <Route path="/student/library" element={<ProtectedRoute role="student"><StudentLibrary /></ProtectedRoute>} />
+                <Route path="/student/dashboard/subscribe/:classId" element={<PaymentForm />} />
+                <Route path="/student/dashboard/my-classes" element={<MyClasses />} />
+                <Route path="/student/dashboard/my-classes/:classId/materials" element={<ClassMaterial />} />
+                <Route path="/student/dashboard/available-classes" element={<ProtectedRoute role="student"><AvailableClasses /></ProtectedRoute>} />
+                <Route path="/student/dashboard/payment-history" element={<ProtectedRoute role="student"><PaymentHistory /></ProtectedRoute>} /> {/* New route */}
+
+                <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
+                <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
+                <Route path="/admin/edit-profile" element={<EditProfile />} />
+
+
+                <Route path="/teacher/dashboard" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
+                <Route path="/teacher/classes/add" element={<ProtectedRoute role="teacher"><TeacherCreateClass/></ProtectedRoute>} />
+                <Route path="/teacher/classses/view-all" element={<ProtectedRoute role="teacher"><TeacherViewAllClass/></ProtectedRoute>} />
+                <Route path="/teacher/classes" element={<TeacherViewAllClass/>} />
+        <Route path="/teacher/classes/:classId/update" element={<TeacherUpdateClass />} />
+
+        <Route path="/teacher/classes/uploadmaterials" element={<ProtectedRoute role="teacher"><UploadMaterials/></ProtectedRoute>} />
+            </Routes>
+        </Router>
+
+
+    );
+}
+
+export default App;
