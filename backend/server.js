@@ -33,7 +33,8 @@ app.use('/api/classes', classRoutes);
 const paymentRoutes = require('./routes/paymentRoutes');
 app.use('/api/payments', paymentRoutes);
 
-
+const refundRoutes = require('./routes/refundRoutes');
+app.use('/api/refunds', refundRoutes);
 
 // Serve static files
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));

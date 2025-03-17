@@ -30,6 +30,9 @@ import UploadMaterials from "./features/dashboard/teacher/UploadMaterial";
 import ClassMaterial from "./features/dashboard/student/ClassMaterials";
 import AvailableClasses from "./features/dashboard/student/AvailableClasses";
 import PaymentHistory from "./features/dashboard/student/PaymentHistory";
+import RefundManagement from "./features/dashboard/admin/RefundManagement";
+import RefundRequest from "./features/dashboard/student/RefundRequest";
+import RefundHistory from "./features/dashboard/student/RefundHistory";
 
 
 function App() {
@@ -64,11 +67,16 @@ function App() {
                 <Route path="/student/dashboard/my-classes" element={<MyClasses />} />
                 <Route path="/student/dashboard/my-classes/:classId/materials" element={<ClassMaterial />} />
                 <Route path="/student/dashboard/available-classes" element={<ProtectedRoute role="student"><AvailableClasses /></ProtectedRoute>} />
-                <Route path="/student/dashboard/payment-history" element={<ProtectedRoute role="student"><PaymentHistory /></ProtectedRoute>} /> {/* New route */}
+                <Route path="/student/dashboard/payment-history" element={<ProtectedRoute role="student"><PaymentHistory /></ProtectedRoute>} /> 
+                <Route path="/student/dashboard/refund-request" element={<ProtectedRoute role="student"><RefundRequest /></ProtectedRoute>} /> {/* New route */}
+                <Route path="/student/dashboard/refund-history" element={<ProtectedRoute role="student"><RefundHistory /></ProtectedRoute>} /> {/* New route */}
+                
 
                 <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
+
+                <Route path="/admin/refund-management" element={<ProtectedRoute role="admin"><RefundManagement /></ProtectedRoute>} />
 
 
 
