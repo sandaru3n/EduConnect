@@ -1,4 +1,4 @@
-//backend/controllers/paymentController.js
+// backend/controllers/paymentController.js
 const StudentSubscription = require('../models/StudentSubscription');
 const Class = require('../models/Class');
 
@@ -23,20 +23,35 @@ exports.subscribeToClass = async (req, res) => {
             return res.status(404).json({ message: 'Class not found' });
         }
 
-        const subscription = new StudentSubscription({
+        let subscription = await StudentSubscription.findOne({ userId, classId });
+        if (subscription) {
+            // If subscription exists (inactive), reactivate it
+            if (subscription.status === 'Inactive') {
+                subscription.status = 'Active';
+                subscription.feePaid = classData.monthlyFee;
+                subscription.createdAt = new Date(); // Update payment date
+                await subscription.save();
+                return res.status(200).json({ message: 'Subscription reactivated successfully', subscriptionId: subscription._id });
+            } else {
+                return res.status(400).json({ message: 'Already subscribed to this class' });
+            }
+        }
+
+        // Create new subscription if none exists
+        subscription = new StudentSubscription({
             userId,
             classId,
-            feePaid: classData.monthlyFee, // Store the fee at the time of subscription
+            feePaid: classData.monthlyFee,
         });
         await subscription.save();
         res.status(201).json({ message: 'Subscription successful', subscriptionId: subscription._id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error creating subscription' });
+        res.status(500).json({ message: 'Error processing subscription', error: error.message });
     }
 };
 
-// Simple card validation function
+// Simple card validation function (unchanged)
 function validateCard(cardNumber, expiryDate, cvv) {
     const cardRegex = /^\d{16}$/;
     const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
@@ -44,16 +59,7 @@ function validateCard(cardNumber, expiryDate, cvv) {
     return cardRegex.test(cardNumber) && expiryRegex.test(expiryDate) && cvvRegex.test(cvv);
 }
 
-// Simulate payment success (replace with real gateway logic later)
+// Simulate payment success (unchanged)
 function processPayment(cardNumber) {
     return cardNumber.length === 16; // Dummy success condition
 }
-
-
-
-
-
-
-
-
-
