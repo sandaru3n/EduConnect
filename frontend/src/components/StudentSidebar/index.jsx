@@ -180,7 +180,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             <MdSpaceDashboard
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Payment History</span>}
+            {!isCollapsed && <span>Payment</span>}
             {!isCollapsed && (
               <span className="ml-auto">
                 <FaAngleDown
@@ -204,11 +204,11 @@ const AdminSidebar = ({ isCollapsed}) => {
                 <li>
                   <Button
                     component={Link}
-                    to="/admin/users/add"
+                    to="/student/dashboard/payment-history"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    Add User
+                     Payment History
                   </Button>
                 </li>
                 <li>
@@ -218,7 +218,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    User List
+                    Refund Request
                   </Button>
                 </li>
               </ul>
