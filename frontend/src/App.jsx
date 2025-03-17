@@ -36,6 +36,7 @@ function App() {
     return (
         <Router>
             <Routes>
+                
                 <Route path="/" element={<HomePage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/privacy-policy" element={<PageView />} />
@@ -68,6 +69,7 @@ function App() {
                 <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
+
 
 
                 <Route path="/teacher/dashboard" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
