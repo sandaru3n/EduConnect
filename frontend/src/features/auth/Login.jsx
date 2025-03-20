@@ -1,3 +1,4 @@
+//frontend/src/features/auth/Login.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [stayLoggedIn, setStayLoggedIn] = useState(false);
-  const [notification, setNotification] = useState({ message: "", type: "" }); // New state for notifications
+  const [notification, setNotification] = useState({ message: "", type: "" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +49,7 @@ const Login = () => {
       if (stayLoggedIn) {
         localStorage.setItem("stayLoggedIn", "true");
       }
-      setNotification({ message: "Login Successfully", type: "success" }); // Show success notification
+      setNotification({ message: "You're Successfully Login", type: "success" });
       setTimeout(() => {
         const roleRoutes = {
           admin: "/admin/dashboard",
@@ -57,10 +58,10 @@ const Login = () => {
           institute: "/institute/dashboard",
         };
         navigate(roleRoutes[data.role] || "/");
-      }, 1500); // Navigate after 1.5 seconds to allow the user to see the success message
+      }, 1500);
     } catch (error) {
       console.error("Login error:", error);
-      setNotification({ message: `Error: ${error.response?.data?.message || "Please check your credentials"}`, type: "error" }); // Show error notification
+      setNotification({ message: `Login Failed: ${error.response?.data?.message || "Please check your credentials"}`, type: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -94,22 +95,23 @@ const Login = () => {
           <ArrowBackIcon className="h-5 w-5 mr-1" />
           <span className="text-sm font-medium">BACK</span>
         </button>
-        {/* Notification */}
+
+        {/* Notification - Floating from Right */}
         <AnimatePresence>
-            {notification.message && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={`absolute top-0 left-0 right-0 mx-auto w-fit px-4 py-2 rounded-md shadow-md text-white text-sm font-medium ${
-                  notification.type === "success" ? "bg-green-500" : "bg-red-500"
-                }`}
-              >
-                {notification.message}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {notification.message && (
+            <motion.div
+              initial={{ opacity: 0, x: "100%" }} // Start off-screen to the right
+              animate={{ opacity: 0.9, x: 16 }} // Slide in to 16px from the right edge
+              exit={{ opacity: 0, x: "100%" }} // Slide back out to the right
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className={`fixed top-6 right-0 px-24 py-3 rounded-l-md shadow-md text-white text-sm font-medium z-50 ${
+                notification.type === "success" ? "bg-green-500" : "bg-red-500"
+              }`}
+            >
+              {notification.message}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -117,8 +119,6 @@ const Login = () => {
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="max-w-sm w-full space-y-6 relative"
         >
-          
-
           {/* Logo/Title */}
           <div className="text-center">
             <h1 className="text-3xl font-bold text-indigo-600">EduConnect</h1>
