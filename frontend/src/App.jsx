@@ -9,7 +9,7 @@ import TeacherDashboard from "./features/dashboard/teacher/TeacherDashboard";
 import StudentDashboard from "./features/dashboard/student/StudentDashboard";
 import InstituteDashboard from "./features/dashboard/institute/InstituteDashboard";
 import Login from "./features/auth/Login";
-import Register from "./features/auth/Register";
+//import Register from "./features/auth/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 
@@ -39,6 +39,8 @@ import RefundManagement from "./features/dashboard/admin/RefundManagement";
 import RefundRequest from "./features/dashboard/student/RefundRequest";
 import RefundHistory from "./features/dashboard/student/RefundHistory";
 
+import RoleSelection from "./features/auth/RoleSelection";
+
 
 function App() {
     return (
@@ -56,8 +58,10 @@ function App() {
 
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                
                 <Route path="/:slug" element={<PageView />} />
+
+                <Route path="/register" element={<RoleSelection />} />
 
                 {/* Protected Routes */}
                 <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />

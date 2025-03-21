@@ -6,7 +6,7 @@ exports.register = async (req, res) => {
     const { 
         name, email, password, role, 
         firstName, lastName, contactNumber, dateOfBirth, 
-        guardianName, guardianContactNumber,addressLine1,addressLine2,district,zipCode, address, username,age 
+        guardianName, guardianContactNumber,addressLine1,addressLine2,district,zipCode, address, username,age,subscriptionId
     } = req.body;
 
     const userExists = await User.findOne({ email });
@@ -34,9 +34,13 @@ exports.register = async (req, res) => {
         userData.address = address;
         userData.username = username;
     }
-    // Add student-specific fields if role is student
-    if (role === "teacher") {
-        userData.age = age;
+    else if (role === "teacher") {
+    userData.age = age;
+    if (!subscriptionId) return res.status(400).json({ message: "Subscription plan is required for teachers" });
+    userData.subscriptionId = subscriptionId;
+    } else if (role === "institute") {
+    if (!subscriptionId) return res.status(400).json({ message: "Subscription plan is required for institutes" });
+    userData.subscriptionId = subscriptionId;
     }
 
     const user = await User.create(userData);
@@ -46,6 +50,7 @@ exports.register = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            subscriptionId: user.subscriptionId,
             token: generateToken(user._id),
         });
     } else {
@@ -57,15 +62,19 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role, // ✅ Ensure this is returned
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(401).json({ message: "Invalid email or password" });
+    if (!user || !(await user.matchPassword(password))) {
+        return res.status(401).json({ message: "Invalid email or password" });
     }
+
+    if (["teacher", "institute"].includes(user.role) && user.subscriptionStatus !== "active") {
+        return res.status(403).json({ message: "Your subscription is not active." });
+    }
+
+    res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+    });
 };
