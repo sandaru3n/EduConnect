@@ -229,8 +229,8 @@ const Login = () => {
               </a>
               <p className="text-sm text-gray-600">
                 Don’t have an account?{" "}
-                <a href="/register" className="text-indigo-600 hover:underline">
-                  Sign up
+                <a href="/register/student" className="text-indigo-600 hover:underline">
+                  Student Sign up
                 </a>
               </p>
             </div>

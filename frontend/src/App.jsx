@@ -12,6 +12,11 @@ import Login from "./features/auth/Login";
 import Register from "./features/auth/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+
+import StudentRegister from "./features/auth/StudentRegister";
+import TeacherRegister from "./features/auth/TeacherRegister";
+import InstituteRegister from "./features/auth/InstituteRegister";
+
 import PageView from "./features/home/PageView";
 import AdminPages from "./features/dashboard/admin/AdminPages";
 import AdminEditPage from "./features/dashboard/admin/AdminEditPage";
@@ -88,6 +93,12 @@ function App() {
         <Route path="/teacher/classes/:classId/update" element={<TeacherUpdateClass />} />
 
         <Route path="/teacher/classes/uploadmaterials" element={<ProtectedRoute role="teacher"><UploadMaterials/></ProtectedRoute>} />
+
+        <Route path="/register/student" element={<StudentRegister />} />
+                <Route path="/register/teacher" element={<TeacherRegister />} />
+                <Route path="/register/institute" element={<InstituteRegister />} />
+
+
             </Routes>
         </Router>
 
