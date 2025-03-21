@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema({
         required: true, 
         enum: ["student", "teacher", "institute", "admin"] 
     },
+    subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" }, // For teacher/institute
+    subscriptionStatus: { 
+        type: String, 
+        enum: ["active", "inactive"], 
+        default: "inactive" 
+    }, // For teacher/institute
     createdAt: { type: Date, default: Date.now },
 });
 

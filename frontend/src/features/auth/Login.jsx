@@ -41,31 +41,34 @@ const Login = () => {
     e.preventDefault();
     if (!validate()) return;
     setIsLoading(true);
-    setNotification({ message: "", type: "" }); // Clear previous notifications
+    setNotification({ message: "", type: "" });
 
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      if (stayLoggedIn) {
-        localStorage.setItem("stayLoggedIn", "true");
-      }
-      setNotification({ message: "You're Successfully Login", type: "success" });
-      setTimeout(() => {
-        const roleRoutes = {
-          admin: "/admin/dashboard",
-          teacher: "/teacher/dashboard",
-          student: "/student/dashboard",
-          institute: "/institute/dashboard",
-        };
-        navigate(roleRoutes[data.role] || "/");
-      }, 1500);
+        const { data } = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+        localStorage.setItem("userInfo", JSON.stringify(data));
+        if (stayLoggedIn) {
+            localStorage.setItem("stayLoggedIn", "true");
+        }
+        setNotification({ message: "You're Successfully Logged In", type: "success" });
+        setTimeout(() => {
+            const roleRoutes = {
+                admin: "/admin/dashboard",
+                teacher: "/teacher/dashboard",
+                student: "/student/dashboard",
+                institute: "/institute/dashboard",
+            };
+            navigate(roleRoutes[data.role] || "/");
+        }, 1500);
     } catch (error) {
-      console.error("Login error:", error);
-      setNotification({ message: `Login Failed: ${error.response?.data?.message || "Please check your credentials"}`, type: "error" });
+        console.error("Login error:", error);
+        setNotification({
+            message: `Login Failed: ${error.response?.data?.message || "Please check your credentials"}`,
+            type: "error",
+        });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

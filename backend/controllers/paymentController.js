@@ -1,6 +1,8 @@
 // backend/controllers/paymentController.js
 const StudentSubscription = require('../models/StudentSubscription');
 const Class = require('../models/Class');
+const User = require("../models/User");
+const Subscription = require("../models/Subscription");
 
 exports.subscribeToClass = async (req, res) => {
     const { classId, cardNumber, expiryDate, cvv } = req.body;
@@ -48,6 +50,36 @@ exports.subscribeToClass = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error processing subscription', error: error.message });
+    }
+};
+
+exports.processSubscriptionPayment = async (req, res) => {
+    const { userId, subscriptionId, cardNumber, expiryDate, cvv } = req.body;
+
+    if (!validateCard(cardNumber, expiryDate, cvv)) {
+        return res.status(400).json({ message: "Invalid card details" });
+    }
+
+    const paymentSuccess = processPayment(cardNumber); // Simulated payment gateway
+    if (!paymentSuccess) {
+        return res.status(500).json({ message: "Payment processing failed" });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const subscription = await Subscription.findById(subscriptionId);
+        if (!subscription) return res.status(404).json({ message: "Subscription not found" });
+
+        user.subscriptionId = subscriptionId;
+        user.subscriptionStatus = "active";
+        await user.save();
+
+        res.status(200).json({ message: "Subscription activated successfully", user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error processing subscription", error: error.message });
     }
 };
 
