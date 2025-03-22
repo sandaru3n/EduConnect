@@ -5,6 +5,13 @@ import { Button } from "@mui/material";
 import { MdSpaceDashboard } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 import { Collapse } from "react-collapse";
+import { MdClass } from "react-icons/md";
+import { MdCollectionsBookmark } from "react-icons/md";
+import { TbMessageFilled } from "react-icons/tb";
+import { IoLibrary } from "react-icons/io5";
+import { MdPayments } from "react-icons/md";
+import { BiSolidReport } from "react-icons/bi";
+import { BiSupport } from "react-icons/bi";
 
 const AdminSidebar = ({ isCollapsed}) => {
   const [submenuIndex, setSubmenuIndex] = useState(null);
@@ -63,7 +70,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(1)}
           >
-            <MdSpaceDashboard
+            <MdClass
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Class</span>}
@@ -105,7 +112,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    View All Classes
+                    View Classes
                   </Button>
                 </li>
               </ul>
@@ -123,7 +130,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(2)}
           >
-            <MdSpaceDashboard
+            <MdCollectionsBookmark
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Material</span>}
@@ -184,7 +191,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <MdCollectionsBookmark
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Materials</span>}
@@ -202,7 +209,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <TbMessageFilled
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Private Message</span>}
@@ -220,7 +227,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <IoLibrary 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Library</span>}
@@ -238,7 +245,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(3)}
           >
-            <MdSpaceDashboard
+            <MdPayments
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Payment History</span>}
@@ -299,7 +306,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <BiSolidReport
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Reports</span>}
@@ -318,7 +325,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <BiSupport
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Support</span>}

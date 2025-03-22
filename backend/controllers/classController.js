@@ -1,4 +1,4 @@
-//backend/controllers/classContrller.js
+//backend/controllers/classController.js
 const Class = require('../models/Class');
 
 exports.getActiveClasses = async (req, res) => {
