@@ -116,7 +116,7 @@ const AdminSidebar = ({ isCollapsed}) => {
         <li>
           <Button
             component={Link}
-            to="/admin/subscription"
+            to="/student/dashboard/all-teachers"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
@@ -126,7 +126,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             <MdSpaceDashboard
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Teachers</span>}
+            {!isCollapsed && <span>All Teachers</span>}
           </Button>
         </li>
 
@@ -134,7 +134,7 @@ const AdminSidebar = ({ isCollapsed}) => {
         <li>
           <Button
             component={Link}
-            to="/logout"
+            to="/student/dashboard/all-teachers"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
@@ -214,7 +214,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 <li>
                   <Button
                     component={Link}
-                    to="/admin/users/list"
+                    to="/student/dashboard/refund-request"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>

@@ -41,6 +41,8 @@ import RefundHistory from "./features/dashboard/student/RefundHistory";
 
 import RoleSelection from "./features/auth/RoleSelection";
 
+import ActiveTeachers from "./features/dashboard/student/ActiveTeachers";
+
 
 function App() {
     return (
@@ -103,6 +105,9 @@ function App() {
                 <Route path="/register/institute" element={<InstituteRegister />} />
 
 
+                
+                <Route path="/student/dashboard/all-teachers" element={<ProtectedRoute role="student"><ActiveTeachers /></ProtectedRoute>} /> {/* New route */}
+                
             </Routes>
         </Router>
 
