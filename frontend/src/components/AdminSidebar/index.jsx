@@ -5,6 +5,15 @@ import { Button } from "@mui/material";
 import { MdSpaceDashboard } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 import { Collapse } from "react-collapse";
+import { RiPagesFill } from "react-icons/ri";
+import { SiPlanetscale } from "react-icons/si";
+import { FaChalkboardTeacher } from "react-icons/fa";
+import { BsFillBuildingsFill } from "react-icons/bs";
+import { MdPayments } from "react-icons/md";
+import { BiSolidReport } from "react-icons/bi";
+import { MdDiscount } from "react-icons/md";
+import { TbHelpSquareRoundedFilled } from "react-icons/tb";
+import { IoLibrary } from "react-icons/io5";
 
 const AdminSidebar = ({ isCollapsed}) => {
   const [submenuIndex, setSubmenuIndex] = useState(null);
@@ -63,7 +72,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(1)}
           >
-            <MdSpaceDashboard
+            <RiPagesFill 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Pages</span>}
@@ -123,7 +132,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <SiPlanetscale
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Subscription</span>}
@@ -141,7 +150,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <FaChalkboardTeacher
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Teachers</span>}
@@ -159,7 +168,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <BsFillBuildingsFill
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Institutes</span>}
@@ -177,7 +186,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(2)}
           >
-            <MdSpaceDashboard
+            <MdPayments 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Payments</span>}
@@ -238,7 +247,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <BiSolidReport
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Reports</span>}
@@ -256,7 +265,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <MdDiscount
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Discounts</span>}
@@ -275,7 +284,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(3)}
           >
-            <MdSpaceDashboard
+            <TbHelpSquareRoundedFilled 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Help Center</span>}
@@ -335,7 +344,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <MdSpaceDashboard
+            <IoLibrary 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Library</span>}
