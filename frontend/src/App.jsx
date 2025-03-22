@@ -35,6 +35,7 @@ import RefundRequest from "./features/dashboard/student/RefundRequest";
 import RefundHistory from "./features/dashboard/student/RefundHistory";
 
 
+
 function App() {
     return (
         <Router>
@@ -73,6 +74,7 @@ function App() {
                 
 
                 <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
+
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
 
