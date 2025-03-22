@@ -1,16 +1,40 @@
-// backend/models/User.js
+//backend/model/User.js
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const UserSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+// Define the schema
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true }, // Added for compatibility with authController
+    firstName: { type: String }, // Required for students, optional for others
+    lastName: { type: String }, // Required for students, optional for others
+    contactNumber: { type: String }, // Required for students
+    dateOfBirth: { type: String }, // Required for students
+    guardianName: { type: String }, // Required for students
+    guardianContactNumber: { type: String }, // Required for students
+    addressLine1: { type: String }, // Required for students
+    addressLine2: { type: String }, // Optional for students
+    district: { type: String }, // Required for students
+    zipCode: { type: String }, // Required for students
+    age:{ type: String }, // Required for teacher
     email: { type: String, required: true, unique: true },
+    username: { type: String, unique: true }, // Required for students
     password: { type: String, required: true },
-    role: { type: String, enum: ["student", "teacher", "admin", "institute"], required: true }
+    role: { 
+        type: String, 
+        required: true, 
+        enum: ["student", "teacher", "institute", "admin"] 
+    },
+    subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" }, // For teacher/institute
+    subscriptionStatus: { 
+        type: String, 
+        enum: ["active", "inactive"], 
+        default: "inactive" 
+    }, // For teacher/institute
+    createdAt: { type: Date, default: Date.now },
 });
 
 // Password hashing before saving user
-UserSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -18,8 +42,9 @@ UserSchema.pre("save", async function (next) {
 });
 
 // Compare user-entered password with hashed password
-UserSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model("User", UserSchema);
+// Export the model
+module.exports = mongoose.model("User", userSchema);

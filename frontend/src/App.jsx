@@ -9,8 +9,13 @@ import TeacherDashboard from "./features/dashboard/teacher/TeacherDashboard";
 import StudentDashboard from "./features/dashboard/student/StudentDashboard";
 import InstituteDashboard from "./features/dashboard/institute/InstituteDashboard";
 import Login from "./features/auth/Login";
-import Register from "./features/auth/Register";
+//import Register from "./features/auth/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
+
+
+import StudentRegister from "./features/auth/StudentRegister";
+import TeacherRegister from "./features/auth/TeacherRegister";
+import InstituteRegister from "./features/auth/InstituteRegister";
 
 import PageView from "./features/home/PageView";
 import AdminPages from "./features/dashboard/admin/AdminPages";
@@ -34,6 +39,10 @@ import RefundManagement from "./features/dashboard/admin/RefundManagement";
 import RefundRequest from "./features/dashboard/student/RefundRequest";
 import RefundHistory from "./features/dashboard/student/RefundHistory";
 
+import RoleSelection from "./features/auth/RoleSelection";
+
+import ActiveTeachers from "./features/dashboard/student/ActiveTeachers";
+
 
 
 function App() {
@@ -52,8 +61,10 @@ function App() {
 
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                
                 <Route path="/:slug" element={<PageView />} />
+
+                <Route path="/register" element={<RoleSelection />} />
 
                 {/* Protected Routes */}
                 <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
@@ -90,6 +101,15 @@ function App() {
         <Route path="/teacher/classes/:classId/update" element={<TeacherUpdateClass />} />
 
         <Route path="/teacher/classes/uploadmaterials" element={<ProtectedRoute role="teacher"><UploadMaterials/></ProtectedRoute>} />
+
+        <Route path="/register/student" element={<StudentRegister />} />
+                <Route path="/register/teacher" element={<TeacherRegister />} />
+                <Route path="/register/institute" element={<InstituteRegister />} />
+
+
+                
+                <Route path="/student/dashboard/all-teachers" element={<ProtectedRoute role="student"><ActiveTeachers /></ProtectedRoute>} /> {/* New route */}
+                
             </Routes>
         </Router>
 

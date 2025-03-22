@@ -11,4 +11,7 @@ router.get('/active', getActiveClasses);
 
 router.get('/:classId/materials', authMiddleware, getClassMaterials);
 
+const { getClassesByTeacher } = require('../controllers/classController');
+router.get('/teacher/:teacherId', getClassesByTeacher);
+
 module.exports = router;
