@@ -44,6 +44,7 @@ import RoleSelection from "./features/auth/RoleSelection";
 import ActiveTeachers from "./features/dashboard/student/ActiveTeachers";
 
 
+
 function App() {
     return (
         <Router>
@@ -84,6 +85,7 @@ function App() {
                 
 
                 <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
+
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
 

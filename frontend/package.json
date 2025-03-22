@@ -23,7 +23,7 @@
     "@stripe/react-stripe-js": "^3.3.0",
     "@stripe/stripe-js": "^5.10.0",
     "@tailwindcss/postcss": "^4.0.9",
-    "axios": "^1.8.3",
+    "axios": "^1.8.4",
     "cors": "^2.8.5",
     "framer-motion": "^12.5.0",
     "json2csv": "^6.0.0-alpha.2",

@@ -36,6 +36,9 @@ app.use('/api/payments', paymentRoutes);
 const refundRoutes = require('./routes/refundRoutes');
 app.use('/api/refunds', refundRoutes);
 
+const studyPackRoutes = require('./routes/studyPackRoutes');
+app.use('/api/study-packs',studyPackRoutes);
+
 // Serve static files
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploads/covers')));
