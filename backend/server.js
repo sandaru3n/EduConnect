@@ -60,8 +60,9 @@ app.use((err, req, res, next) => {
   app.use("/uploads/materials", express.static(path.join(__dirname, "uploads/materials")));
 
 
-  const studyPackRoutes = require('./routes/studyPackRoutes');
-app.use('/api/studypacks', studyPackRoutes);
+// Study pack routes
+const studyPackRoutes = require('./routes/studyPackRoutes');
+app.use('/api/studypacks', studyPackRoutes); // Check: Must export Router
 app.use('/uploads/studypacks', express.static(path.join(__dirname, 'src/public/uploads/studypacks')));
 
 // Start server
