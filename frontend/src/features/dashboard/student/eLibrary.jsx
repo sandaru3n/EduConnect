@@ -1,8 +1,7 @@
-//frontend/src/features/dashboard/student/eLibrary.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './eLibrary.css';
-import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import { Breadcrumbs, Link as MuiLink, Typography, Button, Box } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import StudentSidebar from "../../../components/StudentSidebar/index";
 import StudentHeader from "../../../components/StudentHeader/index";
@@ -12,11 +11,12 @@ const EBookDashboard = () => {
   const [filters, setFilters] = useState({ author: '', category: '', uploadDate: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewingEBookId, setViewingEBookId] = useState(null); // State to track which PDF is being viewed
   const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Get pathnames for breadcrumbs
+  // Breadcrumbs logic
   const pathnames = location.pathname.split("/").filter((x) => x);
   const breadcrumbItems = pathnames.map((value, index) => {
     const last = index === pathnames.length - 1;
@@ -52,6 +52,7 @@ const EBookDashboard = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
+  // Responsive sidebar handling
   useEffect(() => {
     const handleResize = () => {
       const mobileView = window.innerWidth <= 768;
@@ -64,6 +65,7 @@ const EBookDashboard = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Fetch eBooks based on filters
   useEffect(() => {
     fetchEBooks();
   }, [filters]);
@@ -96,6 +98,16 @@ const EBookDashboard = () => {
       console.error('Download error:', error);
       alert('Error downloading eBook');
     }
+  };
+
+  // Handle "View Online" button click
+  const handleViewOnline = (id) => {
+    setViewingEBookId(id);
+  };
+
+  // Handle returning to the eBook list
+  const handleBackToList = () => {
+    setViewingEBookId(null);
   };
 
   return (
@@ -169,33 +181,58 @@ const EBookDashboard = () => {
               {error && <p className="error">{error}</p>}
 
               {!loading && !error && (
-                <div className="ebook-list">
-                  {eBooks.length === 0 ? (
-                    <p>No eBooks available.</p>
-                  ) : (
-                    eBooks.map(eBook => (
-                      <div key={eBook._id} className="ebook-card">
-                        {eBook.coverPhotoUrl ? (
-                          <img
-                            src={eBook.coverPhotoUrl}
-                            alt={eBook.title}
-                            className="ebook-cover"
-                          />
-                        ) : (
-                          <div className="no-cover">No Cover</div>
-                        )}
-                        <h3>{eBook.title}</h3>
-                        <p><strong>Author:</strong> {eBook.author}</p>
-                        <p><strong>Category:</strong> {eBook.category}</p>
-                        <p><strong>Uploaded:</strong> {new Date(eBook.uploadDate).toLocaleDateString()}</p>
-                        <p><strong>Downloads:</strong> {eBook.downloadCount}</p>
-                        <button onClick={() => handleDownload(eBook._id)}>
-                          Download
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
+                viewingEBookId ? (
+                  <Box>
+                    <Button
+                      variant="outlined"
+                      onClick={handleBackToList}
+                      sx={{ mb: 2 }}
+                    >
+                      Back to List
+                    </Button>
+                    <iframe
+                      src={`http://localhost:5000/uploads/ebooks/${eBooks.find(eBook => eBook._id === viewingEBookId).filePath.split('/').pop()}`}
+                      width="100%"
+                      height="600px"
+                      title={eBooks.find(eBook => eBook._id === viewingEBookId).title}
+                      style={{ border: 'none' }}
+                    />
+                  </Box>
+                ) : (
+                  <div className="ebook-list">
+                    {eBooks.length === 0 ? (
+                      <p>No eBooks available.</p>
+                    ) : (
+                      eBooks.map(eBook => (
+                        <div key={eBook._id} className="ebook-card">
+                          {eBook.coverPhotoUrl ? (
+                            <img
+                              src={eBook.coverPhotoUrl}
+                              alt={eBook.title}
+                              className="ebook-cover"
+                            />
+                          ) : (
+                            <div className="no-cover">No Cover</div>
+                          )}
+                          <h3>{eBook.title}</h3>
+                          <p><strong>Author:</strong> {eBook.author}</p>
+                          <p><strong>Category:</strong> {eBook.category}</p>
+                          <p><strong>Uploaded:</strong> {new Date(eBook.uploadDate).toLocaleDateString()}</p>
+                          <p><strong>Downloads:</strong> {eBook.downloadCount}</p>
+                          <button onClick={() => handleDownload(eBook._id)}>
+                            Download
+                          </button>
+                          <button 
+                            onClick={() => handleViewOnline(eBook._id)}
+                            style={{ marginLeft: '10px' }}
+                          >
+                            View Online
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )
               )}
             </div>
           </div>
