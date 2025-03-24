@@ -48,6 +48,7 @@ import ActiveTeachers from "./features/dashboard/student/ActiveTeachers";
 import UploadStudyPack from "./features/dashboard/teacher/UploadStudyPack";
 import StudyPacks from './features/dashboard/student/StudyPacks';
 import PurchasedStudyPacks from './features/dashboard/student/PurchasedStudyPacks';
+import ManageStudyPacks from './features/dashboard/teacher/ManageStudyPacks';
 
 
 
@@ -121,7 +122,7 @@ function App() {
 <Route path="/student/studypacks" element={<StudyPacks />} />
 <Route path="/student/purchased-studypacks" element={<PurchasedStudyPacks />} />
 
-
+<Route path="/teacher/manage-studypacks" element={<ManageStudyPacks />} />
 
             </Routes>
         </Router>
