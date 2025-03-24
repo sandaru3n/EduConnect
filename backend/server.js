@@ -59,6 +59,11 @@ app.use((err, req, res, next) => {
 
   app.use("/uploads/materials", express.static(path.join(__dirname, "uploads/materials")));
 
+
+  const studyPackRoutes = require('./routes/studyPackRoutes');
+app.use('/api/studypacks', studyPackRoutes);
+app.use('/uploads/studypacks', express.static(path.join(__dirname, 'src/public/uploads/studypacks')));
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
