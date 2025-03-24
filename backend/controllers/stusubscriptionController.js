@@ -16,21 +16,27 @@ exports.getMyClasses = async (req, res) => {
 
 exports.getPaymentHistory = async (req, res) => {
     try {
-        const StudentSubscriptions = await StudentSubscription.find({ userId: req.user.id })
-            .populate({
-                path: 'classId',
-                select: 'subject monthlyFee',
-                populate: {
-                    path: 'teacherId',
-                    select: 'name'
-                }
-            });
-        res.status(200).json(StudentSubscriptions);
+      const payments = await StudentSubscription.find({ userId: req.user.id })
+        .populate({
+          path: 'classId',
+          select: 'subject teacherId',
+          populate: {
+            path: 'teacherId',
+            select: 'name',
+          },
+        })
+        .sort({ createdAt: -1 });
+  
+      if (!payments.length) {
+        return res.status(200).json([]);
+      }
+  
+      res.status(200).json(payments);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching payment history' });
+      console.error('Error fetching payment history:', error);
+      res.status(500).json({ message: 'Server error fetching payment history' });
     }
-};
+  };
 
 //
 exports.getMyClasses = async (req, res) => {
