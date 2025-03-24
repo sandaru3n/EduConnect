@@ -1,4 +1,3 @@
-// frontend/src/features/student/StudyPacks.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Card, CardContent, CardMedia, Button, Grid, CircularProgress, Alert } from '@mui/material';
@@ -41,6 +40,7 @@ const StudyPacks = () => {
         cvv: paymentData.cvv,
       }, config);
       alert('Purchase successful!');
+      setPaymentModalOpen(false);
     } catch (err) {
       throw new Error(err.response?.data?.message || 'Payment failed');
     }

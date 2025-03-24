@@ -1,12 +1,13 @@
-// frontend/src/features/teacher/UploadStudyPack.jsx
 import { useState } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, Typography, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, Alert, Select, MenuItem, IconButton, FormControl, InputLabel } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
 const UploadStudyPack = () => {
   const [formData, setFormData] = useState({ title: '', subject: '', price: '' });
   const [coverPhoto, setCoverPhoto] = useState(null);
-  const [files, setFiles] = useState([]);
+  const [filesData, setFilesData] = useState([{ lessonName: '', type: 'pdf', content: null }]);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -14,12 +15,24 @@ const UploadStudyPack = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.name === 'coverPhoto') {
-      setCoverPhoto(e.target.files[0]);
-    } else {
-      setFiles([...e.target.files]);
-    }
+  const handleFileDataChange = (index, field, value) => {
+    const updatedFilesData = [...filesData];
+    updatedFilesData[index][field] = value;
+    setFilesData(updatedFilesData);
+  };
+
+  const handleFileChange = (index, e) => {
+    const updatedFilesData = [...filesData];
+    updatedFilesData[index].content = e.target.files[0];
+    setFilesData(updatedFilesData);
+  };
+
+  const addFileField = () => {
+    setFilesData([...filesData, { lessonName: '', type: 'pdf', content: null }]);
+  };
+
+  const removeFileField = (index) => {
+    setFilesData(filesData.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -29,7 +42,13 @@ const UploadStudyPack = () => {
     data.append('subject', formData.subject);
     data.append('price', formData.price);
     data.append('coverPhoto', coverPhoto);
-    files.forEach(file => data.append('files', file));
+    data.append('filesData', JSON.stringify(filesData.filter(file => file.lessonName && (file.type === 'url' ? file.content : true))));
+
+    filesData.forEach((fileData, index) => {
+      if (fileData.type !== 'url' && fileData.content) {
+        data.append('files', fileData.content);
+      }
+    });
 
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -38,7 +57,7 @@ const UploadStudyPack = () => {
       setSuccess('Study pack uploaded successfully!');
       setFormData({ title: '', subject: '', price: '' });
       setCoverPhoto(null);
-      setFiles([]);
+      setFilesData([{ lessonName: '', type: 'pdf', content: null }]);
     } catch (err) {
       setError(err.response?.data?.message || 'Upload failed');
     }
@@ -53,9 +72,56 @@ const UploadStudyPack = () => {
         <TextField fullWidth label="Title" name="title" value={formData.title} onChange={handleChange} margin="normal" required />
         <TextField fullWidth label="Subject" name="subject" value={formData.subject} onChange={handleChange} margin="normal" required />
         <TextField fullWidth label="Price" name="price" type="number" value={formData.price} onChange={handleChange} margin="normal" required />
-        <input type="file" name="coverPhoto" accept="image/*" onChange={handleFileChange} required />
-        <input type="file" name="files" multiple accept=".pdf,video/*" onChange={handleFileChange} required />
-        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Upload</Button>
+        <Typography variant="subtitle1" sx={{ mt: 2 }}>Cover Photo</Typography>
+        <input type="file" name="coverPhoto" accept="image/*" onChange={(e) => setCoverPhoto(e.target.files[0])} required />
+
+        <Typography variant="subtitle1" sx={{ mt: 2 }}>Files</Typography>
+        {filesData.map((fileData, index) => (
+          <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <TextField
+              label="Lesson Name"
+              value={fileData.lessonName}
+              onChange={(e) => handleFileDataChange(index, 'lessonName', e.target.value)}
+              sx={{ mr: 2, flex: 1 }}
+              required
+            />
+            <FormControl sx={{ minWidth: 120, mr: 2 }}>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={fileData.type}
+                onChange={(e) => handleFileDataChange(index, 'type', e.target.value)}
+                label="Type"
+              >
+                <MenuItem value="pdf">PDF</MenuItem>
+                <MenuItem value="video">Video</MenuItem>
+                <MenuItem value="url">URL</MenuItem>
+              </Select>
+            </FormControl>
+            {fileData.type === 'url' ? (
+              <TextField
+                label="URL"
+                value={fileData.content || ''}
+                onChange={(e) => handleFileDataChange(index, 'content', e.target.value)}
+                sx={{ flex: 1 }}
+                required
+              />
+            ) : (
+              <input
+                type="file"
+                accept={fileData.type === 'pdf' ? '.pdf' : 'video/*'}
+                onChange={(e) => handleFileChange(index, e)}
+                required={!fileData.content}
+              />
+            )}
+            <IconButton onClick={() => removeFileField(index)} color="error" sx={{ ml: 1 }}>
+              <RemoveCircleIcon />
+            </IconButton>
+          </Box>
+        ))}
+        <Button startIcon={<AddCircleIcon />} onClick={addFileField} sx={{ mb: 2 }}>
+          Add More Files
+        </Button>
+        <Button type="submit" variant="contained" color="primary" fullWidth>Upload</Button>
       </form>
     </Box>
   );

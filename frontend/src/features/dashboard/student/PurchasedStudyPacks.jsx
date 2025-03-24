@@ -1,4 +1,3 @@
-// frontend/src/features/student/PurchasedStudyPacks.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Card, CardContent, CardMedia, Button, Grid, CircularProgress, Alert } from '@mui/material';
@@ -39,10 +38,20 @@ const PurchasedStudyPacks = () => {
                 <Typography variant="h6">{pack.title}</Typography>
                 <Typography variant="body2" color="textSecondary">Subject: {pack.subject}</Typography>
                 <Typography variant="body2">Teacher: {pack.teacherId.name}</Typography>
+                <Typography variant="subtitle1" sx={{ mt: 2 }}>Files:</Typography>
                 {pack.files.map((file, index) => (
-                  <Button key={index} href={file.content} target="_blank" variant="outlined" sx={{ mt: 1 }}>
-                    {file.type === 'pdf' ? 'View PDF' : file.type === 'video' ? 'Watch Video' : 'Open URL'}
-                  </Button>
+                  <Box key={index} sx={{ mt: 1 }}>
+                    <Typography variant="body2">{file.lessonName} ({file.type})</Typography>
+                    <Button
+                      href={file.content}
+                      target="_blank"
+                      variant="outlined"
+                      size="small"
+                      sx={{ mt: 0.5 }}
+                    >
+                      {file.type === 'pdf' ? 'View PDF' : file.type === 'video' ? 'Watch Video' : 'Open URL'}
+                    </Button>
+                  </Box>
                 ))}
               </CardContent>
             </Card>

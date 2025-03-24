@@ -1,10 +1,9 @@
-// backend/routes/studyPackRoutes.js
 const express = require('express');
 const router = express.Router();
 const { uploadStudyPack, getAllStudyPacks, getPurchasedStudyPacks } = require('../controllers/studyPackController');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
-const path = require('path'); // Import the path module
+const path = require('path');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

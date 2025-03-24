@@ -1,4 +1,3 @@
-// backend/models/StudyPack.js
 const mongoose = require('mongoose');
 
 const StudyPackSchema = new mongoose.Schema({
@@ -7,6 +6,7 @@ const StudyPackSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   coverPhotoPath: { type: String, required: true },
   files: [{
+    lessonName: { type: String, required: true }, // Added lesson name
     type: { type: String, enum: ['pdf', 'video', 'url'], required: true },
     content: { type: String, required: true }, // Path for pdf/video, URL for links
   }],
