@@ -12,6 +12,7 @@ import { IoLibrary } from "react-icons/io5";
 import { MdPayments } from "react-icons/md";
 import { BiSolidReport } from "react-icons/bi";
 import { BiSupport } from "react-icons/bi";
+import { SiStudyverse } from "react-icons/si";
 
 const AdminSidebar = ({ isCollapsed}) => {
   const [submenuIndex, setSubmenuIndex] = useState(null);
@@ -130,10 +131,10 @@ const AdminSidebar = ({ isCollapsed}) => {
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
             onClick={() => toggleSubmenu(2)}
           >
-            <MdCollectionsBookmark
+            <SiStudyverse 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Material</span>}
+            {!isCollapsed && <span>Study Pack</span>}
             {!isCollapsed && (
               <span className="ml-auto">
                 <FaAngleDown
@@ -157,22 +158,22 @@ const AdminSidebar = ({ isCollapsed}) => {
                 <li>
                   <Button
                     component={Link}
-                    to="/teacher/classes/add"
+                    to="/teacher/upload-studypack"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    Create Class
+                    Create Study Pack
                   </Button>
                 </li>
                 <li>
                   
                   <Button
                     component={Link}
-                    to="/teacher/classses/view-all"
+                    to="/teacher/manage-studypacks"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    View All Classes
+                    Manage Study Pack
                   </Button>
                 </li>
               </ul>
