@@ -3,6 +3,9 @@ const StudentSubscription = require('../models/StudentSubscription');
 const Class = require('../models/Class');
 const User = require("../models/User");
 const Subscription = require("../models/Subscription");
+const StudyPack = require('../models/StudyPack'); // Add this line
+const StudyPackSubscription = require('../models/StudyPackSubscription'); // Add this line
+const mongoose = require('mongoose'); // Ensure this line is present
 
 exports.subscribeToClass = async (req, res) => {
     const { classId, cardNumber, expiryDate, cvv } = req.body;
@@ -82,6 +85,59 @@ exports.processSubscriptionPayment = async (req, res) => {
         res.status(500).json({ message: "Error processing subscription", error: error.message });
     }
 };
+
+exports.subscribeToStudyPack = async (req, res) => {
+    const { studyPackId, cardNumber, expiryDate, cvv } = req.body;
+    const userId = req.user?.id;
+  
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+  
+    if (!mongoose.Types.ObjectId.isValid(studyPackId)) {
+      return res.status(400).json({ message: 'Invalid study pack ID' });
+    }
+  
+    if (!validateCard(cardNumber, expiryDate, cvv)) {
+      return res.status(400).json({ message: 'Invalid card details' });
+    }
+  
+    const paymentSuccess = processPayment(cardNumber);
+    if (!paymentSuccess) {
+      return res.status(500).json({ message: 'Payment processing failed' });
+    }
+  
+    try {
+      const studyPack = await StudyPack.findById(studyPackId);
+      if (!studyPack) {
+        return res.status(404).json({ message: 'Study pack not found' });
+      }
+  
+      let subscription = await StudyPackSubscription.findOne({ userId, studyPackId }); // Use new model
+      if (subscription) {
+        if (subscription.status === 'Inactive') {
+          subscription.status = 'Active';
+          subscription.feePaid = studyPack.price;
+          subscription.createdAt = new Date();
+          await subscription.save();
+          return res.status(200).json({ message: 'Subscription reactivated', subscriptionId: subscription._id });
+        } else {
+          return res.status(400).json({ message: 'Already subscribed to this study pack' });
+        }
+      }
+  
+      subscription = new StudyPackSubscription({
+        userId,
+        studyPackId, // Use studyPackId instead of classId
+        feePaid: studyPack.price,
+      });
+      await subscription.save();
+      res.status(201).json({ message: 'Subscription successful', subscriptionId: subscription._id });
+    } catch (error) {
+      console.error('Error in subscribeToStudyPack:', error);
+      res.status(500).json({ message: 'Error processing subscription', error: error.message });
+    }
+  };
 
 // Simple card validation function (unchanged)
 function validateCard(cardNumber, expiryDate, cvv) {

@@ -44,6 +44,14 @@ import RoleSelection from "./features/auth/RoleSelection";
 import ActiveTeachers from "./features/dashboard/student/ActiveTeachers";
 
 
+// frontend/src/App.jsx (example)
+import UploadStudyPack from "./features/dashboard/teacher/UploadStudyPack";
+import StudyPacks from './features/dashboard/student/StudyPacks';
+import PurchasedStudyPacks from './features/dashboard/student/PurchasedStudyPacks';
+
+
+
+
 function App() {
     return (
         <Router>
@@ -108,6 +116,13 @@ function App() {
                 
                 <Route path="/student/dashboard/all-teachers" element={<ProtectedRoute role="student"><ActiveTeachers /></ProtectedRoute>} /> {/* New route */}
                 
+               
+<Route path="/teacher/upload-studypack" element={<UploadStudyPack />} />
+<Route path="/student/studypacks" element={<StudyPacks />} />
+<Route path="/student/purchased-studypacks" element={<PurchasedStudyPacks />} />
+
+
+
             </Routes>
         </Router>
 
