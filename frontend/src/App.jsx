@@ -25,6 +25,7 @@ import ManageLibrary from "./features/dashboard/admin/EBookUpload";
 
 
 import StudentLibrary from "./features/dashboard/student/eLibrary";
+import TeacherLibrary from "./features/dashboard/student/eLibrary";
 import PaymentForm from "./features/dashboard/student/PaymentForm";
 import MyClasses from "./features/dashboard/student/MyClasses";
  
@@ -84,6 +85,8 @@ function App() {
                 
                 <Route path="/student/dashboard" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
                 <Route path="/student/library" element={<ProtectedRoute role="student"><StudentLibrary /></ProtectedRoute>} />
+                <Route path="/teacher/library" element={<ProtectedRoute role="teacher"><TeacherLibrary  /></ProtectedRoute>} />
+                
                 <Route path="/student/dashboard/subscribe/:classId" element={<PaymentForm />} />
                 <Route path="/student/dashboard/my-classes" element={<MyClasses />} />
                 <Route path="/student/dashboard/my-classes/:classId/materials" element={<ClassMaterial />} />

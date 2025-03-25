@@ -221,7 +221,7 @@ const AdminSidebar = ({ isCollapsed}) => {
         <li>
           <Button
             component={Link}
-            to="/logout"
+            to="/teacher/library"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"

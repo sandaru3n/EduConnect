@@ -99,21 +99,32 @@ const AdminSidebar = ({ isCollapsed}) => {
                 <li>
                   <Button
                     component={Link}
-                    to="/admin/users/add"
+                    to="/admin/pages"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    Add User
+                    View All Pages
                   </Button>
                 </li>
                 <li>
                   <Button
                     component={Link}
-                    to="/admin/users/list"
+                    to="/admin/pages/edit-page/terms"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    User List
+                    Edit Terms Page
+                  </Button>
+                </li>
+
+                <li>
+                  <Button
+                    component={Link}
+                    to="/admin/pages/edit-page/privacy-policy"
+                    className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
+                  >
+                    <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
+                    Edit Privacy Page
                   </Button>
                 </li>
               </ul>
@@ -213,11 +224,11 @@ const AdminSidebar = ({ isCollapsed}) => {
                 <li>
                   <Button
                     component={Link}
-                    to="/admin/users/add"
+                    to="/admin/refund-management"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    Add User
+                    Class Refund Mangement
                   </Button>
                 </li>
                 <li>
