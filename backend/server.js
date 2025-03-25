@@ -65,6 +65,9 @@ const studyPackRoutes = require('./routes/studyPackRoutes');
 app.use('/api/studypacks', studyPackRoutes); // Check: Must export Router
 app.use('/uploads/studypacks', express.static(path.join(__dirname, 'src/public/uploads/studypacks')));
 
+// New message routes
+app.use('/api/messages', require('./routes/messageRoutes'));
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

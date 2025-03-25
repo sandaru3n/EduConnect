@@ -1,3 +1,4 @@
+// frontend/src/features/student/PurchasedStudyPacks.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Card, CardContent, CardMedia, Button, Grid, CircularProgress, Alert } from '@mui/material';
