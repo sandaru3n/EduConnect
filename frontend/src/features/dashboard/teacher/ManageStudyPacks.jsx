@@ -1,3 +1,4 @@
+//frontend/src/features/dashboard/teacher/ManageStudyPacks.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
