@@ -6,54 +6,78 @@ const Subscription = require("../models/Subscription");
 const StudyPack = require('../models/StudyPack'); // Add this line
 const StudyPackSubscription = require('../models/StudyPackSubscription'); // Add this line
 const mongoose = require('mongoose'); // Ensure this line is present
+const sendEmail = require('../config/email');
 
 exports.subscribeToClass = async (req, res) => {
-    const { classId, cardNumber, expiryDate, cvv } = req.body;
-    const userId = req.user.id; // From authMiddleware
+  const { classId, cardNumber, expiryDate, cvv } = req.body;
+  const userId = req.user.id; // From authMiddleware
 
-    // Custom card validation
-    if (!validateCard(cardNumber, expiryDate, cvv)) {
-        return res.status(400).json({ message: 'Invalid card details' });
-    }
+  // Custom card validation
+  if (!validateCard(cardNumber, expiryDate, cvv)) {
+      return res.status(400).json({ message: 'Invalid card details' });
+  }
 
-    // Simulate payment processing
-    const paymentSuccess = processPayment(cardNumber); // Simulated for now
-    if (!paymentSuccess) {
-        return res.status(500).json({ message: 'Payment processing failed' });
-    }
+  // Simulate payment processing
+  const paymentSuccess = processPayment(cardNumber); // Simulated for now
+  if (!paymentSuccess) {
+      return res.status(500).json({ message: 'Payment processing failed' });
+  }
 
-    try {
-        const classData = await Class.findById(classId);
-        if (!classData) {
-            return res.status(404).json({ message: 'Class not found' });
-        }
+  try {
+      const classData = await Class.findById(classId).populate('teacherId', 'name');
+      if (!classData) {
+          return res.status(404).json({ message: 'Class not found' });
+      }
 
-        let subscription = await StudentSubscription.findOne({ userId, classId });
-        if (subscription) {
-            // If subscription exists (inactive), reactivate it
-            if (subscription.status === 'Inactive') {
-                subscription.status = 'Active';
-                subscription.feePaid = classData.monthlyFee;
-                subscription.createdAt = new Date(); // Update payment date
-                await subscription.save();
-                return res.status(200).json({ message: 'Subscription reactivated successfully', subscriptionId: subscription._id });
-            } else {
-                return res.status(400).json({ message: 'Already subscribed to this class' });
-            }
-        }
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
 
-        // Create new subscription if none exists
-        subscription = new StudentSubscription({
-            userId,
-            classId,
-            feePaid: classData.monthlyFee,
-        });
-        await subscription.save();
-        res.status(201).json({ message: 'Subscription successful', subscriptionId: subscription._id });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error processing subscription', error: error.message });
-    }
+      let subscription = await StudentSubscription.findOne({ userId, classId });
+      if (subscription) {
+          // If subscription exists (inactive), reactivate it
+          if (subscription.status === 'Inactive') {
+              subscription.status = 'Active';
+              subscription.feePaid = classData.monthlyFee;
+              subscription.createdAt = new Date(); // Update payment date
+              await subscription.save();
+
+              // Send reactivation email
+              await sendEmail(
+                  user.email,
+                  'Class Subscription Reactivated',
+                  `Hello ${user.name},\n\nYour subscription to the class "${classData.subject}" taught by ${classData.teacherId.name} has been successfully reactivated. The monthly fee of $${classData.monthlyFee} has been paid.\n\nHappy Learning!\nEduConnect Team`,
+                  `<h2>Class Subscription Reactivated</h2><p>Hello ${user.name},</p><p>Your subscription to the class "<strong>${classData.subject}</strong>" taught by <strong>${classData.teacherId.name}</strong> has been successfully reactivated. The monthly fee of <strong>$${classData.monthlyFee}</strong> has been paid.</p><p>Happy Learning!<br>EduConnect Team</p>`
+              );
+
+              return res.status(200).json({ message: 'Subscription reactivated successfully', subscriptionId: subscription._id });
+          } else {
+              return res.status(400).json({ message: 'Already subscribed to this class' });
+          }
+      }
+
+      // Create new subscription if none exists
+      subscription = new StudentSubscription({
+          userId,
+          classId,
+          feePaid: classData.monthlyFee,
+      });
+      await subscription.save();
+
+      // Send confirmation email
+      await sendEmail(
+          user.email,
+          'Class Subscription Confirmation',
+          `Hello ${user.name},\n\nYou have successfully subscribed to the class "${classData.subject}" taught by ${classData.teacherId.name}. The monthly fee of $${classData.monthlyFee} has been paid.\n\nHappy Learning!\nEduConnect Team`,
+          `<h2>Class Subscription Confirmation</h2><p>Hello ${user.name},</p><p>You have successfully subscribed to the class "<strong>${classData.subject}</strong>" taught by <strong>${classData.teacherId.name}</strong>. The monthly fee of <strong>$${classData.monthlyFee}</strong> has been paid.</p><p>Happy Learning!<br>EduConnect Team</p>`
+      );
+
+      res.status(201).json({ message: 'Subscription successful', subscriptionId: subscription._id });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error processing subscription', error: error.message });
+  }
 };
 
 exports.processSubscriptionPayment = async (req, res) => {
