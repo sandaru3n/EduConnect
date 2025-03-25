@@ -14,6 +14,32 @@
     transform: translate(-20px, 20px) scale(0.9);
   }
 }
+
+@layer components {
+  /* Fix autofill for text inputs (from previous fixes) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #111827 !important; /* Tailwind's gray-900 */
+  }
+
+  /* Fix checkbox background */
+  input[type="checkbox"] {
+    background-color: white !important; /* White background when unchecked */
+    border-color: #d1d5db !important; /* Tailwind's gray-300 */
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: #4f46e5 !important; /* Tailwind's indigo-600 */
+    border-color: #4f46e5 !important;
+  }
+}
+
+
+
 .animate-blob {
   animation: blob 7s infinite;
 }
