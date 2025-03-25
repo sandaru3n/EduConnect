@@ -50,7 +50,8 @@ import StudyPacks from './features/dashboard/student/StudyPacks';
 import PurchasedStudyPacks from './features/dashboard/student/PurchasedStudyPacks';
 import ManageStudyPacks from './features/dashboard/teacher/ManageStudyPacks';
 
-
+import StudentMessage from "./features/dashboard/student/StudentMessage";
+import TeacherMessage from "./features/dashboard/teacher/TeacherMessage";
 
 
 function App() {
@@ -124,6 +125,8 @@ function App() {
 
 <Route path="/teacher/manage-studypacks" element={<ManageStudyPacks />} />
 
+<Route path="/student/message" element={<ProtectedRoute role="student"><StudentMessage /></ProtectedRoute>} />
+<Route path="/teacher/message" element={<TeacherMessage />} />
             </Routes>
         </Router>
 
