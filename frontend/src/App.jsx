@@ -43,6 +43,8 @@ import RoleSelection from "./features/auth/RoleSelection";
 
 import ActiveTeachers from "./features/dashboard/student/ActiveTeachers";
 
+import StudyPacksList from "./components/StudyPackList";
+import AddStudyPack from "./components/AddStudyPack";
 
 
 function App() {
@@ -65,6 +67,9 @@ function App() {
                 <Route path="/:slug" element={<PageView />} />
 
                 <Route path="/register" element={<RoleSelection />} />
+
+                <Route path="/component/studyPacks" element={<ProtectedRoute><StudyPacksList /></ProtectedRoute>} />
+                <Route path="/add-study-pack" element={<AddStudyPack />} />
 
                 {/* Protected Routes */}
                 <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
