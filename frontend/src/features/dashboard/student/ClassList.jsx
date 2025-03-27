@@ -1,4 +1,3 @@
-//frontend/src/features/dashboard/student/ClassList.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -24,19 +23,31 @@ const ClassList = () => {
     };
 
     return (
-        <div>
-            <h2>Available Classes</h2>
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Available Classes</h2>
             {classes.length === 0 ? (
-                <p>No active classes available.</p>
+                <p className="text-gray-600 text-lg">No active classes available.</p>
             ) : (
-                classes.map(cls => (
-                    <div key={cls._id} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
-                        <h3>{cls.subject}</h3>
-                        <p>Monthly Fee: ${cls.monthlyFee}</p>
-                        <p>Teacher: {cls.teacherId.name}</p>
-                        <button onClick={() => handleSubscribe(cls._id)}>Subscribe</button>
-                    </div>
-                ))
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {classes.map(cls => (
+                        <div
+                            key={cls._id}
+                            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 p-6 flex flex-col justify-between"
+                        >
+                            <div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">{cls.subject}</h3>
+                                <p className="text-gray-600 mb-2">Monthly Fee: <span className="font-medium text-green-600">${cls.monthlyFee}</span></p>
+                                <p className="text-gray-500 text-sm italic">Teacher: {cls.teacherId.name}</p>
+                            </div>
+                            <button
+                                onClick={() => handleSubscribe(cls._id)}
+                                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+                            >
+                                Subscribe
+                            </button>
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );

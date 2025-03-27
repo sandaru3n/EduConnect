@@ -33,7 +33,7 @@ const AdminSidebar = ({ isCollapsed}) => {
         <div className="py-2 w-full flex justify-center">
           <Link to="/admin/dashboard">
             <img
-              src="https://ecme-react.themenate.net/img/logo/logo-light-full.png"
+              src="../../src/assets/educonnetlogo.png"
               alt="Logo"
               className="w-[120px] transition-all duration-300"
             />
