@@ -7,7 +7,7 @@ const path = require('path');
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
-
+const faqRoutes = require('./routes/faqRoutes');
 
 
 
@@ -36,6 +36,8 @@ app.use('/api/payments', paymentRoutes);
 const refundRoutes = require('./routes/refundRoutes');
 app.use('/api/refunds', refundRoutes);
 
+
+app.use('/api/faqs', faqRoutes);
 // Serve static files
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploads/covers')));

@@ -54,6 +54,8 @@ import ManageStudyPacks from './features/dashboard/teacher/ManageStudyPacks';
 import StudentMessage from "./features/dashboard/student/StudentMessage";
 import TeacherMessage from "./features/dashboard/teacher/TeacherMessage";
 
+import ManageFAQs from "./features/dashboard/admin/ManageFAQs";
+
 
 function App() {
     return (
@@ -82,6 +84,9 @@ function App() {
                 <Route path="/admin/subscription" element={<ProtectedRoute role="admin"><Subscription /></ProtectedRoute>} />
                 <Route path="/admin/library" element={<ProtectedRoute role="admin"><ManageLibrary /></ProtectedRoute>} />
                 <Route path="/admin/pages" element={<ProtectedRoute role="admin">< AdminPages/></ProtectedRoute>} />
+                <Route path="/admin/manage-faqs" element={<ProtectedRoute role="admin">< ManageFAQs/></ProtectedRoute>} />
+
+                
                 
                 <Route path="/student/dashboard" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
                 <Route path="/student/library" element={<ProtectedRoute role="student"><StudentLibrary /></ProtectedRoute>} />
