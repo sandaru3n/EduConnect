@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const faqRoutes = require('./routes/faqRoutes');
-
+const knowledgebaseRoutes = require('./routes/knowledgebaseRoutes');
 
 
 dotenv.config();
@@ -42,6 +42,8 @@ app.use('/api/faqs', faqRoutes);
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploads/covers')));
 
+
+app.use('/api/knowledgebase', knowledgebaseRoutes);
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/teacher", require("./routes/teacherRoutes"));
