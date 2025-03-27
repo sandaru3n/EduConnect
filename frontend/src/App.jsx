@@ -57,6 +57,9 @@ import TeacherMessage from "./features/dashboard/teacher/TeacherMessage";
 import ManageFAQs from "./features/dashboard/admin/ManageFAQs";
 
 
+import Knowledgebase from "../src/features/home/Knowledgebase";
+import ManageKnowledgebase from "./features/dashboard/admin/ManageKnowledgebase";
+
 function App() {
     return (
         <Router>
@@ -68,6 +71,7 @@ function App() {
                 <Route path="/terms-of-service" element={<PageView />} />
                 <Route path="/contact-us" element={<PageView />} />
                 <Route path="/about-us" element={<PageView />} />
+                <Route path="/knowledgebase" element={<Knowledgebase />} />
 
 
 
@@ -85,6 +89,7 @@ function App() {
                 <Route path="/admin/library" element={<ProtectedRoute role="admin"><ManageLibrary /></ProtectedRoute>} />
                 <Route path="/admin/pages" element={<ProtectedRoute role="admin">< AdminPages/></ProtectedRoute>} />
                 <Route path="/admin/manage-faqs" element={<ProtectedRoute role="admin">< ManageFAQs/></ProtectedRoute>} />
+                <Route path="/admin/manage-knwoledgebase" element={<ProtectedRoute role="admin">< ManageKnowledgebase/></ProtectedRoute>} />
 
                 
                 
