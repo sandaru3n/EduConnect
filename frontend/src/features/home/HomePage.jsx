@@ -1,10 +1,10 @@
-//frontend/src/features/home/HomePage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import axios from 'axios';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,8 +14,6 @@ const Header = () => {
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="text-2xl font-bold text-blue-600">EduConnect</div>
-          
-          {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-8">
             <a href="/" className="text-gray-700 hover:text-blue-600">Home</a>
             <a href="/login" className="text-gray-700 hover:text-blue-600">Login</a>
@@ -23,10 +21,7 @@ const Header = () => {
             <a href="/contact" className="text-gray-700 hover:text-blue-600">Contact</a>
             <a href="/pricing" className="text-gray-700 hover:text-blue-600">Pricing</a>
             <a href="/terms" className="text-gray-700 hover:text-blue-600">Terms</a>
-            
           </div>
-
-          {/* Mobile Menu Button */}
           <button 
             className="md:hidden text-gray-700"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -34,9 +29,6 @@ const Header = () => {
             {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
         </div>
-
-        
-        
       </nav>
     </header>
   );
@@ -70,6 +62,36 @@ const HeroSlider = () => {
           </div>
         </SwiperSlide>
       </Swiper>
+    </section>
+  );
+};
+
+const FAQs = () => {
+  const [faqs, setFaqs] = useState([]);
+
+  useEffect(() => {
+    const fetchFAQs = async () => {
+      try {
+        const { data } = await axios.get('http://localhost:5000/api/faqs');
+        setFaqs(data);
+      } catch (error) {
+        console.error('Error fetching FAQs:', error);
+      }
+    };
+    fetchFAQs();
+  }, []);
+
+  return (
+    <section className="container mx-auto px-6 py-16">
+      <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+      <div className="space-y-4">
+        {faqs.map((faq) => (
+          <div key={faq._id} className="bg-gray-100 p-4 rounded-lg">
+            <p className="font-semibold">Q: {faq.question}</p>
+            <p className="mt-2">A: {faq.answer}</p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 };
@@ -116,6 +138,7 @@ const HomePage = () => {
             {/* Add course cards here */}
           </div>
         </section>
+        <FAQs />
       </main>
       <Footer />
     </div>
