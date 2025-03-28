@@ -28,18 +28,31 @@ const ContactForm = () => {
   };
 
   return (
-    <section className="container mx-auto px-6 py-16">
-      <h2 className="text-3xl font-bold text-center mb-8">Contact Us</h2>
-      {success && <p className="text-green-600 text-center mb-4">{success}</p>}
-      {error && <p className="text-red-600 text-center mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
+    <section className="container mx-auto px-6 py-16 bg-gradient-to-b from-indigo-50 to-white">
+      <h2 className="text-4xl font-extrabold text-center mb-8 text-indigo-700 tracking-tight">
+        Contact Us
+      </h2>
+      {success && (
+        <p className="text-green-600 bg-green-100 p-3 rounded-md text-center mb-6 shadow-md">
+          {success}
+        </p>
+      )}
+      {error && (
+        <p className="text-red-600 bg-red-100 p-3 rounded-md text-center mb-6 shadow-md">
+          {error}
+        </p>
+      )}
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md mx-auto space-y-6 bg-white p-6 rounded-xl shadow-lg border border-indigo-200"
+      >
         <input
           type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
           placeholder="Your Name"
-          className="w-full p-3 border rounded-md"
+          className="w-full p-3 border border-indigo-300 rounded-md bg-indigo-50 text-indigo-900 placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
           required
         />
         <input
@@ -48,7 +61,7 @@ const ContactForm = () => {
           value={formData.email}
           onChange={handleChange}
           placeholder="Your Email"
-          className="w-full p-3 border rounded-md"
+          className="w-full p-3 border border-teal-300 rounded-md bg-teal-50 text-teal-900 placeholder-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300"
           required
         />
         <textarea
@@ -56,12 +69,12 @@ const ContactForm = () => {
           value={formData.message}
           onChange={handleChange}
           placeholder="Your Message"
-          className="w-full p-3 border rounded-md h-32"
+          className="w-full p-3 border border-purple-300 rounded-md bg-purple-50 text-purple-900 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32 resize-none transition-all duration-300"
           required
         />
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 rounded-md font-semibold hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300 shadow-md"
         >
           Send Message
         </button>
