@@ -36,6 +36,9 @@ app.use('/api/payments', paymentRoutes);
 const refundRoutes = require('./routes/refundRoutes');
 app.use('/api/refunds', refundRoutes);
 
+const contactRoutes = require('./routes/contactRoutes');
+app.use('/api/contact', contactRoutes);
+
 
 app.use('/api/faqs', faqRoutes);
 // Serve static files

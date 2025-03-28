@@ -59,6 +59,7 @@ import ManageFAQs from "./features/dashboard/admin/ManageFAQs";
 
 import Knowledgebase from "../src/features/home/Knowledgebase";
 import ManageKnowledgebase from "./features/dashboard/admin/ManageKnowledgebase";
+import ContactMessages from "./features/dashboard/admin/ContactMessages";
 
 function App() {
     return (
@@ -90,7 +91,8 @@ function App() {
                 <Route path="/admin/pages" element={<ProtectedRoute role="admin">< AdminPages/></ProtectedRoute>} />
                 <Route path="/admin/manage-faqs" element={<ProtectedRoute role="admin">< ManageFAQs/></ProtectedRoute>} />
                 <Route path="/admin/manage-knwoledgebase" element={<ProtectedRoute role="admin">< ManageKnowledgebase/></ProtectedRoute>} />
-
+                <Route path="/admin/contact-messages" element={<ProtectedRoute role="admin">< ContactMessages/></ProtectedRoute>} />
+                
                 
                 
                 <Route path="/student/dashboard" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
