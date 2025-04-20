@@ -7,6 +7,7 @@ const {
     getClassesByTeacher,
     startVideoAccess,
     requestVideoExtension,
+    getExtensionRequests,
     handleExtensionRequest
 } = require('../controllers/classController');
 const authMiddleware = require('../middleware/auth');
@@ -16,14 +17,9 @@ router.get('/:classId/materials', authMiddleware, getClassMaterials);
 router.get('/teacher/:teacherId', getClassesByTeacher);
 router.post('/:classId/materials/:materialId/start', authMiddleware, startVideoAccess);
 router.post('/:classId/materials/:materialId/extend', authMiddleware, requestVideoExtension);
-router.post('/materials/extension/handle', authMiddleware, handleExtensionRequest);
+router.get('/extension/requests', authMiddleware, getExtensionRequests);
+router.post('/extension/handle', authMiddleware, handleExtensionRequest);
 
 module.exports = router;
 
 
-
-
-
-
-
-module.exports = router;

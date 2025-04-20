@@ -62,7 +62,9 @@ const ClassMaterials = () => {
             data.forEach(material => {
                 if (material.type === "video" && material.accessStartTime) {
                     const startTime = new Date(material.accessStartTime).getTime();
-                    const expiryTime = startTime + 24 * 60 * 60 * 1000; // 24 hours
+                    // Use 6 hours for approved extensions, 24 hours otherwise
+                    const duration = material.extensionApproved ? 6 : 24;
+                    const expiryTime = startTime + duration * 60 * 60 * 1000;
                     const now = Date.now();
                     initialTimeLeft[material._id] = expiryTime > now 
                         ? Math.floor((expiryTime - now) / 1000)
@@ -78,22 +80,26 @@ const ClassMaterials = () => {
     };
 
     const handleStartVideo = async (material) => {
-        if (window.confirm("Start watching this video? You will have 24 hours of access.")) {
+        const message = material.extensionApproved 
+            ? "Start watching this video? You will have 6 hours of access."
+            : "Start watching this video? You will have 24 hours of access.";
+        if (window.confirm(message)) {
             try {
                 const userInfo = JSON.parse(localStorage.getItem("userInfo"));
                 const config = {
                     headers: { Authorization: `Bearer ${userInfo.token}` }
                 };
-                await axios.post(
+                const { data } = await axios.post(
                     `http://localhost:5000/api/classes/${classId}/materials/${material._id}/start`,
                     {},
                     config
                 );
+                // Set countdown based on whether this is an extended access
                 setTimeLeft(prev => ({
                     ...prev,
-                    [material._id]: 24 * 60 * 60 // 24 hours in seconds
+                    [material._id]: (data.isExtended ? 6 : 24) * 60 * 60
                 }));
-                fetchMaterials(); // Refresh materials to get updated access time
+                fetchMaterials();
             } catch (err) {
                 setError(err.response?.data?.message || "Error starting video");
             }
@@ -119,6 +125,7 @@ const ClassMaterials = () => {
             setExtendSuccess("Extension request submitted successfully");
             setExtendReason("");
             setOpenDialog(false);
+            fetchMaterials();
         } catch (err) {
             setExtendError(err.response?.data?.message || "Error submitting extension request");
         }

@@ -61,6 +61,8 @@ import Knowledgebase from "../src/features/home/Knowledgebase";
 import ManageKnowledgebase from "./features/dashboard/admin/ManageKnowledgebase";
 import ContactMessages from "./features/dashboard/admin/ContactMessages";
 
+import ManageExtensionRequests from "./features/dashboard/teacher/ManageExtensionRequests";
+
 function App() {
     return (
         <Router>
@@ -132,7 +134,7 @@ function App() {
 
                 
                 <Route path="/student/dashboard/all-teachers" element={<ProtectedRoute role="student"><ActiveTeachers /></ProtectedRoute>} /> {/* New route */}
-                
+                <Route path="/teacher/extension-requests" element={<ProtectedRoute role="teacher"><ManageExtensionRequests /></ProtectedRoute>} />
                
 <Route path="/teacher/upload-studypack" element={<UploadStudyPack />} />
 <Route path="/student/studypacks" element={<StudyPacks />} />
