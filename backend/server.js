@@ -11,6 +11,8 @@ const faqRoutes = require('./routes/faqRoutes');
 const knowledgebaseRoutes = require('./routes/knowledgebaseRoutes');
 
 
+
+
 dotenv.config();
 connectDB();
 
@@ -44,6 +46,9 @@ app.use('/api/faqs', faqRoutes);
 // Serve static files
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploads/covers')));
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'src/public/uploads')));
 
 
 app.use('/api/knowledgebase', knowledgebaseRoutes);

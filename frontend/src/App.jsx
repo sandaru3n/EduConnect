@@ -95,7 +95,7 @@ function App() {
                 
                 
                 
-                <Route path="/student/dashboard" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
+                <Route path="/student/dashboard/*" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
                 <Route path="/student/library" element={<ProtectedRoute role="student"><StudentLibrary /></ProtectedRoute>} />
                 <Route path="/teacher/library" element={<ProtectedRoute role="teacher"><TeacherLibrary  /></ProtectedRoute>} />
                 
