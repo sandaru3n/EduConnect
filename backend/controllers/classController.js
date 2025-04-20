@@ -1,8 +1,10 @@
 //backend/controllers/classController.js
 const Class = require('../models/Class');
 const ClassMaterial = require('../models/ClassMaterial');
+const User = require('../models/User');
 const path = require('path');
 const fs = require('fs');
+const sendEmail = require('../config/email');
 
 exports.getActiveClasses = async (req, res) => {
     try {
@@ -94,16 +96,15 @@ exports.startVideoAccess = async (req, res) => {
             return res.status(404).json({ message: 'Video material not found' });
         }
 
-        // Allow starting if no access time or if extension is approved
         if (!material.accessStartTime || material.extensionApproved) {
             material.accessStartTime = new Date();
             if (material.extensionApproved) {
-                material.extensionApproved = false; // Reset flag after starting
+                material.extensionApproved = false;
             }
             await material.save();
             res.status(200).json({ 
                 message: 'Video access started',
-                isExtended: material.extensionApproved // Inform client if this is an extended access
+                isExtended: material.extensionApproved
             });
         } else {
             return res.status(400).json({ message: 'Video access already started' });
@@ -122,10 +123,16 @@ exports.requestVideoExtension = async (req, res) => {
             return res.status(404).json({ message: 'Video material not found' });
         }
 
-        const existingRequest = material.extendRequests.find(
-            r => r.studentId.toString() === req.user.id && r.status === 'pending'
+        // Check existing requests for the student
+        const studentRequests = material.extendRequests.filter(
+            r => r.studentId.toString() === req.user.id
         );
-        if (existingRequest) {
+        if (studentRequests.length >= 2) {
+            return res.status(400).json({ message: 'You have reached the maximum of 2 extension requests for this video' });
+        }
+
+        const existingPending = studentRequests.find(r => r.status === 'pending');
+        if (existingPending) {
             return res.status(400).json({ message: 'You already have a pending extension request' });
         }
 
@@ -150,7 +157,7 @@ exports.getExtensionRequests = async (req, res) => {
 
         const materials = await ClassMaterial.find({
             classId: { $in: classIds },
-            extendRequests: { $exists: true, $ne: [] } // Fetch materials with any extension requests
+            extendRequests: { $exists: true, $ne: [] }
         })
             .populate('classId', 'subject')
             .populate('extendRequests.studentId', 'name email');
@@ -197,9 +204,30 @@ exports.handleExtensionRequest = async (req, res) => {
 
         extendRequest.status = status;
         if (status === 'approved') {
-            material.extensionApproved = true; // Enable 6-hour countdown
-            material.accessStartTime = null; // Reset access time to allow restarting
+            material.extensionApproved = true;
+            material.accessStartTime = null;
         }
+
+        // Send email notification
+        const student = await User.findById(extendRequest.studentId);
+        if (student) {
+            const subject = `Video Extension Request ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+            const text = `Your request to extend access to "${material.lessonName}" has been ${status}. ${
+                status === 'approved' ? 'You now have 6 hours of access when you start the video.' : 'Please contact your teacher for further assistance.'
+            }`;
+            const html = `
+                <h2>${subject}</h2>
+                <p>Your request to extend access to "<strong>${material.lessonName}</strong>" has been <strong>${status}</strong>.</p>
+                ${
+                    status === 'approved'
+                        ? '<p>You now have 6 hours of access when you start the video.</p>'
+                        : '<p>Please contact your teacher for further assistance.</p>'
+                }
+                <p>EduConnect Team</p>
+            `;
+            await sendEmail(student.email, subject, text, html);
+        }
+
         await material.save();
         res.status(200).json({ message: `Extension request ${status}` });
     } catch (error) {
