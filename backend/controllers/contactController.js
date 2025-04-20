@@ -1,3 +1,4 @@
+//backend/controllers/contactController.js
 const ContactMessage = require('../models/ContactMessage');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();

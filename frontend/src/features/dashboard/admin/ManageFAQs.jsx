@@ -1,3 +1,4 @@
+//frontend/src/features/dashboard/admin/ManageFAQs.jsx
 import { useState, useEffect } from "react";
 import { Breadcrumbs, Link as MuiLink, Typography, Box, IconButton, Button } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";

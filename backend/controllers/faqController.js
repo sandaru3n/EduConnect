@@ -1,3 +1,4 @@
+//backend/controllers/faqController.js
 const FAQ = require('../models/FAQ');
 
 // Get all FAQs

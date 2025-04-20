@@ -1,3 +1,4 @@
+//frontend/src/features/dashboard/institute/InstituteDashboard.jsx
 import useAuth from "../../../hooks/useAuth";
 
 const InstituteDashboard = () => {

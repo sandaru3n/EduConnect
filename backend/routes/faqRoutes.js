@@ -1,3 +1,4 @@
+// backend/routes/faqRoutes.js
 const express = require('express');
 const router = express.Router();
 const { getAllFAQs, createFAQ, updateFAQ, deleteFAQ } = require('../controllers/faqController');

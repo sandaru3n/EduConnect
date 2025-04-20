@@ -1,3 +1,4 @@
+// backend/models/StudyPack.js
 const mongoose = require('mongoose');
 
 const StudyPackSchema = new mongoose.Schema({

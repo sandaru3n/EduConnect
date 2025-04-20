@@ -1,3 +1,4 @@
+// backend/models/Knowledgebase.js
 const mongoose = require('mongoose');
 
 const knowledgebaseSchema = new mongoose.Schema({

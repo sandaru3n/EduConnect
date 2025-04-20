@@ -1,3 +1,4 @@
+//backend/controllers/knowledgebaseController.js
 const Knowledgebase = require('../models/Knowledgebase');
 
 // Get all knowledgebase articles (public)

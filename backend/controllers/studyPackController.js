@@ -1,3 +1,4 @@
+// backend/controllers/studyPackController.js
 const StudyPack = require('../models/StudyPack');
 const StudyPackSubscription = require('../models/StudyPackSubscription');
 const path = require('path');

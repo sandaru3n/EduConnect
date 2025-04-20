@@ -1,4 +1,4 @@
-// AdminHeader.jsx
+//frontend/src/components/TeacherHeader/index.js
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { FaRegUser } from "react-icons/fa";
