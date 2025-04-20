@@ -4,53 +4,42 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/auth");
 const Class = require("../models/Class");
-
-const ClassMaterial = require("../models/ClassMaterial");
+const { uploadMaterial } = require("../controllers/classController");
 const multer = require("multer");
+const path = require("path");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "uploads/materials/");
+    destination: (req, file, cb) => {
+        cb(null, "src/public/uploads/materials");
     },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname);
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
-const upload = multer({ storage: storage });
+
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'video/mp4'];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only PDF and MP4 files are allowed'), false);
+    }
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
+});
 
 // Upload class material
 router.post(
     "/classes/:classId/materials",
     authMiddleware,
-    upload.single("file"),
-    async (req, res) => {
-        try {
-            const classItem = await Class.findById(req.params.classId);
-            if (!classItem || classItem.teacherId.toString() !== req.user.id) {
-                return res.status(403).json({ message: "Not authorized" });
-            }
-
-            const { title, type } = req.body;
-            const content = type === "document" ? req.file.path : req.body.content;
-
-            const material = new ClassMaterial({
-                classId: req.params.classId,
-                title,
-                type,
-                content,
-                uploadedBy: req.user.id
-            });
-
-            const savedMaterial = await material.save();
-            res.status(201).json(savedMaterial);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Error uploading material" });
-        }
-    }
+    upload.fields([{ name: 'file', maxCount: 1 }]),
+    uploadMaterial
 );
-
 
 // Create a new class
 router.post("/classes", authMiddleware, async (req, res) => {
@@ -66,7 +55,7 @@ router.post("/classes", authMiddleware, async (req, res) => {
             subject,
             monthlyFee,
             description,
-            teacherId: req.user.id, // From authMiddleware
+            teacherId: req.user.id,
             isActive: true
         });
 
@@ -107,7 +96,6 @@ router.get("/classes/:classId", authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Class not found" });
         }
 
-        // Check if the class belongs to the logged-in teacher
         if (classItem.teacherId.toString() !== req.user.id) {
             return res.status(403).json({ message: "Not authorized to view this class" });
         }
@@ -133,12 +121,10 @@ router.put("/classes/:classId", authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Class not found" });
         }
 
-        // Check if the class belongs to the logged-in teacher
         if (classItem.teacherId.toString() !== req.user.id) {
             return res.status(403).json({ message: "Not authorized to update this class" });
         }
 
-        // Update fields
         classItem.subject = subject || classItem.subject;
         classItem.monthlyFee = monthlyFee || classItem.monthlyFee;
         classItem.description = description || classItem.description;
@@ -162,7 +148,7 @@ router.put("/classes/:classId", authMiddleware, async (req, res) => {
     }
 });
 
-// Keep your sample route
+// Sample route
 router.get("/", (req, res) => {
     res.send("Teacher Route Working!");
 });
