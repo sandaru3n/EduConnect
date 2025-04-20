@@ -1,3 +1,4 @@
+// frontend/src/features/home/HomePage.jsx
 import { useState, useEffect } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { Swiper, SwiperSlide } from 'swiper/react';

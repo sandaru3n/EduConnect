@@ -1,3 +1,4 @@
+// backend/models/FAQ.js
 const mongoose = require('mongoose');
 
 const faqSchema = new mongoose.Schema({

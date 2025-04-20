@@ -1,3 +1,4 @@
+//frontend/src/features/dashboard/student/PurchasedStudyPacks.jsx
 import StudentSidebar from "../../../components/StudentSidebar/index";
 import StudentHeader from "../../../components/StudentHeader/index";
 import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";

@@ -1,3 +1,4 @@
+// backend/routes/studyPackRoutes.js
 const express = require('express');
 const router = express.Router();
 const { uploadStudyPack, getAllStudyPacks, getPurchasedStudyPacks,getTeacherStudyPacks, deleteStudyPack,updateStudyPack } = require('../controllers/studyPackController');

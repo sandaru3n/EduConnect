@@ -1,3 +1,4 @@
+//frontend/src/components/Layout.jsx
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { Breadcrumbs, Typography, Box, Container, Drawer, AppBar, Toolbar, List, ListItem, ListItemText, CssBaseline } from "@mui/material";

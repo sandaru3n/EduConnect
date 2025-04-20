@@ -1,3 +1,4 @@
+//frontend/src/components/AdminSidebar/index.js
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
