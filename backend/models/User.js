@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
         required: true, 
         enum: ["student", "teacher", "institute", "admin"] 
     },
+    profilePicture: { type: String }, // New field for profile picture path
     subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" }, // For teacher/institute
     subscriptionStatus: { 
         type: String, 
