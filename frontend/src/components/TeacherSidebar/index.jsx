@@ -182,22 +182,64 @@ const AdminSidebar = ({ isCollapsed}) => {
           )}
         </li>
 
-        {/* Support */}
+        {/* Materials */}
         <li>
           <Button
-            component={Link}
-            to="/teacher/classes/uploadmaterials"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
+            onClick={() => toggleSubmenu(3)}
           >
-            <MdCollectionsBookmark
+            <MdCollectionsBookmark 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Materials</span>}
+            {!isCollapsed && (
+              <span className="ml-auto">
+                <FaAngleDown
+                  className={`transition-transform duration-300 ${
+                    submenuIndex === 3 ? "rotate-180" : ""
+                  }`}
+                />
+              </span>
+            )}
           </Button>
+
+          {/* Material with Smooth Collapse */}
+          {!isCollapsed && (
+            <Collapse
+              isOpened={submenuIndex === 3}
+              theme={{
+                collapse: "ReactCollapse--collapse transition-all duration-300 ease-in-out",
+              }}
+            >
+              <ul className="w-full space-y-1 mt-1">
+                <li>
+                  <Button
+                    component={Link}
+                    to="/teacher/classes/uploadmaterials"
+                    className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
+                  >
+                    <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
+                    Add Materials
+                  </Button>
+                </li>
+                <li>
+                  
+                  <Button
+                    component={Link}
+                    to="/teacher/extension-requests"
+                    className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
+                  >
+                    <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
+                    Extension Request
+                  </Button>
+                </li>
+              </ul>
+            </Collapse>
+          )}
         </li>
 
         {/* Teachers */}
@@ -245,7 +287,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
-            onClick={() => toggleSubmenu(3)}
+            onClick={() => toggleSubmenu(4)}
           >
             <MdPayments
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
@@ -255,7 +297,7 @@ const AdminSidebar = ({ isCollapsed}) => {
               <span className="ml-auto">
                 <FaAngleDown
                   className={`transition-transform duration-300 ${
-                    submenuIndex === 3 ? "rotate-180" : ""
+                    submenuIndex === 4 ? "rotate-180" : ""
                   }`}
                 />
               </span>
@@ -265,7 +307,7 @@ const AdminSidebar = ({ isCollapsed}) => {
           {/* Submenu with Smooth Collapse */}
           {!isCollapsed && (
             <Collapse
-              isOpened={submenuIndex === 3}
+              isOpened={submenuIndex === 4}
               theme={{
                 collapse: "ReactCollapse--collapse transition-all duration-300 ease-in-out",
               }}
