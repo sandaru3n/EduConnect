@@ -1,7 +1,7 @@
 // backend/routes/authRoutes.js
 
 const express = require("express");
-const { register, login, updateProfile } = require("../controllers/authController");
+const { register, login, updateProfile, getProfile } = require("../controllers/authController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
@@ -37,5 +37,6 @@ const upload = multer({
 router.post("/register", register);
 router.post("/login", login);
 router.put("/profile", authMiddleware, upload.fields([{ name: 'profilePicture', maxCount: 1 }]), updateProfile);
+router.get("/profile", authMiddleware, getProfile);
 
 module.exports = router;

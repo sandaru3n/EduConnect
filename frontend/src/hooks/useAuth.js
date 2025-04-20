@@ -1,6 +1,7 @@
 //frontend/src/hooks/useAuth.jsx
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 const useAuth = () => {
     const [user, setUser] = useState(() => {
@@ -10,6 +11,27 @@ const useAuth = () => {
     });
 
     useEffect(() => {
+
+        const fetchUserProfile = async () => {
+            if (user && user.token) {
+                try {
+                    const config = {
+                        headers: { Authorization: `Bearer ${user.token}` }
+                    };
+                    const { data } = await axios.get("http://localhost:5000/api/auth/profile", config);
+                    const updatedUser = { ...user, ...data, token: user.token };
+                    localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+                    setUser(updatedUser);
+                } catch (err) {
+                    console.error("Error fetching user profile:", err);
+                }
+            }
+        };
+
+        fetchUserProfile();
+
+
+
         const handleStorageChange = () => {
             // Update user when localStorage changes
             const userInfo = localStorage.getItem("userInfo");

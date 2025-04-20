@@ -89,9 +89,9 @@ exports.updateProfile = async (req, res) => {
         }
 
         const { 
-            name, email, password, passwordConfirm, 
+            name, email, 
             firstName, lastName, contactNumber, dateOfBirth, 
-            guardianName, guardianContactNumber, addressLine1, addressLine2, district, zipCode, address, username, age 
+            guardianName, guardianContactNumber, addressLine1, addressLine2, district, zipCode, username, age 
         } = req.body;
 
         // Validate email uniqueness
@@ -106,14 +106,6 @@ exports.updateProfile = async (req, res) => {
         // Update common fields
         user.name = name || user.name;
 
-        // Update password if provided and confirmed
-        if (password && passwordConfirm) {
-            if (password !== passwordConfirm) {
-                return res.status(400).json({ message: "Passwords do not match" });
-            }
-            user.password = password;
-        }
-
         // Update role-specific fields
         if (user.role === "student") {
             user.firstName = firstName || user.firstName;
@@ -126,7 +118,6 @@ exports.updateProfile = async (req, res) => {
             user.addressLine2 = addressLine2 || user.addressLine2;
             user.district = district || user.district;
             user.zipCode = zipCode || user.zipCode;
-            user.address = address || user.address;
             user.username = username || user.username;
         } else if (user.role === "teacher") {
             user.age = age || user.age;
@@ -156,7 +147,6 @@ exports.updateProfile = async (req, res) => {
                 addressLine2: user.addressLine2,
                 district: user.district,
                 zipCode: user.zipCode,
-                address: user.address,
                 username: user.username,
                 age: user.age
             }
@@ -164,6 +154,39 @@ exports.updateProfile = async (req, res) => {
     } catch (error) {
         console.error('Update profile error:', error);
         res.status(500).json({ message: 'Error updating profile', error: error.message });
+    }
+};
+
+exports.getProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            profilePicture: user.profilePicture,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            guardianName: user.guardianName,
+            guardianContactNumber: user.guardianContactNumber,
+            addressLine1: user.addressLine1,
+            addressLine2: user.addressLine2,
+            district: user.district,
+            zipCode: user.zipCode,
+            username: user.username,
+            age: user.age
+        });
+    } catch (error) {
+        console.error('Get profile error:', error);
+        res.status(500).json({ message: 'Error fetching profile', error: error.message });
     }
 };
 
