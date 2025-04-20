@@ -43,23 +43,19 @@ exports.uploadMaterial = async (req, res) => {
         const classId = req.params.classId;
         const userId = req.user.id;
 
-        // Validate class and teacher authorization
         const classItem = await Class.findById(classId);
         if (!classItem || classItem.teacherId.toString() !== userId) {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Validate required fields
         if (!title || !lessonName || !type || !uploadDate) {
             return res.status(400).json({ message: 'Title, lesson name, type, and upload date are required' });
         }
 
-        // Validate type
         if (!['pdf', 'video', 'link'].includes(type)) {
             return res.status(400).json({ message: 'Invalid material type' });
         }
 
-        // Validate file or content based on type
         let content;
         if (type === 'link') {
             if (!req.body.content) {
@@ -97,13 +93,21 @@ exports.startVideoAccess = async (req, res) => {
         if (!material || material.type !== 'video') {
             return res.status(404).json({ message: 'Video material not found' });
         }
-        if (material.accessStartTime) {
+
+        // Allow starting if no access time or if extension is approved
+        if (!material.accessStartTime || material.extensionApproved) {
+            material.accessStartTime = new Date();
+            if (material.extensionApproved) {
+                material.extensionApproved = false; // Reset flag after starting
+            }
+            await material.save();
+            res.status(200).json({ 
+                message: 'Video access started',
+                isExtended: material.extensionApproved // Inform client if this is an extended access
+            });
+        } else {
             return res.status(400).json({ message: 'Video access already started' });
         }
-
-        material.accessStartTime = new Date();
-        await material.save();
-        res.status(200).json({ message: 'Video access started' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error starting video access' });
@@ -116,6 +120,13 @@ exports.requestVideoExtension = async (req, res) => {
         const material = await ClassMaterial.findById(req.params.materialId);
         if (!material || material.type !== 'video') {
             return res.status(404).json({ message: 'Video material not found' });
+        }
+
+        const existingRequest = material.extendRequests.find(
+            r => r.studentId.toString() === req.user.id && r.status === 'pending'
+        );
+        if (existingRequest) {
+            return res.status(400).json({ message: 'You already have a pending extension request' });
         }
 
         material.extendRequests.push({
@@ -131,12 +142,52 @@ exports.requestVideoExtension = async (req, res) => {
     }
 };
 
+exports.getExtensionRequests = async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+        const classes = await Class.find({ teacherId }).select('_id');
+        const classIds = classes.map(c => c._id);
+
+        const materials = await ClassMaterial.find({
+            classId: { $in: classIds },
+            extendRequests: { $exists: true, $ne: [] } // Fetch materials with any extension requests
+        })
+            .populate('classId', 'subject')
+            .populate('extendRequests.studentId', 'name email');
+
+        const requests = materials.flatMap(material =>
+            material.extendRequests.map(req => ({
+                requestId: req._id,
+                materialId: material._id,
+                classId: material.classId._id,
+                classSubject: material.classId.subject,
+                lessonName: material.lessonName,
+                studentName: req.studentId.name,
+                studentEmail: req.studentId.email,
+                reason: req.reason,
+                status: req.status,
+                requestedAt: req.requestedAt
+            }))
+        );
+
+        res.status(200).json(requests);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching extension requests' });
+    }
+};
+
 exports.handleExtensionRequest = async (req, res) => {
     try {
         const { materialId, requestId, status } = req.body;
         const material = await ClassMaterial.findById(materialId);
         if (!material || material.type !== 'video') {
             return res.status(404).json({ message: 'Video material not found' });
+        }
+
+        const classItem = await Class.findById(material.classId);
+        if (!classItem || classItem.teacherId.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized' });
         }
 
         const extendRequest = material.extendRequests.id(requestId);
@@ -146,8 +197,8 @@ exports.handleExtensionRequest = async (req, res) => {
 
         extendRequest.status = status;
         if (status === 'approved') {
-            const now = new Date();
-            material.accessStartTime = new Date(now.getTime() - 18 * 60 * 60 * 1000);
+            material.extensionApproved = true; // Enable 6-hour countdown
+            material.accessStartTime = null; // Reset access time to allow restarting
         }
         await material.save();
         res.status(200).json({ message: `Extension request ${status}` });

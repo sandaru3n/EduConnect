@@ -10,6 +10,7 @@ const ClassMaterialSchema = new mongoose.Schema({
     uploadDate: { type: Date, required: true },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     accessStartTime: { type: Date },
+    extensionApproved: { type: Boolean, default: false }, // New field to track approved extension
     extendRequests: [{
         studentId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         reason: { type: String, required: true },
