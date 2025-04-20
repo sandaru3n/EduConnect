@@ -21,6 +21,7 @@ import PageView from "./features/home/PageView";
 import AdminPages from "./features/dashboard/admin/AdminPages";
 import AdminEditPage from "./features/dashboard/admin/AdminEditPage";
 import EditProfile from "./features/dashboard/admin/AdminEditProfile";
+import StudentEditProfile from "./features/dashboard/admin/AdminEditProfile";
 import ManageLibrary from "./features/dashboard/admin/EBookUpload";
 
 
@@ -113,6 +114,7 @@ function App() {
                 <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
+                <Route path="/student/edit-profile" element={<StudentEditProfile />} />
 
                 <Route path="/admin/refund-management" element={<ProtectedRoute role="admin"><RefundManagement /></ProtectedRoute>} />
 
