@@ -78,3 +78,93 @@ exports.login = async (req, res) => {
         token: generateToken(user._id),
     });
 };
+
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const { 
+            name, email, password, passwordConfirm, 
+            firstName, lastName, contactNumber, dateOfBirth, 
+            guardianName, guardianContactNumber, addressLine1, addressLine2, district, zipCode, address, username, age 
+        } = req.body;
+
+        // Validate email uniqueness
+        if (email && email !== user.email) {
+            const emailExists = await User.findOne({ email });
+            if (emailExists) {
+                return res.status(400).json({ message: "Email already in use" });
+            }
+            user.email = email;
+        }
+
+        // Update common fields
+        user.name = name || user.name;
+
+        // Update password if provided and confirmed
+        if (password && passwordConfirm) {
+            if (password !== passwordConfirm) {
+                return res.status(400).json({ message: "Passwords do not match" });
+            }
+            user.password = password;
+        }
+
+        // Update role-specific fields
+        if (user.role === "student") {
+            user.firstName = firstName || user.firstName;
+            user.lastName = lastName || user.lastName;
+            user.contactNumber = contactNumber || user.contactNumber;
+            user.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : user.dateOfBirth;
+            user.guardianName = guardianName || user.guardianName;
+            user.guardianContactNumber = guardianContactNumber || user.guardianContactNumber;
+            user.addressLine1 = addressLine1 || user.addressLine1;
+            user.addressLine2 = addressLine2 || user.addressLine2;
+            user.district = district || user.district;
+            user.zipCode = zipCode || user.zipCode;
+            user.address = address || user.address;
+            user.username = username || user.username;
+        } else if (user.role === "teacher") {
+            user.age = age || user.age;
+        }
+
+        // Handle profile picture upload
+        if (req.files && req.files.profilePicture) {
+            user.profilePicture = `/uploads/profiles/${req.files.profilePicture[0].filename}`;
+        }
+
+        await user.save();
+        res.status(200).json({
+            message: "Profile updated successfully",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                profilePicture: user.profilePicture,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                contactNumber: user.contactNumber,
+                dateOfBirth: user.dateOfBirth,
+                guardianName: user.guardianName,
+                guardianContactNumber: user.guardianContactNumber,
+                addressLine1: user.addressLine1,
+                addressLine2: user.addressLine2,
+                district: user.district,
+                zipCode: user.zipCode,
+                address: user.address,
+                username: user.username,
+                age: user.age
+            }
+        });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ message: 'Error updating profile', error: error.message });
+    }
+};
+
+module.exports = exports;

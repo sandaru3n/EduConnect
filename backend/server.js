@@ -51,6 +51,7 @@ app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploa
 app.use('/uploads', express.static(path.join(__dirname, 'src/public/uploads')));
 
 
+
 app.use('/api/knowledgebase', knowledgebaseRoutes);
 
 app.use("/api/auth", require("./routes/authRoutes"));
