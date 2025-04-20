@@ -12,17 +12,39 @@ import {
     TableRow,
     Paper,
     Button,
-    Chip
+    Chip,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    TableSortLabel
 } from "@mui/material";
 
 const ManageExtensionRequests = () => {
     const [requests, setRequests] = useState([]);
+    const [filteredRequests, setFilteredRequests] = useState([]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [filter, setFilter] = useState('all');
+    const [sortOrder, setSortOrder] = useState('asc');
 
     useEffect(() => {
         fetchRequests();
     }, []);
+
+    useEffect(() => {
+        // Apply filter and sort
+        let updatedRequests = [...requests];
+        if (filter !== 'all') {
+            updatedRequests = requests.filter(req => req.status === filter);
+        }
+        updatedRequests.sort((a, b) => {
+            const statusOrder = { pending: 1, approved: 2, rejected: 3 };
+            const order = sortOrder === 'asc' ? 1 : -1;
+            return order * (statusOrder[a.status] - statusOrder[b.status]);
+        });
+        setFilteredRequests(updatedRequests);
+    }, [requests, filter, sortOrder]);
 
     const fetchRequests = async () => {
         try {
@@ -58,12 +80,31 @@ const ManageExtensionRequests = () => {
         }
     };
 
+    const handleSort = () => {
+        setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    };
+
     return (
         <Box sx={{ maxWidth: 1000, mx: "auto", p: 3 }}>
             <Typography variant="h4" gutterBottom>Manage Extension Requests</Typography>
             {error && <Alert severity="error">{error}</Alert>}
             {success && <Alert severity="success">{success}</Alert>}
-            {requests.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <FormControl sx={{ minWidth: 200 }}>
+                    <InputLabel>Filter by Status</InputLabel>
+                    <Select
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        label="Filter by Status"
+                    >
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="pending">Pending</MenuItem>
+                        <MenuItem value="approved">Approved</MenuItem>
+                        <MenuItem value="rejected">Rejected</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
+            {filteredRequests.length === 0 ? (
                 <Typography>No extension requests found</Typography>
             ) : (
                 <TableContainer component={Paper}>
@@ -75,12 +116,20 @@ const ManageExtensionRequests = () => {
                                 <TableCell>Student</TableCell>
                                 <TableCell>Reason</TableCell>
                                 <TableCell>Requested At</TableCell>
-                                <TableCell>Status</TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active
+                                        direction={sortOrder}
+                                        onClick={handleSort}
+                                    >
+                                        Status
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {requests.map(request => (
+                            {filteredRequests.map(request => (
                                 <TableRow key={request.requestId}>
                                     <TableCell>{request.classSubject}</TableCell>
                                     <TableCell>{request.lessonName}</TableCell>
