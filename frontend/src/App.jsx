@@ -64,6 +64,8 @@ import ContactMessages from "./features/dashboard/admin/ContactMessages";
 
 import ManageExtensionRequests from "./features/dashboard/teacher/ManageExtensionRequests";
 
+
+import DoubtResolver from "./features/dashboard/student/DoubtResolver"
 function App() {
     return (
         <Router>
@@ -97,7 +99,7 @@ function App() {
                 <Route path="/admin/contact-messages" element={<ProtectedRoute role="admin">< ContactMessages/></ProtectedRoute>} />
                 
                 
-                
+                <Route path="/student/doubt-resolver" element={<ProtectedRoute role="student"><DoubtResolver /></ProtectedRoute>} />
                 <Route path="/student/dashboard/*" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
                 <Route path="/student/library" element={<ProtectedRoute role="student"><StudentLibrary /></ProtectedRoute>} />
                 <Route path="/teacher/library" element={<ProtectedRoute role="teacher"><TeacherLibrary  /></ProtectedRoute>} />

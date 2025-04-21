@@ -17,6 +17,10 @@ dotenv.config();
 connectDB();
 
 const app = express();
+// Debug environment variables
+console.log("Gemini API Key:", process.env.GEMINI_API_KEY ? "Loaded" : "Missing");
+
+
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:5173', // Match Vite's default port
@@ -58,6 +62,8 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/teacher", require("./routes/teacherRoutes"));
 app.use("/api/student", require("./routes/studentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+
+app.use('/api/doubt', require('./routes/doubtRoutes')); // New doubt routes
 
 app.use("/api/pages", require("./routes/pageRoutes"));
 app.use('/api/subscriptions', subscriptionRoutes);
