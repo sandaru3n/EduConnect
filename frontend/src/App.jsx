@@ -69,6 +69,10 @@ import StudentQuiz from "./features/dashboard/student/StudentQuiz";
 import StudentQuizList from "./features/dashboard/student/StudentQuizList";
 
 import DoubtResolver from "./features/dashboard/student/DoubtResolver"
+
+import StudentNotices from "./features/dashboard/student/StudentNotices";
+import TeacherNotices from "./features/dashboard/teacher/TeacherNotices";
+
 function App() {
     return (
         <Router>
@@ -155,6 +159,12 @@ function App() {
 
 <Route path="/student/message" element={<ProtectedRoute role="student"><StudentMessage /></ProtectedRoute>} />
 <Route path="/teacher/message" element={<TeacherMessage />} />
+
+
+<Route path="/student/notices" element={<ProtectedRoute role="student"><StudentNotices /></ProtectedRoute>} />
+<Route path="/student/notice/:noticeId" element={<ProtectedRoute role="student"><StudentNotices /></ProtectedRoute>} />
+<Route path="/teacher/notices" element={<ProtectedRoute role="teacher"><TeacherNotices /></ProtectedRoute>} />
+
             </Routes>
         </Router>
 

@@ -2,6 +2,9 @@
 const User = require("../models/User");
 const generateToken = require("../config/jwt");
 
+const Notice = require("../models/Notice");
+const Class = require("../models/Class");
+const StudentSubscription = require("../models/StudentSubscription");
 
 const PasswordResetToken = require("../models/PasswordResetToken");
 const nodemailer = require("nodemailer");
@@ -319,6 +322,207 @@ exports.resetPassword = async (req, res) => {
     } catch (error) {
         console.error("Reset password error:", error);
         res.status(500).json({ message: "Error resetting password", error: error.message });
+    }
+};
+
+exports.createNotice = async (req, res) => {
+    try {
+        const { title, description, date, classId } = req.body;
+        const teacherId = req.user.id;
+
+        // Validate input
+        if (!title || !description || !date || !classId) {
+            return res.status(400).json({ message: "Title, description, date, and class are required" });
+        }
+
+        // Validate class ownership
+        const classData = await Class.findOne({ _id: classId, teacherId });
+        if (!classData) {
+            return res.status(403).json({ message: "Class not found or you are not the teacher of this class" });
+        }
+
+        // Create the notice
+        const notice = new Notice({
+            title,
+            description,
+            date,
+            classId,
+            teacherId,
+            readBy: [] // Initialize as empty
+        });
+        await notice.save();
+
+        res.status(201).json({ message: "Notice created successfully", notice });
+    } catch (error) {
+        console.error("Create notice error:", error);
+        res.status(500).json({ message: "Error creating notice", error: error.message });
+    }
+};
+
+exports.getTeacherNotices = async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+
+        const notices = await Notice.find({ teacherId })
+            .populate("classId", "subject")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(notices);
+    } catch (error) {
+        console.error("Get teacher notices error:", error);
+        res.status(500).json({ message: "Error retrieving notices", error: error.message });
+    }
+};
+
+exports.updateNotice = async (req, res) => {
+    try {
+        const { noticeId, title, description, date, classId } = req.body;
+        const teacherId = req.user.id;
+
+        // Validate input
+        if (!noticeId || !title || !description || !date || !classId) {
+            return res.status(400).json({ message: "Notice ID, title, description, date, and class are required" });
+        }
+
+        // Validate class ownership
+        const classData = await Class.findOne({ _id: classId, teacherId });
+        if (!classData) {
+            return res.status(403).json({ message: "Class not found or you are not the teacher of this class" });
+        }
+
+        // Find the notice and ensure it belongs to the teacher
+        const notice = await Notice.findOne({ _id: noticeId, teacherId });
+        if (!notice) {
+            return res.status(403).json({ message: "Notice not found or you are not the creator of this notice" });
+        }
+
+        // Update the notice
+        notice.title = title;
+        notice.description = description;
+        notice.date = date;
+        notice.classId = classId;
+        await notice.save();
+
+        res.status(200).json({ message: "Notice updated successfully", notice });
+    } catch (error) {
+        console.error("Update notice error:", error);
+        res.status(500).json({ message: "Error updating notice", error: error.message });
+    }
+};
+
+exports.deleteNotice = async (req, res) => {
+    try {
+        const { noticeId } = req.params;
+        const teacherId = req.user.id;
+
+        // Find the notice and ensure it belongs to the teacher
+        const notice = await Notice.findOne({ _id: noticeId, teacherId });
+        if (!notice) {
+            return res.status(403).json({ message: "Notice not found or you are not the creator of this notice" });
+        }
+
+        // Delete the notice
+        await Notice.deleteOne({ _id: noticeId });
+
+        res.status(200).json({ message: "Notice deleted successfully" });
+    } catch (error) {
+        console.error("Delete notice error:", error);
+        res.status(500).json({ message: "Error deleting notice", error: error.message });
+    }
+};
+
+exports.getStudentNotices = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        // Find active subscriptions for the student
+        const subscriptions = await StudentSubscription.find({
+            userId: studentId,
+            status: "Active"
+        });
+        const classIds = subscriptions.map(sub => sub.classId);
+
+        // Find notices for those classes
+        const notices = await Notice.find({ classId: { $in: classIds } })
+            .populate("classId", "subject")
+            .populate("teacherId", "name")
+            .sort({ createdAt: -1 });
+
+        // Add unread flag for each notice
+        const noticesWithUnread = notices.map(notice => ({
+            ...notice.toObject(),
+            unread: !notice.readBy.includes(studentId)
+        }));
+
+        res.status(200).json(noticesWithUnread);
+    } catch (error) {
+        console.error("Get student notices error:", error);
+        res.status(500).json({ message: "Error retrieving notices", error: error.message });
+    }
+};
+
+exports.markNoticeAsRead = async (req, res) => {
+    try {
+        const { noticeId } = req.params;
+        const studentId = req.user.id;
+
+        // Find the notice
+        const notice = await Notice.findById(noticeId);
+        if (!notice) {
+            return res.status(404).json({ message: "Notice not found" });
+        }
+
+        // Check if the student has access to the notice
+        const subscriptions = await StudentSubscription.find({
+            userId: studentId,
+            status: "Active"
+        });
+        const classIds = subscriptions.map(sub => sub.classId.toString());
+        if (!classIds.includes(notice.classId.toString())) {
+            return res.status(403).json({ message: "You do not have access to this notice" });
+        }
+
+        // Mark the notice as read by adding the student to readBy
+        if (!notice.readBy.includes(studentId)) {
+            notice.readBy.push(studentId);
+            await notice.save();
+        }
+
+        res.status(200).json({ message: "Notice marked as read" });
+    } catch (error) {
+        console.error("Mark notice as read error:", error);
+        res.status(500).json({ message: "Error marking notice as read", error: error.message });
+    }
+};
+
+exports.getNoticeById = async (req, res) => {
+    try {
+        const { noticeId } = req.params;
+        const studentId = req.user.id;
+
+        // Find active subscriptions for the student
+        const subscriptions = await StudentSubscription.find({
+            userId: studentId,
+            status: "Active"
+        });
+        const classIds = subscriptions.map(sub => sub.classId);
+
+        // Find the notice and ensure it's for a class the student is subscribed to
+        const notice = await Notice.findOne({ 
+            _id: noticeId,
+            classId: { $in: classIds }
+        })
+            .populate("classId", "subject")
+            .populate("teacherId", "name");
+
+        if (!notice) {
+            return res.status(404).json({ message: "Notice not found or you do not have access to this notice" });
+        }
+
+        res.status(200).json(notice);
+    } catch (error) {
+        console.error("Get notice by ID error:", error);
+        res.status(500).json({ message: "Error retrieving notice", error: error.message });
     }
 };
 
