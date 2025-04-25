@@ -12,7 +12,11 @@ import {
     Radio,
     RadioGroup,
     FormControlLabel,
-    FormControl
+    FormControl,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from "@mui/material";
 import { CheckCircleOutline } from "@mui/icons-material";
 import useAuth from "../../../hooks/useAuth";
@@ -33,6 +37,10 @@ const StudentQuiz = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [timeLeft, setTimeLeft] = useState(null); // Time left in seconds
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [quizStarted, setQuizStarted] = useState(false);
+    const [startTime, setStartTime] = useState(null);
 
     const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -63,8 +71,18 @@ const StudentQuiz = () => {
                 try {
                     const { data } = await axios.get(`http://localhost:5000/api/quiz/${quizId}`, config);
                     setQuiz(data);
-                    // Set timer in seconds (timer is in minutes)
-                    setTimeLeft(data.timer * 60);
+                    // Check for existing attempt start time in local storage
+                    const savedStartTime = localStorage.getItem(`quizStartTime_${quizId}`);
+                    if (savedStartTime) {
+                        const elapsed = Math.floor((new Date() - new Date(savedStartTime)) / 1000);
+                        const totalTime = data.timer * 60;
+                        const remainingTime = Math.max(0, totalTime - elapsed);
+                        setTimeLeft(remainingTime);
+                        setStartTime(new Date(savedStartTime));
+                        setQuizStarted(true);
+                    } else {
+                        setOpenConfirm(true); // Show confirmation popup
+                    }
                 } catch (quizErr) {
                     setError(quizErr.response?.data?.message || "Quiz not found. Please check the quiz ID or contact your teacher.");
                 }
@@ -80,7 +98,7 @@ const StudentQuiz = () => {
 
     // Timer countdown
     useEffect(() => {
-        if (!quiz || timeLeft === null || timeLeft <= 0 || results) return;
+        if (!quiz || timeLeft === null || timeLeft <= 0 || results || !quizStarted) return;
 
         const timerId = setInterval(() => {
             setTimeLeft(prev => {
@@ -94,7 +112,7 @@ const StudentQuiz = () => {
         }, 1000);
 
         return () => clearInterval(timerId);
-    }, [timeLeft, quiz, results]);
+    }, [timeLeft, quiz, results, quizStarted]);
 
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60);
@@ -104,6 +122,15 @@ const StudentQuiz = () => {
 
     const handleAnswerChange = (questionId, selectedAnswer) => {
         setAnswers({ ...answers, [questionId]: selectedAnswer });
+    };
+
+    const handleStartQuiz = () => {
+        const now = new Date();
+        setStartTime(now);
+        setTimeLeft(quiz.timer * 60);
+        setQuizStarted(true);
+        localStorage.setItem(`quizStartTime_${quizId}`, now.toISOString());
+        setOpenConfirm(false);
     };
 
     const handleAutoSubmit = async () => {
@@ -116,29 +143,43 @@ const StudentQuiz = () => {
             };
             const answersArray = Object.keys(answers).map(questionId => ({
                 questionId,
-                selectedAnswer: answers[questionId] || "" // Default to empty if not answered
+                selectedAnswer: answers[questionId] || ""
             }));
-            console.log("Submitting Quiz:", { quizId, answers: answersArray }); // Debug log
+            console.log("Submitting Quiz:", { quizId, answers: answersArray, startTime }); // Debug log
             const { data } = await axios.post(
                 "http://localhost:5000/api/quiz/attempt",
-                { quizId, answers: answersArray },
+                { quizId, answers: answersArray, startTime },
                 config
             );
             console.log("Quiz Submission Response:", data); // Debug log
 
+            // Clear local storage
+            localStorage.removeItem(`quizStartTime_${quizId}`);
+
             // Fetch the latest results after submission
             await fetchQuiz();
         } catch (err) {
-            console.error("Quiz Submission Error:", err); // Debug log
+            console.error("Quiz Submission Error:", err);
             setError(err.response?.data?.message || "Failed to submit quiz. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleFinishAttempt = async () => {
         await handleAutoSubmit();
+    };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < quiz.questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        }
+    };
+
+    const handlePrevious = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+        }
     };
 
     const pathnames = location.pathname.split("/").filter((x) => x);
@@ -238,26 +279,26 @@ const StudentQuiz = () => {
                                     </CardContent>
                                 </Card>
                             ) : quiz ? (
-                                <form onSubmit={handleSubmit}>
-                                    <Typography variant="body1" sx={{ mb: 2, color: timeLeft <= 30 ? "error.main" : "text.primary" }}>
-                                        Time Remaining: {formatTime(timeLeft)}
-                                    </Typography>
-                                    {quiz.questions.map((q, index) => (
-                                        <Box key={q._id} sx={{ mb: 3 }}>
+                                quizStarted ? (
+                                    <>
+                                        <Typography variant="body1" sx={{ mb: 2, color: timeLeft <= 30 ? "error.main" : "text.primary" }}>
+                                            Time Remaining: {formatTime(timeLeft)}
+                                        </Typography>
+                                        <Box sx={{ mb: 3 }}>
                                             <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                                {index + 1}. {q.question}
+                                                {currentQuestionIndex + 1}. {quiz.questions[currentQuestionIndex].question}
                                             </Typography>
                                             <FormControl component="fieldset">
                                                 <RadioGroup
-                                                    onChange={(e) => handleAnswerChange(q._id, e.target.value)}
-                                                    value={answers[q._id] || ""}
+                                                    onChange={(e) => handleAnswerChange(quiz.questions[currentQuestionIndex]._id, e.target.value)}
+                                                    value={answers[quiz.questions[currentQuestionIndex]._id] || ""}
                                                 >
                                                     <FormControlLabel
-                                                        value={q.options.correct}
+                                                        value={quiz.questions[currentQuestionIndex].options.correct}
                                                         control={<Radio />}
-                                                        label={`A) ${q.options.correct}`}
+                                                        label={`A) ${quiz.questions[currentQuestionIndex].options.correct}`}
                                                     />
-                                                    {q.options.incorrect.map((opt, idx) => (
+                                                    {quiz.questions[currentQuestionIndex].options.incorrect.map((opt, idx) => (
                                                         <FormControlLabel
                                                             key={idx}
                                                             value={opt}
@@ -268,18 +309,43 @@ const StudentQuiz = () => {
                                                 </RadioGroup>
                                             </FormControl>
                                         </Box>
-                                    ))}
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        color="primary"
-                                        fullWidth
-                                        disabled={loading}
-                                        sx={{ py: 1.5, textTransform: 'none' }}
-                                    >
-                                        {loading ? <CircularProgress size={24} /> : "Submit Quiz"}
-                                    </Button>
-                                </form>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                                            <Button
+                                                variant="outlined"
+                                                color="primary"
+                                                onClick={handlePrevious}
+                                                disabled={currentQuestionIndex === 0}
+                                                sx={{ textTransform: 'none' }}
+                                            >
+                                                Previous
+                                            </Button>
+                                            {currentQuestionIndex < quiz.questions.length - 1 ? (
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    onClick={handleNext}
+                                                    sx={{ textTransform: 'none' }}
+                                                >
+                                                    Next
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    onClick={handleFinishAttempt}
+                                                    disabled={loading}
+                                                    sx={{ textTransform: 'none' }}
+                                                >
+                                                    {loading ? <CircularProgress size={24} /> : "Finish Attempt"}
+                                                </Button>
+                                            )}
+                                        </Box>
+                                    </>
+                                ) : (
+                                    <Typography variant="body1" color="text.secondary">
+                                        Press Start Quiz to begin.
+                                    </Typography>
+                                )
                             ) : (
                                 <Typography variant="body1" color="text.secondary">
                                     Loading quiz...
@@ -289,6 +355,23 @@ const StudentQuiz = () => {
                     </Box>
                 </div>
             </div>
+
+            <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+                <DialogTitle>Start Quiz</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to start this quiz? You will have {quiz?.timer} minutes to complete it.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenConfirm(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleStartQuiz} color="primary" variant="contained">
+                        Start Quiz
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

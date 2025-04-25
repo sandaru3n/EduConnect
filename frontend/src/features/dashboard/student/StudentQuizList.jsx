@@ -8,7 +8,11 @@ import {
     CardContent,
     CardActions,
     Button,
-    Alert
+    
+    Alert,
+    Tabs,
+    Tab,
+    Divider
 } from "@mui/material";
 import useAuth from "../../../hooks/useAuth";
 import StudentSidebar from "../../../components/StudentSidebar/index";
@@ -20,10 +24,12 @@ const StudentQuizList = () => {
     const { user } = useAuth();
     const location = useLocation();
     const [quizzes, setQuizzes] = useState([]);
+    const [history, setHistory] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [tabValue, setTabValue] = useState(0);
 
     const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -56,8 +62,26 @@ const StudentQuizList = () => {
                 setLoading(false);
             }
         };
+
+        const fetchHistory = async () => {
+            try {
+                const config = {
+                    headers: { Authorization: `Bearer ${user.token}` }
+                };
+                const { data } = await axios.get("http://localhost:5000/api/quiz/student/history", config);
+                setHistory(data);
+            } catch (err) {
+                setError(err.response?.data?.message || "Error loading quiz history");
+            }
+        };
+
         fetchQuizzes();
+        fetchHistory();
     }, [user.token]);
+
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
 
     const pathnames = location.pathname.split("/").filter((x) => x);
     const breadcrumbItems = pathnames.map((value, index) => {
@@ -124,40 +148,83 @@ const StudentQuizList = () => {
 
                     <Box sx={{ maxWidth: 800, mx: "auto", p: 3, mt: "50px" }}>
                         <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                            <Typography variant="h4" gutterBottom>Available Quizzes</Typography>
+                            <Typography variant="h4" gutterBottom>Quizzes</Typography>
                             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-                            {loading ? (
-                                <Typography variant="body1" color="text.secondary">
-                                    Loading quizzes...
-                                </Typography>
-                            ) : quizzes.length > 0 ? (
-                                quizzes.map((quiz) => (
-                                    <Card key={quiz._id} sx={{ mt: 2, borderRadius: 2, boxShadow: 3 }}>
-                                        <CardContent>
-                                            <Typography variant="h6">
-                                                {quiz.lessonName}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Duration: {quiz.timer} minutes
-                                            </Typography>
-                                        </CardContent>
-                                        <CardActions>
-                                            <Button
-                                                component={Link}
-                                                to={`/student/quizlist/quiz/${quiz._id}`}
-                                                variant="contained"
-                                                color="primary"
-                                                sx={{ textTransform: 'none' }}
-                                            >
-                                                Attempt Quiz
-                                            </Button>
-                                        </CardActions>
-                                    </Card>
-                                ))
+                            <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 3 }}>
+                                <Tab label="Available Quizzes" />
+                                <Tab label="Quiz History" />
+                            </Tabs>
+                            <Divider sx={{ mb: 3 }} />
+                            {tabValue === 0 ? (
+                                loading ? (
+                                    <Typography variant="body1" color="text.secondary">
+                                        Loading quizzes...
+                                    </Typography>
+                                ) : quizzes.length > 0 ? (
+                                    quizzes.map((quiz) => (
+                                        <Card key={quiz._id} sx={{ mt: 2, borderRadius: 2, boxShadow: 3 }}>
+                                            <CardContent>
+                                                <Typography variant="h6">
+                                                    {quiz.lessonName}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Duration: {quiz.timer} minutes
+                                                </Typography>
+                                            </CardContent>
+                                            <CardActions>
+                                                <Button
+                                                    component={Link}
+                                                    to={`/student/quizlist/quiz/${quiz._id}`}
+                                                    variant="contained"
+                                                    color="primary"
+                                                    sx={{ textTransform: 'none' }}
+                                                >
+                                                    Attempt Quiz
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <Typography variant="body1" color="text.secondary">
+                                        No quizzes available. Please subscribe to a class or contact your teacher.
+                                    </Typography>
+                                )
                             ) : (
-                                <Typography variant="body1" color="text.secondary">
-                                    No quizzes available. Please subscribe to a class or contact your teacher.
-                                </Typography>
+                                history.length > 0 ? (
+                                    history.map((attempt) => (
+                                        <Card key={attempt._id} sx={{ mt: 2, borderRadius: 2, boxShadow: 3 }}>
+                                            <CardContent>
+                                                <Typography variant="h6">
+                                                    {attempt.quizId.lessonName}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Class: {attempt.quizId.classId.subject}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Marks: {attempt.marks}/{attempt.quizId.questions.length}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Attempted At: {new Date(attempt.attemptedAt).toLocaleString()}
+                                                </Typography>
+                                            </CardContent>
+                                            <CardActions>
+                                                <Button
+                                                    component={Link}
+                                                    to={`/student/quizlist/quiz/${attempt.quizId._id}`}
+                                                    variant="outlined"
+                                                    color="primary"
+                                                    sx={{ textTransform: 'none' }}
+                                                >
+                                                    View Results
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <Typography variant="body1" color="text.secondary">
+                                        No quiz history available.
+                                    </Typography>
+                                )
                             )}
                         </Paper>
                     </Box>

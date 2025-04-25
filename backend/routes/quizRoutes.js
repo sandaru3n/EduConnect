@@ -1,6 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const { generateMCQs, attemptQuiz, getQuizResults, getQuizById, getAvailableQuizzes, getTeacherClasses } = require("../controllers/quizController");
+const { 
+    generateMCQs, 
+    attemptQuiz, 
+    getQuizResults, 
+    getQuizById, 
+    getAvailableQuizzes, 
+    getTeacherClasses,
+    getStudentQuizHistory,
+    getTeacherQuizHistory,
+    updateQuizTimer,
+    deleteQuiz
+} = require("../controllers/quizController");
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
@@ -51,7 +62,19 @@ router.get("/:quizId", authMiddleware, getQuizById);
 // Get available quizzes (Student)
 router.get("/student/available", authMiddleware, getAvailableQuizzes);
 
+// Get student quiz history (Student)
+router.get("/student/history", authMiddleware, getStudentQuizHistory);
+
 // Get teacher classes (Teacher)
 router.get("/teacher/classes", authMiddleware, getTeacherClasses);
+
+// Get teacher quiz history (Teacher)
+router.get("/teacher/history", authMiddleware, getTeacherQuizHistory);
+
+// Update quiz timer (Teacher)
+router.put("/update-timer", authMiddleware, updateQuizTimer);
+
+// Delete quiz (Teacher)
+router.delete("/:quizId", authMiddleware, deleteQuiz);
 
 module.exports = router;
