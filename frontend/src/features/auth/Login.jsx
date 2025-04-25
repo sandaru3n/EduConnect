@@ -8,12 +8,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import ArrowBackIcon from '@mui/icons-material/ArrowBackIos';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    TextField,
+   
     Alert,
     Typography
 } from "@mui/material";
@@ -32,7 +27,7 @@ const Login = () => {
     const navigate = useNavigate();
 
     // Forgot Password States
-    const [openForgotPassword, setOpenForgotPassword] = useState(false);
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: Enter Email, 2: Enter Code, 3: Reset Password
     const [forgotEmail, setForgotEmail] = useState("");
     const [resetCode, setResetCode] = useState("");
@@ -99,12 +94,17 @@ const Login = () => {
 
     // Forgot Password Handlers
     const handleForgotPasswordClick = () => {
-        setOpenForgotPassword(true);
+        setIsForgotPassword(true);
         setForgotPasswordStep(1);
         setForgotEmail("");
         setResetCode("");
         setNewPassword("");
         setConfirmPassword("");
+        setForgotPasswordError("");
+    };
+
+    const handleBackToLogin = () => {
+        setIsForgotPassword(false);
         setForgotPasswordError("");
     };
 
@@ -168,7 +168,7 @@ const Login = () => {
         try {
             await axios.post("http://localhost:5000/api/auth/reset-password", { email: forgotEmail, code: resetCode, newPassword });
             setNotification({ message: "Password reset successfully. Please log in with your new password.", type: "success" });
-            setOpenForgotPassword(false);
+            setIsForgotPassword(false);
         } catch (error) {
             setForgotPasswordError(error.response?.data?.message || "Error resetting password");
         } finally {
@@ -186,7 +186,7 @@ const Login = () => {
                 }}
             ></div>
 
-            {/* Right Side - Login Form */}
+            {/* Right Side - Login/Forgot Password Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-100 p-8">
                 {/* Back Button */}
                 <button
@@ -220,232 +220,264 @@ const Login = () => {
                     transition={{ duration: 0.7, ease: "easeOut" }}
                     className="max-w-sm w-full space-y-6 relative"
                 >
-                    {/* Logo/Title */}
-                    <div className="text-center">
-                        <h1 className="text-3xl font-bold text-indigo-600">EduConnect</h1>
-                        <h2 className="mt-2 text-xl font-semibold text-gray-900">Log in</h2>
-                    </div>
-
-                    <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-                        {/* Email */}
-                        <div className="relative">
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <EmailIcon className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className={`h-12 w-full border rounded-md shadow-sm pl-10 pr-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                                        errors.email ? "border-gray-500" : "border-gray-300"
-                                    }`}
-                                    placeholder="Email"
-                                />
+                    {isForgotPassword ? (
+                        // Forgot Password Form
+                        <>
+                            {/* Logo/Title */}
+                            <div className="text-center">
+                                <h1 className="text-3xl font-bold text-indigo-600">EduConnect</h1>
+                                <h2 className="mt-2 text-xl font-semibold text-gray-900">
+                                    {forgotPasswordStep === 1 ? "Forgot Password" : 
+                                     forgotPasswordStep === 2 ? "Enter Reset Code" : "Reset Password"}
+                                </h2>
                             </div>
-                            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                        </div>
 
-                        {/* Password */}
-                        <div className="relative">
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <LockIcon className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className={`h-12 w-full border rounded-md shadow-sm pl-10 pr-12 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                                        errors.password ? "border-red-500" : "border-gray-300"
-                                    }`}
-                                    placeholder="Password"
-                                />
-                                <div
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                                    onClick={togglePasswordVisibility}
-                                >
-                                    {showPassword ? (
-                                        <VisibilityOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                                    ) : (
-                                        <Visibility className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                                    )}
-                                </div>
-                            </div>
-                            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                        </div>
-
-                        {/* Stay Logged In Checkbox */}
-                        <div className="flex items-center">
-                            <input
-                                id="stay-logged-in"
-                                type="checkbox"
-                                checked={stayLoggedIn}
-                                onChange={(e) => setStayLoggedIn(e.target.checked)}
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="stay-logged-in" className="ml-2 text-sm text-gray-600">
-                                Stay logged in
-                            </label>
-                        </div>
-
-                        {/* Submit Button */}
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            type="submit"
-                            disabled={isLoading}
-                            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ${
-                                isLoading ? "opacity-75 cursor-not-allowed" : ""
-                            }`}
-                        >
-                            {isLoading ? (
-                                <span className="flex items-center">
-                                    <svg
-                                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
+                            <div className="space-y-4">
+                                {forgotPasswordError && <Alert severity="error">{forgotPasswordError}</Alert>}
+                                {forgotPasswordStep === 1 && (
+                                    <>
+                                        <Typography sx={{ mb: 2, color: "text.secondary" }}>
+                                            Enter your email address to receive a password reset code.
+                                        </Typography>
+                                        <div className="relative">
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <EmailIcon className="h-5 w-5 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="email"
+                                                    value={forgotEmail}
+                                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                                    className="h-12 w-full border rounded-md shadow-sm pl-10 pr-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
+                                                    placeholder="Enter your email"
+                                                />
+                                            </div>
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={handleRequestCode}
+                                            disabled={forgotPasswordLoading}
+                                            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ${
+                                                forgotPasswordLoading ? "opacity-75 cursor-not-allowed" : ""
+                                            }`}
+                                        >
+                                            {forgotPasswordLoading ? "Sending..." : "Send Code"}
+                                        </motion.button>
+                                    </>
+                                )}
+                                {forgotPasswordStep === 2 && (
+                                    <>
+                                        <Typography sx={{ mb: 2, color: "text.secondary" }}>
+                                            A 6-digit code has been sent to your email. Please enter it below.
+                                        </Typography>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={resetCode}
+                                                onChange={(e) => setResetCode(e.target.value)}
+                                                className="h-12 w-full border rounded-md shadow-sm px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
+                                                placeholder="Enter 6-digit code"
+                                                maxLength={6}
+                                            />
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={handleVerifyCode}
+                                            disabled={forgotPasswordLoading}
+                                            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ${
+                                                forgotPasswordLoading ? "opacity-75 cursor-not-allowed" : ""
+                                            }`}
+                                        >
+                                            {forgotPasswordLoading ? "Verifying..." : "Verify Code"}
+                                        </motion.button>
+                                    </>
+                                )}
+                                {forgotPasswordStep === 3 && (
+                                    <>
+                                        <Typography sx={{ mb: 2, color: "text.secondary" }}>
+                                            Enter your new password and confirm it.
+                                        </Typography>
+                                        <div className="relative">
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <LockIcon className="h-5 w-5 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="password"
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    className="h-12 w-full border rounded-md shadow-sm pl-10 pr-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
+                                                    placeholder="Enter new password"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="relative">
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <LockIcon className="h-5 w-5 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="password"
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    className="h-12 w-full border rounded-md shadow-sm pl-10 pr-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
+                                                    placeholder="Confirm new password"
+                                                />
+                                            </div>
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={handleResetPassword}
+                                            disabled={forgotPasswordLoading}
+                                            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ${
+                                                forgotPasswordLoading ? "opacity-75 cursor-not-allowed" : ""
+                                            }`}
+                                        >
+                                            {forgotPasswordLoading ? "Resetting..." : "Reset Password"}
+                                        </motion.button>
+                                    </>
+                                )}
+                                <div className="text-center">
+                                    <button
+                                        type="button"
+                                        onClick={handleBackToLogin}
+                                        className="text-sm font-semibold text-indigo-600 hover:underline bg-transparent border-none p-0 cursor-pointer"
                                     >
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                    Signing in...
-                                </span>
-                            ) : (
-                                "Log in"
-                            )}
-                        </motion.button>
+                                        Back to Login
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        // Login Form
+                        <>
+                            {/* Logo/Title */}
+                            <div className="text-center">
+                                <h1 className="text-3xl font-bold text-indigo-600">EduConnect</h1>
+                                <h2 className="mt-2 text-xl font-semibold text-gray-900">Log in</h2>
+                            </div>
 
-                        {/* Links */}
-                        <div className="text-center space-y-2">
-                            <button
-                                type="button"
-                                onClick={handleForgotPasswordClick}
-                                className="block text-sm text-indigo-600 hover:underline bg-transparent border-none p-0 cursor-pointer"
-                            >
-                                I forgot my password
-                            </button>
-                            <p className="text-sm text-gray-600">
-                                Don’t have an account?{" "}
-                                <a href="/register/student" className="text-indigo-600 hover:underline">
-                                    Student Sign up
-                                </a>
-                            </p>
-                        </div>
-                    </form>
+                            <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+                                {/* Email */}
+                                <div className="relative">
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <EmailIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            id="email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className={`h-12 w-full border rounded-md shadow-sm pl-10 pr-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                                                errors.email ? "border-gray-500" : "border-gray-300"
+                                            }`}
+                                            placeholder="Email"
+                                        />
+                                    </div>
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                                </div>
+
+                                {/* Password */}
+                                <div className="relative">
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <LockIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            id="password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className={`h-12 w-full border rounded-md shadow-sm pl-10 pr-12 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                                                errors.password ? "border-red-500" : "border-gray-300"
+                                            }`}
+                                            placeholder="Password"
+                                        />
+                                        <div
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                                            onClick={togglePasswordVisibility}
+                                        >
+                                            {showPassword ? (
+                                                <VisibilityOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                            ) : (
+                                                <Visibility className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                            )}
+                                        </div>
+                                    </div>
+                                    {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                                </div>
+
+                                {/* Stay Logged In Checkbox */}
+                                <div className="flex items-center">
+                                    <input
+                                        id="stay-logged-in"
+                                        type="checkbox"
+                                        checked={stayLoggedIn}
+                                        onChange={(e) => setStayLoggedIn(e.target.checked)}
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="stay-logged-in" className="ml-2 text-sm text-gray-600">
+                                        Stay logged in
+                                    </label>
+                                </div>
+
+                                {/* Submit Button */}
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ${
+                                        isLoading ? "opacity-75 cursor-not-allowed" : ""
+                                    }`}
+                                >
+                                    {isLoading ? (
+                                        <span className="flex items-center">
+                                            <svg
+                                                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                            </svg>
+                                            Signing in...
+                                        </span>
+                                    ) : (
+                                        "Log in"
+                                    )}
+                                </motion.button>
+
+                                {/* Links */}
+                                <div className="text-center space-y-2 ">
+                                    <button
+                                        type="button"
+                                        onClick={handleForgotPasswordClick}
+                                        className="text-sm  font-semibold text-indigo-600 hover:underline bg-transparent border-none p-0 cursor-pointer"
+                                    >
+                                        I forgot my password
+                                    </button>
+                                    <p className="text-center text-gray-600">
+                                        Don’t have an account?{" "}
+                                        <a href="/register/student" className="text-indigo-600 hover:underline">
+                                            Student Sign up
+                                        </a>
+                                    </p>
+                                </div>
+                            </form>
+                        </>
+                    )}
                 </motion.div>
             </div>
-
-            {/* Forgot Password Dialog */}
-            <Dialog open={openForgotPassword} onClose={() => setOpenForgotPassword(false)}>
-                <DialogTitle>
-                    {forgotPasswordStep === 1 ? "Forgot Password" : 
-                     forgotPasswordStep === 2 ? "Enter Reset Code" : "Reset Password"}
-                </DialogTitle>
-                <DialogContent>
-                    {forgotPasswordError && <Alert severity="error" sx={{ mb: 2 }}>{forgotPasswordError}</Alert>}
-                    {forgotPasswordStep === 1 && (
-                        <>
-                            <Typography sx={{ mb: 2 }}>
-                                Enter your email address to receive a password reset code.
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                label="Email"
-                                type="email"
-                                value={forgotEmail}
-                                onChange={(e) => setForgotEmail(e.target.value)}
-                                variant="outlined"
-                                placeholder="Enter your email"
-                            />
-                        </>
-                    )}
-                    {forgotPasswordStep === 2 && (
-                        <>
-                            <Typography sx={{ mb: 2 }}>
-                                A 6-digit code has been sent to your email. Please enter it below.
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                label="Reset Code"
-                                value={resetCode}
-                                onChange={(e) => setResetCode(e.target.value)}
-                                variant="outlined"
-                                placeholder="Enter 6-digit code"
-                                inputProps={{ maxLength: 6 }}
-                            />
-                        </>
-                    )}
-                    {forgotPasswordStep === 3 && (
-                        <>
-                            <Typography sx={{ mb: 2 }}>
-                                Enter your new password and confirm it.
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                label="New Password"
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                variant="outlined"
-                                placeholder="Enter new password"
-                                sx={{ mb: 2 }}
-                            />
-                            <TextField
-                                fullWidth
-                                label="Confirm Password"
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                variant="outlined"
-                                placeholder="Confirm new password"
-                            />
-                        </>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenForgotPassword(false)} color="primary">
-                        Cancel
-                    </Button>
-                    {forgotPasswordStep === 1 && (
-                        <Button
-                            onClick={handleRequestCode}
-                            color="primary"
-                            variant="contained"
-                            disabled={forgotPasswordLoading}
-                        >
-                            {forgotPasswordLoading ? "Sending..." : "Send Code"}
-                        </Button>
-                    )}
-                    {forgotPasswordStep === 2 && (
-                        <Button
-                            onClick={handleVerifyCode}
-                            color="primary"
-                            variant="contained"
-                            disabled={forgotPasswordLoading}
-                        >
-                            {forgotPasswordLoading ? "Verifying..." : "Verify Code"}
-                        </Button>
-                    )}
-                    {forgotPasswordStep === 3 && (
-                        <Button
-                            onClick={handleResetPassword}
-                            color="primary"
-                            variant="contained"
-                            disabled={forgotPasswordLoading}
-                        >
-                            {forgotPasswordLoading ? "Resetting..." : "Reset Password"}
-                        </Button>
-                    )}
-                </DialogActions>
-            </Dialog>
         </div>
     );
 };
