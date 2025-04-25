@@ -64,6 +64,9 @@ import ContactMessages from "./features/dashboard/admin/ContactMessages";
 
 import ManageExtensionRequests from "./features/dashboard/teacher/ManageExtensionRequests";
 
+import QuizGenerator from "./features/dashboard/teacher/QuizGenerator";
+import StudentQuiz from "./features/dashboard/student/StudentQuiz";
+import StudentQuizList from "./features/dashboard/student/StudentQuizList";
 
 import DoubtResolver from "./features/dashboard/student/DoubtResolver"
 function App() {
@@ -98,7 +101,11 @@ function App() {
                 <Route path="/admin/manage-knwoledgebase" element={<ProtectedRoute role="admin">< ManageKnowledgebase/></ProtectedRoute>} />
                 <Route path="/admin/contact-messages" element={<ProtectedRoute role="admin">< ContactMessages/></ProtectedRoute>} />
                 
+                <Route path="/teacher/quiz-generator" element={<ProtectedRoute role="teacher"><QuizGenerator /></ProtectedRoute>} />
+                <Route path="/student/quizlist/quiz/:quizId" element={<ProtectedRoute role="student"><StudentQuiz /></ProtectedRoute>} />
+                <Route path="/student/quizlist" element={<ProtectedRoute role="student"><StudentQuizList /></ProtectedRoute>} />
                 
+
                 <Route path="/student/doubt-resolver" element={<ProtectedRoute role="student"><DoubtResolver /></ProtectedRoute>} />
                 <Route path="/student/dashboard/*" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
                 <Route path="/student/library" element={<ProtectedRoute role="student"><StudentLibrary /></ProtectedRoute>} />
