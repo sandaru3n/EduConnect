@@ -2,6 +2,21 @@
 const User = require("../models/User");
 const generateToken = require("../config/jwt");
 
+
+const PasswordResetToken = require("../models/PasswordResetToken");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+
+
+// Configure Nodemailer (replace with your email service credentials)
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER, // Your email address (set in .env)
+        pass: process.env.EMAIL_PASS, // Your email password or app-specific password (set in .env)
+    },
+});
+
 exports.register = async (req, res) => {
     const { 
         name, email, password, role, 
@@ -187,6 +202,123 @@ exports.getProfile = async (req, res) => {
     } catch (error) {
         console.error('Get profile error:', error);
         res.status(500).json({ message: 'Error fetching profile', error: error.message });
+    }
+};
+
+
+exports.requestPasswordReset = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Validate email
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist" });
+        }
+
+        // Generate a 6-digit code
+        const code = crypto.randomInt(100000, 999999).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiration
+
+        // Save the reset token
+        await PasswordResetToken.deleteMany({ userId: user._id }); // Remove any existing tokens
+        const resetToken = new PasswordResetToken({
+            userId: user._id,
+            token: code,
+            expiresAt
+        });
+        await resetToken.save();
+
+        // Send email with the code
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset Code - EduConnect",
+            text: `Your password reset code is: ${code}\nThis code will expire in 10 minutes.`
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: "Password reset code sent to your email" });
+    } catch (error) {
+        console.error("Request password reset error:", error);
+        res.status(500).json({ message: "Error sending reset code", error: error.message });
+    }
+};
+
+exports.verifyResetCode = async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        // Validate input
+        if (!email || !code) {
+            return res.status(400).json({ message: "Email and code are required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist" });
+        }
+
+        const resetToken = await PasswordResetToken.findOne({
+            userId: user._id,
+            token: code,
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!resetToken) {
+            return res.status(400).json({ message: "Invalid or expired reset code" });
+        }
+
+        res.status(200).json({ message: "Code verified successfully" });
+    } catch (error) {
+        console.error("Verify reset code error:", error);
+        res.status(500).json({ message: "Error verifying reset code", error: error.message });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, code, newPassword } = req.body;
+
+        // Validate input
+        if (!email || !code || !newPassword) {
+            return res.status(400).json({ message: "Email, code, and new password are required" });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "New password must be at least 6 characters" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist" });
+        }
+
+        const resetToken = await PasswordResetToken.findOne({
+            userId: user._id,
+            token: code,
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!resetToken) {
+            return res.status(400).json({ message: "Invalid or expired reset code" });
+        }
+
+        // Update the user's password
+        user.password = newPassword;
+        await user.save();
+
+        // Delete the reset token
+        await PasswordResetToken.deleteMany({ userId: user._id });
+
+        res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+        console.error("Reset password error:", error);
+        res.status(500).json({ message: "Error resetting password", error: error.message });
     }
 };
 
