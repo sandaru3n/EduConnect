@@ -68,6 +68,8 @@ app.use('/api/doubt', require('./routes/doubtRoutes')); // New doubt routes
 app.use("/api/pages", require("./routes/pageRoutes"));
 app.use('/api/subscriptions', subscriptionRoutes);
 
+app.use('/api/quiz', require('./routes/quizRoutes')); // New quiz routes
+
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Internal server error' });
