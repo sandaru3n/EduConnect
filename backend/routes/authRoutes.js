@@ -1,7 +1,13 @@
 // backend/routes/authRoutes.js
 
 const express = require("express");
-const { register, login, updateProfile, getProfile,requestPasswordReset,verifyResetCode,resetPassword } = require("../controllers/authController");
+const { register, login, updateProfile, getProfile,requestPasswordReset,verifyResetCode,resetPassword,createNotice,
+    getTeacherNotices,
+    updateNotice,
+    deleteNotice,
+    getStudentNotices,
+    markNoticeAsRead,
+    getNoticeById } = require("../controllers/authController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
@@ -44,5 +50,16 @@ router.get("/profile", authMiddleware, getProfile);
 router.post("/forgot-password", requestPasswordReset);
 router.post("/verify-reset-code", verifyResetCode);
 router.post("/reset-password", resetPassword);
+
+
+// Notice Routes
+router.post("/notices", authMiddleware, createNotice);
+router.get("/notices/teacher", authMiddleware, getTeacherNotices);
+router.put("/notices", authMiddleware, updateNotice);
+router.delete("/notices/:noticeId", authMiddleware, deleteNotice);
+router.get("/notices/student", authMiddleware, getStudentNotices);
+router.post("/notices/:noticeId/read", authMiddleware, markNoticeAsRead);
+router.get("/notices/:noticeId", authMiddleware, getNoticeById);
+
 
 module.exports = router;

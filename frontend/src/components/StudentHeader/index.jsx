@@ -1,5 +1,4 @@
-//frontend/src/components/StudentHeader/index.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FaRegUser } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
@@ -9,12 +8,13 @@ import { FaRegBell } from "react-icons/fa";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { Divider } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import { styled } from "@mui/material/styles";
 import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import backgroundImage from '../../assets/avatars/thumb-1.jpg';
+import axios from "axios";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     "& .MuiBadge-badge": {
@@ -30,6 +30,8 @@ const StudentHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
     const navigate = useNavigate();
 
     const [anchorMyacc, setAnchorMyacc] = useState(null);
+    const [anchorNotif, setAnchorNotif] = useState(null);
+    const [notices, setNotices] = useState([]);
 
     const handleClickMyacc = (event) => {
         setAnchorMyacc(event.currentTarget);
@@ -39,6 +41,14 @@ const StudentHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
         setAnchorMyacc(null);
     };
 
+    const handleClickNotif = (event) => {
+        setAnchorNotif(event.currentTarget);
+    };
+
+    const handleCloseNotif = () => {
+        setAnchorNotif(null);
+    };
+
     const handleLogout = () => {
         logout();
         navigate("/login");
@@ -46,7 +56,7 @@ const StudentHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
 
     const handleProfile = () => {
         handleCloseMyacc();
-        navigate(`/${user.role}/edit-profile`); // Dynamic based on user role
+        navigate(`/${user.role}/edit-profile`);
     };
 
     const handleLogoutClick = () => {
@@ -54,10 +64,51 @@ const StudentHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
         handleLogout();
     };
 
+    const handleViewNotice = async (noticeId) => {
+        try {
+            const config = {
+                headers: { Authorization: `Bearer ${user.token}` }
+            };
+            // Mark the notice as read
+            await axios.post(`http://localhost:5000/api/auth/notices/${noticeId}/read`, {}, config);
+            // Update the notices state to reflect the read status
+            setNotices(notices.map(notice => 
+                notice._id === noticeId ? { ...notice, unread: false } : notice
+            ));
+            handleCloseNotif();
+            navigate(`/student/notice/${noticeId}`);
+        } catch (err) {
+            console.error("Error marking notice as read:", err);
+        }
+    };
+
+    const handleSeeAllNotices = () => {
+        handleCloseNotif();
+        navigate("/student/notices");
+    };
+
+    useEffect(() => {
+        const fetchNotices = async () => {
+            try {
+                const config = {
+                    headers: { Authorization: `Bearer ${user.token}` }
+                };
+                const { data } = await axios.get("http://localhost:5000/api/auth/notices/student", config);
+                setNotices(data);
+            } catch (err) {
+                console.error("Error fetching notices:", err);
+            }
+        };
+        fetchNotices();
+    }, [user.token]);
+
+    const unreadCount = notices.filter(notice => notice.unread).length;
+
     const openMyAcc = Boolean(anchorMyacc);
+    const openNotif = Boolean(anchorNotif);
 
     // Default profile picture
-    const defaultProfilePicture = backgroundImage; // Adjust path to your default image
+    const defaultProfilePicture = backgroundImage;
 
     return (
         <header
@@ -79,11 +130,90 @@ const StudentHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
             </div>
 
             <div className="part2 flex items-center justify-end gap-3">
-                <IconButton aria-label="notifications">
-                    <StyledBadge badgeContent={4} color="secondary">
-                        <FaRegBell className="text-[18px]" />
-                    </StyledBadge>
-                </IconButton>
+                <div className="relative">
+                    <IconButton aria-label="notifications" onClick={handleClickNotif}>
+                        <StyledBadge badgeContent={unreadCount} color="secondary">
+                            <FaRegBell className="text-[18px]" />
+                        </StyledBadge>
+                    </IconButton>
+
+                    <Menu
+                        anchorEl={anchorNotif}
+                        open={openNotif}
+                        onClose={handleCloseNotif}
+                        slotProps={{
+                            paper: {
+                                elevation: 0,
+                                sx: {
+                                    overflow: "visible",
+                                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                                    mt: 1.5,
+                                    maxWidth: 300, // Increased width
+                                    width: "100%", // Ensure it uses the max width
+                                    "&::before": {
+                                        content: '""',
+                                        display: "block",
+                                        position: "absolute",
+                                        top: 0,
+                                        right: 14,
+                                        width: 10,
+                                        height: 10,
+                                        bgcolor: "background.paper",
+                                        transform: "translateY(-50%) rotate(45deg)",
+                                        zIndex: 0,
+                                    },
+                                },
+                            },
+                        }}
+                        transformOrigin={{ horizontal: "right", vertical: "top" }}
+                        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                    >
+                        <MenuItem disabled>
+                            <Typography variant="h6">Notifications</Typography>
+                        </MenuItem>
+                        <Divider />
+                        {notices.length > 0 ? (
+                            notices.slice(0, 5).map((notice) => (
+                                <MenuItem
+                                    key={notice._id}
+                                    onClick={() => handleViewNotice(notice._id)}
+                                    sx={{ 
+                                        display: "flex", 
+                                        flexDirection: "column", 
+                                        alignItems: "flex-start", 
+                                        py: 1,
+                                        bgcolor: notice.unread ? "rgba(0, 128, 0, 0.1)" : "white" // Green background for unread notices
+                                    }}
+                                >
+                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                                        {notice.title}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Class: {notice.classId.subject}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {new Date(notice.createdAt).toLocaleString()}
+                                    </Typography>
+                                    <Typography variant="caption" color="primary">
+                                        View full notification
+                                    </Typography>
+                                </MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem disabled sx={{ py: 2, justifyContent: "center" }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    No new notifications
+                                </Typography>
+                            </MenuItem>
+                        )}
+                        <Divider />
+                        <MenuItem onClick={handleSeeAllNotices} sx={{ justifyContent: "center" }}>
+                            <Typography variant="caption" color="primary">
+                                See all
+                            </Typography>
+                        </MenuItem>
+                    </Menu>
+                </div>
 
                 <div className="relative">
                     <div
