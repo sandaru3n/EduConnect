@@ -50,30 +50,31 @@ const StudentQuiz = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    useEffect(() => {
-        const fetchQuiz = async () => {
-            const config = {
-                headers: { Authorization: `Bearer ${user.token}` }
-            };
-
-            try {
-                const { data } = await axios.get(`http://localhost:5000/api/quiz/results/${quizId}`, config);
-                setResults(data);
-            } catch (err) {
-                if (err.response?.status === 404) {
-                    try {
-                        const { data } = await axios.get(`http://localhost:5000/api/quiz/${quizId}`, config);
-                        setQuiz(data);
-                        // Set timer in seconds (timer is in minutes)
-                        setTimeLeft(data.timer * 60);
-                    } catch (quizErr) {
-                        setError(quizErr.response?.data?.message || "Quiz not found. Please check the quiz ID or contact your teacher.");
-                    }
-                } else {
-                    setError(err.response?.data?.message || "Error loading quiz results");
-                }
-            }
+    const fetchQuiz = async () => {
+        const config = {
+            headers: { Authorization: `Bearer ${user.token}` }
         };
+
+        try {
+            const { data } = await axios.get(`http://localhost:5000/api/quiz/results/${quizId}`, config);
+            setResults(data);
+        } catch (err) {
+            if (err.response?.status === 404) {
+                try {
+                    const { data } = await axios.get(`http://localhost:5000/api/quiz/${quizId}`, config);
+                    setQuiz(data);
+                    // Set timer in seconds (timer is in minutes)
+                    setTimeLeft(data.timer * 60);
+                } catch (quizErr) {
+                    setError(quizErr.response?.data?.message || "Quiz not found. Please check the quiz ID or contact your teacher.");
+                }
+            } else {
+                setError(err.response?.data?.message || "Error loading quiz results");
+            }
+        }
+    };
+
+    useEffect(() => {
         fetchQuiz();
     }, [quizId, user.token]);
 
@@ -117,15 +118,19 @@ const StudentQuiz = () => {
                 questionId,
                 selectedAnswer: answers[questionId] || "" // Default to empty if not answered
             }));
+            console.log("Submitting Quiz:", { quizId, answers: answersArray }); // Debug log
             const { data } = await axios.post(
                 "http://localhost:5000/api/quiz/attempt",
                 { quizId, answers: answersArray },
                 config
             );
+            console.log("Quiz Submission Response:", data); // Debug log
 
-            setResults(data);
+            // Fetch the latest results after submission
+            await fetchQuiz();
         } catch (err) {
-            setError(err.response?.data?.message || "Error submitting quiz");
+            console.error("Quiz Submission Error:", err); // Debug log
+            setError(err.response?.data?.message || "Failed to submit quiz. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -221,7 +226,7 @@ const StudentQuiz = () => {
                                                     {index + 1}. {answer.question}
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ ml: 2, color: answer.isCorrect ? "success.main" : "error.main" }}>
-                                                    Your Answer: {answer.selectedAnswer || "Not Answered"} ({answer.isCorrect ? "Correct" : "Incorrect"})
+                                                    Your Answer: {answer.selectedAnswer} ({answer.isCorrect ? "Correct" : "Incorrect"})
                                                 </Typography>
                                                 {!answer.isCorrect && (
                                                     <Typography variant="body2" sx={{ ml: 2 }}>
