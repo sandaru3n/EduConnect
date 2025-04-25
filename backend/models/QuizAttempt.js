@@ -11,6 +11,7 @@ const quizAttemptSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     answers: [answerSchema],
     marks: { type: Number, required: true },
+    startTime: { type: Date }, // New field to store when the quiz attempt started
     attemptedAt: { type: Date, default: Date.now }
 });
 

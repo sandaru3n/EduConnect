@@ -14,6 +14,7 @@ import { TbMessageFilled } from "react-icons/tb";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { SiStudyverse } from "react-icons/si";
 import { FaLightbulb } from "react-icons/fa6";
+import { SiQuizlet } from "react-icons/si";
 
 const AdminSidebar = ({ isCollapsed}) => {
   const [submenuIndex, setSubmenuIndex] = useState(null);
@@ -214,6 +215,24 @@ const AdminSidebar = ({ isCollapsed}) => {
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>AI Doubt Resolver</span>}
+          </Button>
+        </li>
+
+        {/* Quiz*/}
+        <li>
+          <Button
+            component={Link}
+            to="/student/quizlist"
+            className={`${
+              isCollapsed
+                ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
+                : "w-full !justify-start !px-3"
+            } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
+          >
+            <SiQuizlet
+              className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
+            />
+            {!isCollapsed && <span>Quizzes</span>}
           </Button>
         </li>
 

@@ -106,7 +106,7 @@ Ensure the questions are appropriate for high school students, stimulate critica
 
 exports.attemptQuiz = async (req, res) => {
     try {
-        const { quizId, answers } = req.body;
+        const { quizId, answers, startTime } = req.body;
         const studentId = req.user.id;
 
         // Validate input
@@ -115,7 +115,7 @@ exports.attemptQuiz = async (req, res) => {
         }
 
         // Log the incoming request body for debugging
-        console.log("Attempt Quiz Request:", { quizId, studentId, answers });
+        console.log("Attempt Quiz Request:", { quizId, studentId, answers, startTime });
 
         // Validate quizId
         if (!mongoose.Types.ObjectId.isValid(quizId)) {
@@ -165,7 +165,7 @@ exports.attemptQuiz = async (req, res) => {
                 marks += 1;
             }
             gradedAnswers.push({
-                questionId: questionId, // Ensure questionId is set
+                questionId: questionId,
                 question: question.question,
                 selectedAnswer: selectedAnswer || "Not Answered",
                 correctAnswer: question.options.correct,
@@ -181,11 +181,12 @@ exports.attemptQuiz = async (req, res) => {
             quizId,
             studentId,
             answers: gradedAnswers.map(answer => ({
-                questionId: answer.questionId, // Use questionId from gradedAnswers
+                questionId: answer.questionId,
                 selectedAnswer: answer.selectedAnswer,
                 isCorrect: answer.isCorrect
             })),
-            marks
+            marks,
+            startTime: startTime ? new Date(startTime) : new Date() // Store start time
         });
 
         // Log the quiz attempt document before saving
@@ -301,6 +302,101 @@ exports.getTeacherClasses = async (req, res) => {
     } catch (error) {
         console.error("Get teacher classes error:", error);
         res.status(500).json({ message: "Error retrieving teacher classes", error: error.message });
+    }
+};
+
+exports.getStudentQuizHistory = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        // Find all quiz attempts for the student
+        const attempts = await QuizAttempt.find({ studentId })
+            .populate("quizId", "lessonName classId timer")
+            .populate({
+                path: "quizId",
+                populate: { path: "classId", select: "subject" }
+            });
+
+        res.status(200).json(attempts);
+    } catch (error) {
+        console.error("Get student quiz history error:", error);
+        res.status(500).json({ message: "Error retrieving quiz history", error: error.message });
+    }
+};
+
+exports.getTeacherQuizHistory = async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+
+        // Find all quizzes created by the teacher
+        const quizzes = await Quiz.find({ teacherId })
+            .populate("classId", "subject");
+
+        res.status(200).json(quizzes);
+    } catch (error) {
+        console.error("Get teacher quiz history error:", error);
+        res.status(500).json({ message: "Error retrieving quiz history", error: error.message });
+    }
+};
+
+exports.updateQuizTimer = async (req, res) => {
+    try {
+        const { quizId, timer } = req.body;
+        const teacherId = req.user.id;
+
+        // Validate input
+        if (!quizId || !timer || timer < 1) {
+            return res.status(400).json({ message: "Quiz ID and valid timer are required" });
+        }
+
+        // Validate quizId
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({ message: "Invalid quiz ID" });
+        }
+
+        // Find the quiz and ensure it belongs to the teacher
+        const quiz = await Quiz.findOne({ _id: quizId, teacherId });
+        if (!quiz) {
+            return res.status(403).json({ message: "Quiz not found or you are not the creator of this quiz" });
+        }
+
+        // Update the timer
+        quiz.timer = timer;
+        await quiz.save();
+
+        res.status(200).json({ message: "Quiz timer updated successfully", quiz });
+    } catch (error) {
+        console.error("Update quiz timer error:", error);
+        res.status(500).json({ message: "Error updating quiz timer", error: error.message });
+    }
+};
+
+exports.deleteQuiz = async (req, res) => {
+    try {
+        const { quizId } = req.params;
+        const teacherId = req.user.id;
+
+        // Validate quizId
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({ message: "Invalid quiz ID" });
+        }
+
+        // Find the quiz and ensure it belongs to the teacher
+        const quiz = await Quiz.findOne({ _id: quizId, teacherId });
+        if (!quiz) {
+            return res.status(403).json({ message: "Quiz not found or you are not the creator of this quiz" });
+        }
+
+        // Delete associated quiz attempts
+        await QuizAttempt.deleteMany({ quizId });
+
+        // Delete the quiz
+        await Quiz.deleteOne({ _id: quizId });
+
+        res.status(200).json({ message: "Quiz deleted successfully" });
+    } catch (error) {
+        console.error("Delete quiz error:", error);
+        res.status(500).json({ message: "Error deleting quiz", error: error.message });
     }
 };
 
