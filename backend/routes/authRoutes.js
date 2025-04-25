@@ -1,7 +1,7 @@
 // backend/routes/authRoutes.js
 
 const express = require("express");
-const { register, login, updateProfile, getProfile } = require("../controllers/authController");
+const { register, login, updateProfile, getProfile,requestPasswordReset,verifyResetCode,resetPassword } = require("../controllers/authController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
@@ -38,5 +38,11 @@ router.post("/register", register);
 router.post("/login", login);
 router.put("/profile", authMiddleware, upload.fields([{ name: 'profilePicture', maxCount: 1 }]), updateProfile);
 router.get("/profile", authMiddleware, getProfile);
+
+
+// Forgot Password Routes
+router.post("/forgot-password", requestPasswordReset);
+router.post("/verify-reset-code", verifyResetCode);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;
