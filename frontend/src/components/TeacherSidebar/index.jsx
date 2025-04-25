@@ -15,6 +15,7 @@ import { BiSolidReport } from "react-icons/bi";
 import { BiSupport } from "react-icons/bi";
 import { SiStudyverse } from "react-icons/si";
 import { SiQuizlet } from "react-icons/si";
+import { TfiAnnouncement } from "react-icons/tfi";
 
 const AdminSidebar = ({ isCollapsed}) => {
   const [submenuIndex, setSubmenuIndex] = useState(null);
@@ -373,6 +374,24 @@ const AdminSidebar = ({ isCollapsed}) => {
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Reports</span>}
+          </Button>
+        </li>
+
+        {/* Notices*/}
+        <li>
+          <Button
+            component={Link}
+            to="/teacher/notices"
+            className={`${
+              isCollapsed
+                ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
+                : "w-full !justify-start !px-3"
+            } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
+          >
+            <TfiAnnouncement
+              className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
+            />
+            {!isCollapsed && <span>Publish Notices</span>}
           </Button>
         </li>
 
