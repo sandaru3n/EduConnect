@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const mongoose = require("mongoose");
 const Quiz = require("../models/Quiz");
 const QuizAttempt = require("../models/QuizAttempt");
 const Class = require("../models/Class");
@@ -113,6 +114,14 @@ exports.attemptQuiz = async (req, res) => {
             return res.status(400).json({ message: "Quiz ID and answers are required" });
         }
 
+        // Log the incoming request body for debugging
+        console.log("Attempt Quiz Request:", { quizId, studentId, answers });
+
+        // Validate quizId
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({ message: "Invalid quiz ID" });
+        }
+
         // Check if student has already attempted the quiz
         const existingAttempt = await QuizAttempt.findOne({ quizId, studentId });
         if (existingAttempt) {
@@ -140,6 +149,12 @@ exports.attemptQuiz = async (req, res) => {
         let marks = 0;
         for (const answer of answers) {
             const { questionId, selectedAnswer } = answer;
+
+            // Validate questionId
+            if (!mongoose.Types.ObjectId.isValid(questionId)) {
+                return res.status(400).json({ message: `Invalid question ID: ${questionId}` });
+            }
+
             const question = quiz.questions.id(questionId);
             if (!question) {
                 return res.status(400).json({ message: `Question ${questionId} not found in quiz` });
@@ -150,19 +165,32 @@ exports.attemptQuiz = async (req, res) => {
                 marks += 1;
             }
             gradedAnswers.push({
-                questionId,
-                selectedAnswer,
+                questionId: questionId, // Ensure questionId is set
+                question: question.question,
+                selectedAnswer: selectedAnswer || "Not Answered",
+                correctAnswer: question.options.correct,
                 isCorrect
             });
         }
+
+        // Log the graded answers for debugging
+        console.log("Graded Answers:", gradedAnswers);
 
         // Save the quiz attempt
         const quizAttempt = new QuizAttempt({
             quizId,
             studentId,
-            answers: gradedAnswers,
+            answers: gradedAnswers.map(answer => ({
+                questionId: answer.questionId, // Use questionId from gradedAnswers
+                selectedAnswer: answer.selectedAnswer,
+                isCorrect: answer.isCorrect
+            })),
             marks
         });
+
+        // Log the quiz attempt document before saving
+        console.log("Quiz Attempt Document:", quizAttempt.toObject());
+
         await quizAttempt.save();
 
         res.status(200).json({

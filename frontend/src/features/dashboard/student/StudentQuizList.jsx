@@ -8,7 +8,6 @@ import {
     CardContent,
     CardActions,
     Button,
-    CircularProgress,
     Alert
 } from "@mui/material";
 import useAuth from "../../../hooks/useAuth";
@@ -145,7 +144,7 @@ const StudentQuizList = () => {
                                         <CardActions>
                                             <Button
                                                 component={Link}
-                                                to={`/student/quiz/${quiz._id}`}
+                                                to={`/student/quizlist/quiz/${quiz._id}`}
                                                 variant="contained"
                                                 color="primary"
                                                 sx={{ textTransform: 'none' }}
