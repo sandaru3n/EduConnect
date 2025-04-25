@@ -1,8 +1,12 @@
+//frontend/src/features/dashboard/teacher/QuizGenerator.jsx
 import { useState, useEffect } from "react";
+import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
+import StudentSidebar from "../../../components/TeacherSidebar/index";
+import StudentHeader from "../../../components/TeacherHeader/index";
 import axios from "axios";
 import {
     Box,
-    Typography,
     TextField,
     Button,
     Paper,
@@ -26,6 +30,7 @@ import {
 import useAuth from "../../../hooks/useAuth";
 
 const QuizGenerator = () => {
+
     const { user } = useAuth();
     const [lessonName, setLessonName] = useState("");
     const [classId, setClassId] = useState("");
@@ -42,117 +47,219 @@ const QuizGenerator = () => {
     const [deleteQuizId, setDeleteQuizId] = useState(null);
     const [tabValue, setTabValue] = useState(0);
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const config = {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                };
-                const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/classes", config);
-                setClasses(data);
-            } catch (err) {
-                setError(err.response?.data?.message || "Error loading classes");
-            }
-        };
+  const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-        const fetchQuizzes = async () => {
-            setLoading(true);
-            try {
-                const config = {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                };
-                const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/history", config);
-                setQuizzes(data);
-            } catch (err) {
-                setError(err.response?.data?.message || "Error loading quiz history");
-            } finally {
-                setLoading(false);
-            }
-        };
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
 
-        fetchClasses();
-        fetchQuizzes();
-    }, [user.token]);
+  useEffect(() => {
+    const handleResize = () => {
+      const mobileView = window.innerWidth <= 768;
+      setIsMobile(mobileView);
+      setIsSidebarCollapsed(mobileView); // Auto-collapse on mobile
+    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setQuiz(null);
-        setLoading(true);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
+  const pathnames = location.pathname.split("/").filter((x) => x);
+  const breadcrumbItems = pathnames.map((value, index) => {
+    const last = index === pathnames.length - 1;
+    const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+    const displayName = value.charAt(0).toUpperCase() + value.slice(1);
+
+    return last ? (
+      <Typography key={to} color="text.primary">
+        {displayName}
+      </Typography>
+    ) : (
+      <MuiLink
+        key={to}
+        component={Link}
+        to={to}
+        underline="hover"
+        color="inherit"
+      >
+        {displayName}
+      </MuiLink>
+    );
+  });
+
+  // Get the current page name for the tab title
+  const pageTitle = pathnames.length > 0 
+    ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1)
+    : "Dashboard"; // Default title if no pathnames
+
+  // Update document title when location changes
+  useEffect(() => {
+    document.title = `TeacherDashboard - EduConnect`; // You can customize the format
+  }, [location, pageTitle]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
         try {
             const config = {
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                    "Content-Type": "application/json"
-                }
+                headers: { Authorization: `Bearer ${user.token}` }
             };
-            const { data } = await axios.post(
-                "http://localhost:5000/api/quiz/generate",
-                { lessonName, classId, numberOfQuestions, timer },
-                config
-            );
-
-            setQuiz(data.quiz);
-            // Refresh quiz history
-            const { data: updatedQuizzes } = await axios.get("http://localhost:5000/api/quiz/teacher/history", config);
-            setQuizzes(updatedQuizzes);
-            setLessonName("");
-            setClassId("");
-            setNumberOfQuestions(10);
-            setTimer(30);
+            const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/classes", config);
+            setClasses(data);
         } catch (err) {
-            setError(err.response?.data?.message || "Error generating quiz");
+            setError(err.response?.data?.message || "Error loading classes");
+        }
+    };
+
+    const fetchQuizzes = async () => {
+        setLoading(true);
+        try {
+            const config = {
+                headers: { Authorization: `Bearer ${user.token}` }
+            };
+            const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/history", config);
+            setQuizzes(data);
+        } catch (err) {
+            setError(err.response?.data?.message || "Error loading quiz history");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleEditTimer = (quiz) => {
-        setEditQuizId(quiz._id);
-        setEditTimer(quiz.timer);
-    };
+    fetchClasses();
+    fetchQuizzes();
+}, [user.token]);
 
-    const handleSaveTimer = async () => {
-        setError(null);
-        try {
-            const config = {
-                headers: { Authorization: `Bearer ${user.token}` }
-            };
-            const { data } = await axios.put(
-                "http://localhost:5000/api/quiz/update-timer",
-                { quizId: editQuizId, timer: parseInt(editTimer) },
-                config
-            );
-            setQuizzes(quizzes.map(q => q._id === editQuizId ? { ...q, timer: data.quiz.timer } : q));
-            setEditQuizId(null);
-            setEditTimer("");
-        } catch (err) {
-            setError(err.response?.data?.message || "Error updating quiz timer");
-        }
-    };
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setQuiz(null);
+    setLoading(true);
 
-    const handleDeleteQuiz = async () => {
-        setError(null);
-        try {
-            const config = {
-                headers: { Authorization: `Bearer ${user.token}` }
-            };
-            await axios.delete(`http://localhost:5000/api/quiz/${deleteQuizId}`, config);
-            setQuizzes(quizzes.filter(q => q._id !== deleteQuizId));
-            setOpenDeleteConfirm(false);
-            setDeleteQuizId(null);
-        } catch (err) {
-            setError(err.response?.data?.message || "Error deleting quiz");
-        }
-    };
+    try {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${user.token}`,
+                "Content-Type": "application/json"
+            }
+        };
+        const { data } = await axios.post(
+            "http://localhost:5000/api/quiz/generate",
+            { lessonName, classId, numberOfQuestions, timer },
+            config
+        );
 
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue);
-    };
+        setQuiz(data.quiz);
+        // Refresh quiz history
+        const { data: updatedQuizzes } = await axios.get("http://localhost:5000/api/quiz/teacher/history", config);
+        setQuizzes(updatedQuizzes);
+        setLessonName("");
+        setClassId("");
+        setNumberOfQuestions(10);
+        setTimer(30);
+    } catch (err) {
+        setError(err.response?.data?.message || "Error generating quiz");
+    } finally {
+        setLoading(false);
+    }
+};
 
-    return (
-        <Box sx={{ maxWidth: 800, mx: "auto", p: 3, mt: "50px" }}>
+const handleEditTimer = (quiz) => {
+    setEditQuizId(quiz._id);
+    setEditTimer(quiz.timer);
+};
+
+const handleSaveTimer = async () => {
+    setError(null);
+    try {
+        const config = {
+            headers: { Authorization: `Bearer ${user.token}` }
+        };
+        const { data } = await axios.put(
+            "http://localhost:5000/api/quiz/update-timer",
+            { quizId: editQuizId, timer: parseInt(editTimer) },
+            config
+        );
+        setQuizzes(quizzes.map(q => q._id === editQuizId ? { ...q, timer: data.quiz.timer } : q));
+        setEditQuizId(null);
+        setEditTimer("");
+    } catch (err) {
+        setError(err.response?.data?.message || "Error updating quiz timer");
+    }
+};
+
+const handleDeleteQuiz = async () => {
+    setError(null);
+    try {
+        const config = {
+            headers: { Authorization: `Bearer ${user.token}` }
+        };
+        await axios.delete(`http://localhost:5000/api/quiz/${deleteQuizId}`, config);
+        setQuizzes(quizzes.filter(q => q._id !== deleteQuizId));
+        setOpenDeleteConfirm(false);
+        setDeleteQuizId(null);
+    } catch (err) {
+        setError(err.response?.data?.message || "Error deleting quiz");
+    }
+};
+
+const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+};
+
+  return (
+    <div>
+      <StudentHeader 
+        isSidebarCollapsed={isSidebarCollapsed}
+        toggleSidebar={toggleSidebar}
+        isMobile={isMobile}
+      />
+      
+      <div className="flex min-h-screen">
+        <div
+          className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+            isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+          }`}
+        >
+          <StudentSidebar 
+            isCollapsed={isSidebarCollapsed} 
+            toggleSidebar={toggleSidebar} 
+          />
+        </div>
+
+        <div
+          className={`flex-1 transition-all duration-300 ${
+            isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+          }`}
+        >
+          <div
+            className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+              isSidebarCollapsed 
+                ? "ml-[60px] w-[calc(100%-60px)]" 
+                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+            }`}
+          >
+            {/* Breadcrumbs */}
+        <div
+          className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
+            isSidebarCollapsed
+              ? "ml-[60px] w-[calc(100%-60px)]"
+              : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+          }`}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <MuiLink component={Link} to="/student" underline="hover" color="inherit">
+              Student
+            </MuiLink>
+            {breadcrumbItems}
+          </Breadcrumbs>
+          </div></div>
+        
+          
+          <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+          <Box sx={{ maxWidth: 800, mx: "auto", p: 3, mt: "50px" }}>
             <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                 <Typography variant="h4" gutterBottom>Quiz Generator</Typography>
                 {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -352,7 +459,9 @@ const QuizGenerator = () => {
                 </DialogActions>
             </Dialog>
         </Box>
+        </div></div></div></div>
     );
 };
 
-export default QuizGenerator;
+export default QuizGenerator ;
+
