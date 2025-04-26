@@ -5,6 +5,7 @@ const generateToken = require("../config/jwt");
 const Notice = require("../models/Notice");
 const Class = require("../models/Class");
 const StudentSubscription = require("../models/StudentSubscription");
+const TeacherInstituteNotice = require("../models/TeacherInstituteNotice")
 
 const PasswordResetToken = require("../models/PasswordResetToken");
 const nodemailer = require("nodemailer");
@@ -522,6 +523,238 @@ exports.getNoticeById = async (req, res) => {
         res.status(200).json(notice);
     } catch (error) {
         console.error("Get notice by ID error:", error);
+        res.status(500).json({ message: "Error retrieving notice", error: error.message });
+    }
+};
+
+// Admin Notice Management (using TeacherInstituteNotice model)
+exports.createAdminNotice = async (req, res) => {
+    try {
+        const { title, description, date, recipients } = req.body;
+        const adminId = req.user.id;
+
+        // Validate input
+        if (!title || !description || !date || !recipients) {
+            return res.status(400).json({ message: "Title, description, date, and recipients are required" });
+        }
+
+        // Validate admin role
+        const user = await User.findById(adminId);
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can create notices for teachers and institutes" });
+        }
+
+        // Validate recipients
+        if (!["teachers", "institutes", "teachers_and_institutes"].includes(recipients)) {
+            return res.status(400).json({ message: "Invalid recipients value" });
+        }
+
+        // Create the notice
+        const notice = new TeacherInstituteNotice({
+            title,
+            description,
+            date,
+            adminId,
+            recipients,
+            readBy: []
+        });
+        await notice.save();
+
+        res.status(201).json({ message: "Notice created successfully", notice });
+    } catch (error) {
+        console.error("Create admin notice error:", error);
+        res.status(500).json({ message: "Error creating notice", error: error.message });
+    }
+};
+
+exports.getAdminNotices = async (req, res) => {
+    try {
+        const adminId = req.user.id;
+
+        // Validate admin role
+        const user = await User.findById(adminId);
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can view admin notices" });
+        }
+
+        const notices = await TeacherInstituteNotice.find({ adminId })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(notices);
+    } catch (error) {
+        console.error("Get admin notices error:", error);
+        res.status(500).json({ message: "Error retrieving notices", error: error.message });
+    }
+};
+
+exports.updateAdminNotice = async (req, res) => {
+    try {
+        const { noticeId, title, description, date, recipients } = req.body;
+        const adminId = req.user.id;
+
+        // Validate input
+        if (!noticeId || !title || !description || !date || !recipients) {
+            return res.status(400).json({ message: "Notice ID, title, description, date, and recipients are required" });
+        }
+
+        // Validate admin role
+        const user = await User.findById(adminId);
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can update admin notices" });
+        }
+
+        // Validate recipients
+        if (!["teachers", "institutes", "teachers_and_institutes"].includes(recipients)) {
+            return res.status(400).json({ message: "Invalid recipients value" });
+        }
+
+        // Find the notice and ensure it belongs to the admin
+        const notice = await TeacherInstituteNotice.findOne({ _id: noticeId, adminId });
+        if (!notice) {
+            return res.status(403).json({ message: "Notice not found or you are not the creator of this notice" });
+        }
+
+        // Update the notice
+        notice.title = title;
+        notice.description = description;
+        notice.date = date;
+        notice.recipients = recipients;
+        await notice.save();
+
+        res.status(200).json({ message: "Notice updated successfully", notice });
+    } catch (error) {
+        console.error("Update admin notice error:", error);
+        res.status(500).json({ message: "Error updating notice", error: error.message });
+    }
+};
+
+exports.deleteAdminNotice = async (req, res) => {
+    try {
+        const { noticeId } = req.params;
+        const adminId = req.user.id;
+
+        // Validate admin role
+        const user = await User.findById(adminId);
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can delete admin notices" });
+        }
+
+        // Find the notice and ensure it belongs to the admin
+        const notice = await TeacherInstituteNotice.findOne({ _id: noticeId, adminId });
+        if (!notice) {
+            return res.status(403).json({ message: "Notice not found or you are not the creator of this notice" });
+        }
+
+        // Delete the notice
+        await TeacherInstituteNotice.deleteOne({ _id: noticeId });
+
+        res.status(200).json({ message: "Notice deleted successfully" });
+    } catch (error) {
+        console.error("Delete admin notice error:", error);
+        res.status(500).json({ message: "Error deleting notice", error: error.message });
+    }
+};
+
+// Teacher/Institute Notice Viewing (using TeacherInstituteNotice model)
+exports.getAdminNoticesForUser = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+
+        if (!["teacher", "institute"].includes(user.role)) {
+            return res.status(403).json({ message: "Only teachers and institutes can view admin notices" });
+        }
+
+        // Find notices based on user role
+        const query = {
+            $or: [
+                { recipients: user.role === "teacher" ? "teachers" : "institutes" },
+                { recipients: "teachers_and_institutes" }
+            ]
+        };
+
+        const notices = await TeacherInstituteNotice.find(query)
+            .populate("adminId", "name")
+            .sort({ createdAt: -1 });
+
+        // Add unread flag for each notice
+        const noticesWithUnread = notices.map(notice => ({
+            ...notice.toObject(),
+            unread: !notice.readBy.includes(userId)
+        }));
+
+        res.status(200).json(noticesWithUnread);
+    } catch (error) {
+        console.error("Get admin notices for user error:", error);
+        res.status(500).json({ message: "Error retrieving notices", error: error.message });
+    }
+};
+
+exports.markAdminNoticeAsRead = async (req, res) => {
+    try {
+        const { noticeId } = req.params;
+        const userId = req.user.id;
+
+        // Find the notice
+        const notice = await TeacherInstituteNotice.findById(noticeId);
+        if (!notice) {
+            return res.status(404).json({ message: "Notice not found" });
+        }
+
+        // Validate user role and access
+        const user = await User.findById(userId);
+        if (!["teacher", "institute"].includes(user.role) || 
+            (notice.recipients === "teachers" && user.role !== "teacher") ||
+            (notice.recipients === "institutes" && user.role !== "institute")) {
+            return res.status(403).json({ message: "You do not have access to this notice" });
+        }
+
+        // Mark the notice as read by adding the user to readBy
+        if (!notice.readBy.includes(userId)) {
+            notice.readBy.push(userId);
+            await notice.save();
+        }
+
+        res.status(200).json({ message: "Notice marked as read" });
+    } catch (error) {
+        console.error("Mark admin notice as read error:", error);
+        res.status(500).json({ message: "Error marking notice as read", error: error.message });
+    }
+};
+
+exports.TeacherInstitutegetNoticeById = async (req, res) => {
+    try {
+        const { noticeId } = req.params;
+        const userId = req.user.id;
+
+        // Find the notice
+        const notice = await TeacherInstituteNotice.findById(noticeId)
+            .populate("adminId", "name");
+
+        if (!notice) {
+            return res.status(404).json({ message: "Notice not found" });
+        }
+
+        // Get the user's role
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Ensure the user is a teacher or institute
+        if (!["teacher", "institute"].includes(user.role)) {
+            return res.status(403).json({ message: "Only teachers and institutes can access admin notices" });
+        }
+
+        // Check access based on recipients
+        if ((notice.recipients === "teachers" && user.role !== "teacher") ||
+            (notice.recipients === "institutes" && user.role !== "institute")) {
+            return res.status(403).json({ message: "You do not have access to this notice" });
+        }
+
+        res.status(200).json(notice);
+    } catch (error) {
+        console.error("Teacher/Institute get notice by ID error:", error);
         res.status(500).json({ message: "Error retrieving notice", error: error.message });
     }
 };
