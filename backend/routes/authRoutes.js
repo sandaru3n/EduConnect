@@ -14,7 +14,9 @@ const { register, login, updateProfile, getProfile,requestPasswordReset,verifyRe
     deleteAdminNotice,
     getAdminNoticesForUser,
     markAdminNoticeAsRead,
-    TeacherInstitutegetNoticeById } = require("../controllers/authController");
+    TeacherInstitutegetNoticeById} = require("../controllers/authController");
+    const {getTeacherQuizAttempts} = require("../controllers/quizController");
+const { getSubscribedStudents } = require("../controllers/teacherReportController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
@@ -67,7 +69,7 @@ router.delete("/notices/:noticeId", authMiddleware, deleteNotice);
 router.get("/notices/student", authMiddleware, getStudentNotices);
 router.post("/notices/:noticeId/read", authMiddleware, markNoticeAsRead);
 router.get("/notices/:noticeId", authMiddleware, getNoticeById);
-
+router.get("/teacher/quiz-attempts", authMiddleware, getTeacherQuizAttempts);
 
 // Admin Notice Routes (using TeacherInstituteNotice model)
 router.post("/admin/notices", authMiddleware, createAdminNotice);
@@ -78,5 +80,8 @@ router.get("/admin/notices/user", authMiddleware, getAdminNoticesForUser);
 router.post("/admin/notices/:noticeId/read", authMiddleware, markAdminNoticeAsRead);
 router.get("/admin/notices/teacher-institute/:noticeId", authMiddleware, TeacherInstitutegetNoticeById);
 
+
+// Teacher Report Routes
+router.get("/teacher/subscribed-students", authMiddleware, getSubscribedStudents);
 
 module.exports = router;

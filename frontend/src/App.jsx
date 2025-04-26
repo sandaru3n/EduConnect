@@ -78,6 +78,8 @@ import TeacherNoticesView from "./features/dashboard/teacher/TeacherNoticesView"
 
 import InstituteNoticesView from "./features/dashboard/institute/InstituteNoticesView";
 
+import Report from "./features/dashboard/teacher/Report";
+
 function App() {
     return (
         <Router>
@@ -178,6 +180,8 @@ function App() {
 <Route path="/institute/notices/" element={<ProtectedRoute role="institute"><InstituteNoticesView  /> </ProtectedRoute>} />
 <Route path="/institute/notice/:noticeId" element={<ProtectedRoute role="institute"><InstituteNoticesView /></ProtectedRoute> }  />
 
+
+<Route path="/teacher/report" element={<ProtectedRoute role="teacher"> <Report /></ProtectedRoute>} />
 
 
 </Routes>
