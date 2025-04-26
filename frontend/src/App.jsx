@@ -73,6 +73,11 @@ import DoubtResolver from "./features/dashboard/student/DoubtResolver"
 import StudentNotices from "./features/dashboard/student/StudentNotices";
 import TeacherNotices from "./features/dashboard/teacher/TeacherNotices";
 
+import AdminNotices from "./features/dashboard/admin/AdminNotices";
+import TeacherNoticesView from "./features/dashboard/teacher/TeacherNoticesView";
+
+import InstituteNoticesView from "./features/dashboard/institute/InstituteNoticesView";
+
 function App() {
     return (
         <Router>
@@ -165,7 +170,17 @@ function App() {
 <Route path="/student/notice/:noticeId" element={<ProtectedRoute role="student"><StudentNotices /></ProtectedRoute>} />
 <Route path="/teacher/notices" element={<ProtectedRoute role="teacher"><TeacherNotices /></ProtectedRoute>} />
 
-            </Routes>
+<Route path="/admin/notices" element={<ProtectedRoute role="admin"><AdminNotices /></ProtectedRoute>}  />
+ {/* Teacher Routes */}
+<Route path="/teacher/noticesview" element={<ProtectedRoute role="teacher"><TeacherNoticesView /> </ProtectedRoute>} />
+<Route path="/teacher/noticesview/:noticeId" element={<ProtectedRoute role="teacher"><TeacherNoticesView /></ProtectedRoute> }  />
+
+<Route path="/institute/notices/" element={<ProtectedRoute role="institute"><InstituteNoticesView  /> </ProtectedRoute>} />
+<Route path="/institute/notice/:noticeId" element={<ProtectedRoute role="institute"><InstituteNoticesView /></ProtectedRoute> }  />
+
+
+
+</Routes>
         </Router>
 
 

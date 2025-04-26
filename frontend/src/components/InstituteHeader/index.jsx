@@ -24,7 +24,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     },
 }));
 
-const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
+const InstituteHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -56,7 +56,7 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
 
     const handleProfile = () => {
         handleCloseMyacc();
-        navigate("/admin/edit-profile");
+        navigate("/institute/edit-profile");
     };
 
     const handleLogoutClick = () => {
@@ -75,7 +75,7 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
                 notice._id === noticeId ? { ...notice, unread: false } : notice
             ));
             handleCloseNotif();
-            navigate(`/teacher/noticesview/${noticeId}`);
+            navigate(`/institute/notice/${noticeId}`);
         } catch (err) {
             console.error("Error marking notice as read:", err);
             setError(err.response?.data?.message || "Error viewing notice");
@@ -84,7 +84,7 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
 
     const handleSeeAllNotices = () => {
         handleCloseNotif();
-        navigate("/teacher/noticesview");
+        navigate("/institute/notices");
     };
 
     useEffect(() => {
@@ -300,10 +300,10 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
     );
 };
 
-TeacherHeader.propTypes = {
+InstituteHeader.propTypes = {
     isSidebarCollapsed: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     isMobile: PropTypes.bool.isRequired,
 };
 
-export default TeacherHeader;
+export default InstituteHeader;

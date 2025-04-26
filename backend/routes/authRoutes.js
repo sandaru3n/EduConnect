@@ -7,7 +7,14 @@ const { register, login, updateProfile, getProfile,requestPasswordReset,verifyRe
     deleteNotice,
     getStudentNotices,
     markNoticeAsRead,
-    getNoticeById } = require("../controllers/authController");
+    getNoticeById,
+    createAdminNotice,
+    getAdminNotices,
+    updateAdminNotice,
+    deleteAdminNotice,
+    getAdminNoticesForUser,
+    markAdminNoticeAsRead,
+    TeacherInstitutegetNoticeById } = require("../controllers/authController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
@@ -60,6 +67,16 @@ router.delete("/notices/:noticeId", authMiddleware, deleteNotice);
 router.get("/notices/student", authMiddleware, getStudentNotices);
 router.post("/notices/:noticeId/read", authMiddleware, markNoticeAsRead);
 router.get("/notices/:noticeId", authMiddleware, getNoticeById);
+
+
+// Admin Notice Routes (using TeacherInstituteNotice model)
+router.post("/admin/notices", authMiddleware, createAdminNotice);
+router.get("/admin/notices", authMiddleware, getAdminNotices);
+router.put("/admin/notices", authMiddleware, updateAdminNotice);
+router.delete("/admin/notices/:noticeId", authMiddleware, deleteAdminNotice);
+router.get("/admin/notices/user", authMiddleware, getAdminNoticesForUser);
+router.post("/admin/notices/:noticeId/read", authMiddleware, markAdminNoticeAsRead);
+router.get("/admin/notices/teacher-institute/:noticeId", authMiddleware, TeacherInstitutegetNoticeById);
 
 
 module.exports = router;
