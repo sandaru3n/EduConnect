@@ -1,5 +1,10 @@
 // frontend/src/features/dashboard/teacher/CreateClass.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
+import StudentSidebar from "../../../components/TeacherSidebar/index";
+import StudentHeader from "../../../components/TeacherHeader/index";
+
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -10,75 +15,176 @@ const CreateClass = () => {
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
     const navigate = useNavigate();
+  const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-    // Validation function
-    const validateForm = () => {
-        const errors = {};
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
 
-        // Subject validation
-        if (!subject.trim()) {
-            errors.subject = "Subject is required";
-        } else if (subject.length < 2) {
-            errors.subject = "Subject must be at least 2 characters long";
-        } else if (subject.length > 50) {
-            errors.subject = "Subject must be less than 50 characters";
-        }
+  // Validation function
+  const validateForm = () => {
+    const errors = {};
 
-        // Monthly fee validation
-        if (!monthlyFee) {
-            errors.monthlyFee = "Monthly fee is required";
-        } else if (isNaN(monthlyFee) || Number(monthlyFee) <= 0) {
-            errors.monthlyFee = "Monthly fee must be a positive number";
-        } else if (Number(monthlyFee) > 10000) {
-            errors.monthlyFee = "Monthly fee cannot exceed $10,000";
-        }
+    // Subject validation
+    if (!subject.trim()) {
+        errors.subject = "Subject is required";
+    } else if (subject.length < 2) {
+        errors.subject = "Subject must be at least 2 characters long";
+    } else if (subject.length > 50) {
+        errors.subject = "Subject must be less than 50 characters";
+    }
 
-        // Description validation (optional field)
-        if (description && description.length > 500) {
-            errors.description = "Description must be less than 500 characters";
-        }
+    // Monthly fee validation
+    if (!monthlyFee) {
+        errors.monthlyFee = "Monthly fee is required";
+    } else if (isNaN(monthlyFee) || Number(monthlyFee) <= 0) {
+        errors.monthlyFee = "Monthly fee must be a positive number";
+    } else if (Number(monthlyFee) > 10000) {
+        errors.monthlyFee = "Monthly fee cannot exceed $10,000";
+    }
 
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
+    // Description validation (optional field)
+    if (description && description.length > 500) {
+        errors.description = "Description must be less than 500 characters";
+    }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+};
+
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Run validation before submission
+    if (!validateForm()) {
+        return;
+    }
+
+    try {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const config = {
+            headers: {
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+        };
+
+        const classData = {
+            subject,
+            monthlyFee: Number(monthlyFee),
+            description,
+            teacherId: userInfo._id,
+        };
+
+        await axios.post(
+            "http://localhost:5000/api/teacher/classes",
+            classData,
+            config
+        );
         
-        // Run validation before submission
-        if (!validateForm()) {
-            return;
-        }
+        navigate("/teacher/dashboard");
+    } catch (error) {
+        setError(error.response?.data?.message || "Error creating class");
+    }
+};
 
-        try {
-            const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${userInfo.token}`,
-                },
-            };
-
-            const classData = {
-                subject,
-                monthlyFee: Number(monthlyFee),
-                description,
-                teacherId: userInfo._id,
-            };
-
-            await axios.post(
-                "http://localhost:5000/api/teacher/classes",
-                classData,
-                config
-            );
-            
-            navigate("/teacher/dashboard");
-        } catch (error) {
-            setError(error.response?.data?.message || "Error creating class");
-        }
+  useEffect(() => {
+    const handleResize = () => {
+      const mobileView = window.innerWidth <= 768;
+      setIsMobile(mobileView);
+      setIsSidebarCollapsed(mobileView); // Auto-collapse on mobile
     };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-gray-100 to-teal-50 flex items-center justify-center p-4">
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const pathnames = location.pathname.split("/").filter((x) => x);
+  const breadcrumbItems = pathnames.map((value, index) => {
+    const last = index === pathnames.length - 1;
+    const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+    const displayName = value.charAt(0).toUpperCase() + value.slice(1);
+
+    return last ? (
+      <Typography key={to} color="text.primary">
+        {displayName}
+      </Typography>
+    ) : (
+      <MuiLink
+        key={to}
+        component={Link}
+        to={to}
+        underline="hover"
+        color="inherit"
+      >
+        {displayName}
+      </MuiLink>
+    );
+  });
+
+  // Get the current page name for the tab title
+  const pageTitle = pathnames.length > 0 
+    ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1)
+    : "Dashboard"; // Default title if no pathnames
+
+  // Update document title when location changes
+  useEffect(() => {
+    document.title = `TeacherDashboard - EduConnect`; // You can customize the format
+  }, [location, pageTitle]);
+
+  return (
+    <div>
+      <StudentHeader 
+        isSidebarCollapsed={isSidebarCollapsed}
+        toggleSidebar={toggleSidebar}
+        isMobile={isMobile}
+      />
+      
+      <div className="flex min-h-screen">
+        <div
+          className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+            isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+          }`}
+        >
+          <StudentSidebar 
+            isCollapsed={isSidebarCollapsed} 
+            toggleSidebar={toggleSidebar} 
+          />
+        </div>
+
+        <div
+          className={`flex-1 transition-all duration-300 ${
+            isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+          }`}
+        >
+          <div
+            className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+              isSidebarCollapsed 
+                ? "ml-[60px] w-[calc(100%-60px)]" 
+                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+            }`}
+          >
+            {/* Breadcrumbs */}
+        <div
+          className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
+            isSidebarCollapsed
+              ? "ml-[60px] w-[calc(100%-60px)]"
+              : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+          }`}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <MuiLink component={Link} to="/student" underline="hover" color="inherit">
+              Student
+            </MuiLink>
+            {breadcrumbItems}
+          </Breadcrumbs>
+          </div></div>
+        
+          
+          <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+          <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-gray-100 to-teal-50 flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
                 <h2 className="text-3xl font-extrabold text-center text-indigo-700 mb-6 tracking-tight">
                     Create New Class
@@ -141,7 +247,11 @@ const CreateClass = () => {
                 </form>
             </div>
         </div>
-    );
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CreateClass;
