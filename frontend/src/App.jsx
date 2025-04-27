@@ -80,11 +80,27 @@ import InstituteNoticesView from "./features/dashboard/institute/InstituteNotice
 
 import Report from "./features/dashboard/teacher/Report";
 
+
+import TeacherSupportForm from "./features/dashboard/teacher/TeacherSupportForm";
+import AdminSupportTickets from "./features/dashboard/admin/AdminSupportTickets";
+import AdminSupportTicketDetails from "./features/dashboard/admin/AdminSupportTicketDetails";
+import AdminSupportCategories from "./features/dashboard/admin/AdminSupportCategories";
+import TeacherSupportTickets from "./features/dashboard/teacher/TeacherSupportTickets";
+
+import TeacherSupportTicketDetails from "./features/dashboard/teacher/TeacherSupportTicketDetails";
+
 function App() {
     return (
         <Router>
             <Routes>
-                
+
+            <Route path="/admin/support/tickets"  element={ <ProtectedRoute role="admin"><AdminSupportTickets /></ProtectedRoute>} />
+            <Route path="/admin/support/ticket/:ticketId" element={ <ProtectedRoute role="admin"><AdminSupportTicketDetails /></ProtectedRoute>} />
+            <Route path="/admin/support/categories" element={<ProtectedRoute role="admin"><AdminSupportCategories /></ProtectedRoute>} />
+            <Route path="/teacher/support-tickets" element={<ProtectedRoute role="teacher"><TeacherSupportTickets /></ProtectedRoute> } />
+            <Route  path="/teacher/support/ticket/:ticketId" element={<ProtectedRoute role="teacher"><TeacherSupportTicketDetails /> </ProtectedRoute>} />
+            <Route path="/teacher/support-form" element={<ProtectedRoute role="teacher"><TeacherSupportForm /></ProtectedRoute>} />
+                    
                 <Route path="/" element={<HomePage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/privacy-policy" element={<PageView />} />

@@ -17,6 +17,12 @@ const { register, login, updateProfile, getProfile,requestPasswordReset,verifyRe
     TeacherInstitutegetNoticeById} = require("../controllers/authController");
     const {getTeacherQuizAttempts} = require("../controllers/quizController");
 const { getSubscribedStudents } = require("../controllers/teacherReportController");
+
+const { 
+    submitSupportTicket,getSupportCategories,getSupportSubcategories,getAllSupportSubcategories,createSupportCategory,
+    createSupportSubcategory,deleteSupportCategory,deleteSupportSubcategory,getAllSupportTickets, getSupportTicketById,
+    updateSupportTicketStatus, deleteSupportTicket, getUserSupportTickets, getUserSupportTicketById, sendMessage
+} = require("../controllers/supportController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
@@ -83,5 +89,29 @@ router.get("/admin/notices/teacher-institute/:noticeId", authMiddleware, Teacher
 
 // Teacher Report Routes
 router.get("/teacher/subscribed-students", authMiddleware, getSubscribedStudents);
+
+
+// Support Ticket Routes
+router.post("/support/submit", authMiddleware, submitSupportTicket);
+router.get("/support/categories", authMiddleware, getSupportCategories);
+router.get("/support/subcategories/all", authMiddleware, getAllSupportSubcategories); // Moved before dynamic route
+router.get("/support/subcategories/:categoryId", authMiddleware, getSupportSubcategories);
+
+// Teacher/Institute Support Ticket Routes
+router.get("/support/tickets", authMiddleware, getUserSupportTickets);
+router.get("/support/ticket/:ticketId", authMiddleware, getUserSupportTicketById);
+router.post("/support/ticket/:ticketId/message", authMiddleware, sendMessage);
+
+// Admin Support Ticket Routes
+router.post("/admin/support/category", authMiddleware, createSupportCategory);
+router.post("/admin/support/subcategory", authMiddleware, createSupportSubcategory);
+router.delete("/admin/support/category/:categoryId", authMiddleware, deleteSupportCategory);
+router.delete("/admin/support/subcategory/:subcategoryId", authMiddleware, deleteSupportSubcategory);
+router.get("/admin/support/tickets", authMiddleware, getAllSupportTickets);
+router.get("/admin/support/ticket/:ticketId", authMiddleware, getSupportTicketById);
+router.put("/admin/support/ticket/:ticketId/status", authMiddleware, updateSupportTicketStatus);
+router.delete("/admin/support/ticket/:ticketId", authMiddleware, deleteSupportTicket);
+router.post("/admin/support/ticket/:ticketId/message", authMiddleware, sendMessage);
+
 
 module.exports = router;
