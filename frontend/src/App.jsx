@@ -86,13 +86,23 @@ import AdminSupportTickets from "./features/dashboard/admin/AdminSupportTickets"
 import AdminSupportTicketDetails from "./features/dashboard/admin/AdminSupportTicketDetails";
 import AdminSupportCategories from "./features/dashboard/admin/AdminSupportCategories";
 import TeacherSupportTickets from "./features/dashboard/teacher/TeacherSupportTickets";
-
 import TeacherSupportTicketDetails from "./features/dashboard/teacher/TeacherSupportTicketDetails";
+
+
+import InstituteSupportForm from "./features/dashboard/institute/InstituteSupportForm";
+import InstituteSupportTickets from "./features/dashboard/institute/InstituteSupportTickets";
+import InstituteSupportTicketDetails from "./features/dashboard/institute/InstituteSupportTicketDetails";
 
 function App() {
     return (
         <Router>
             <Routes>
+
+            <Route path="/institute/support-form" element={<ProtectedRoute role="institute"><InstituteSupportForm /></ProtectedRoute>} />
+            <Route path="/institute/support-tickets" element={<ProtectedRoute role="institute"><InstituteSupportTickets /></ProtectedRoute> } />
+            <Route  path="/institute/support/ticket/:ticketId" element={<ProtectedRoute role="institute"><InstituteSupportTicketDetails /> </ProtectedRoute>} />
+
+
 
             <Route path="/admin/support/tickets"  element={ <ProtectedRoute role="admin"><AdminSupportTickets /></ProtectedRoute>} />
             <Route path="/admin/support/ticket/:ticketId" element={ <ProtectedRoute role="admin"><AdminSupportTicketDetails /></ProtectedRoute>} />
