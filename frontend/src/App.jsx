@@ -26,7 +26,7 @@ import ManageLibrary from "./features/dashboard/admin/EBookUpload";
 
 
 import StudentLibrary from "./features/dashboard/student/eLibrary";
-import TeacherLibrary from "./features/dashboard/student/eLibrary";
+import TeacherLibrary from "./features/dashboard/teacher/eLibrary";
 import PaymentForm from "./features/dashboard/student/PaymentForm";
 import MyClasses from "./features/dashboard/student/MyClasses";
  
