@@ -93,10 +93,16 @@ import InstituteSupportForm from "./features/dashboard/institute/InstituteSuppor
 import InstituteSupportTickets from "./features/dashboard/institute/InstituteSupportTickets";
 import InstituteSupportTicketDetails from "./features/dashboard/institute/InstituteSupportTicketDetails";
 
+import FeeWaiverForm from "./features/dashboard/student/FeeWaiverForm";
+import FeeWaiverRequests from "./features/dashboard/teacher/FeeWaiverRequests";
+
 function App() {
     return (
         <Router>
             <Routes>
+
+            <Route path="/student/fee-waiver" element={<ProtectedRoute role="student"><FeeWaiverForm /></ProtectedRoute>} />
+            <Route path="/teacher/fee-waiver-requests" element={<ProtectedRoute role="teacher"><FeeWaiverRequests /></ProtectedRoute>} />
 
             <Route path="/institute/support-form" element={<ProtectedRoute role="institute"><InstituteSupportForm /></ProtectedRoute>} />
             <Route path="/institute/support-tickets" element={<ProtectedRoute role="institute"><InstituteSupportTickets /></ProtectedRoute> } />

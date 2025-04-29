@@ -1,17 +1,46 @@
 //backend/controllers/stusubscriptionController.js
 const StudentSubscription = require('../models/StudentSubscription');
 const Class = require('../models/Class');
+const FeeWaiver = require('../models/FeeWaiver');
 
 exports.getMyClasses = async (req, res) => {
-    try {
-        const StudentSubscriptions = await StudentSubscription.find({ userId: req.user.id, status: 'Active' });
-        const classIds = StudentSubscriptions.map(sub => sub.classId);
-        const classes = await Class.find({ _id: { $in: classIds } }).populate('teacherId', 'name');
-        res.status(200).json(classes);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching subscribed classes' });
-    }
+  try {
+      const userId = req.user.id;
+
+      // Fetch student's approved fee waiver (if any)
+      const feeWaiver = await FeeWaiver.findOne({ studentId: userId, status: "Approved" });
+
+      // Fetch active subscriptions
+      const studentSubscriptions = await StudentSubscription.find({ userId, status: 'Active' });
+      const classIds = studentSubscriptions.map(sub => sub.classId);
+
+      // Fetch classes with their subscription fees
+      const classes = await Class.find({ _id: { $in: classIds } }).populate('teacherId', 'name');
+
+      // Apply discount to class fees if fee waiver exists
+      const classesWithFees = classes.map(cls => {
+          const subscription = studentSubscriptions.find(sub => sub.classId.toString() === cls._id.toString());
+          let discountedFee = subscription.feePaid; // Use the fee paid at subscription time
+          const originalFee = cls.monthlyFee; // Original fee from Class model
+
+          if (feeWaiver && feeWaiver.discountPercentage > 0) {
+              // Recalculate the discounted fee for display purposes
+              discountedFee = originalFee * (1 - feeWaiver.discountPercentage / 100);
+          }
+
+          return {
+              ...cls._doc,
+              originalFee,
+              discountedFee: Math.round(discountedFee),
+              subscriptionFeePaid: subscription.feePaid // Fee paid at the time of subscription
+          };
+      });
+
+      res.status(200).json(classesWithFees);
+  } catch (error) {
+      console.error("Get my classes error:", error);
+      res.status(500).json({ message: "Error fetching subscribed classes", error: error.message });
+  }
 };
 
 exports.getPaymentHistory = async (req, res) => {
@@ -39,17 +68,3 @@ exports.getPaymentHistory = async (req, res) => {
   };
 
 //
-exports.getMyClasses = async (req, res) => {
-    try {
-        const studentSubscriptions = await StudentSubscription.find({ 
-            userId: req.user.id, 
-            status: 'Active' // Only return active subscriptions
-        });
-        const classIds = studentSubscriptions.map(sub => sub.classId);
-        const classes = await Class.find({ _id: { $in: classIds } }).populate('teacherId', 'name');
-        res.status(200).json(classes);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching subscribed classes' });
-    }
-};
