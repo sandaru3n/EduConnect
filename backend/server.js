@@ -51,6 +51,8 @@ app.use('/api/faqs', faqRoutes);
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploads/covers')));
 
+app.use('/uploads/documents', express.static(path.join(__dirname, 'src/public/uploads/documents')));
+
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'src/public/uploads')));
 

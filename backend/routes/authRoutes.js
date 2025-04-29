@@ -18,16 +18,20 @@ const { register, login, updateProfile, getProfile,requestPasswordReset,verifyRe
     const {getTeacherQuizAttempts} = require("../controllers/quizController");
 const { getSubscribedStudents } = require("../controllers/teacherReportController");
 
+
 const { 
     submitSupportTicket,getSupportCategories,getSupportSubcategories,getAllSupportSubcategories,createSupportCategory,
     createSupportSubcategory,deleteSupportCategory,deleteSupportSubcategory,getAllSupportTickets, getSupportTicketById,
-    updateSupportTicketStatus, deleteSupportTicket, getUserSupportTickets, getUserSupportTicketById, sendMessage
+    updateSupportTicketStatus, deleteSupportTicket, getUserSupportTickets, getUserSupportTicketById, sendMessage,submitFeeWaiver,
+    getFeeWaiverRequests,
+    updateFeeWaiverStatus
 } = require("../controllers/supportController");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 
 // Configure multer for profile picture uploads
@@ -52,6 +56,35 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
     storage,
     fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+
+// Configure multer for fee waiver document uploads
+const documentStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, "../src/public/uploads/documents");
+        fs.mkdirSync(uploadPath, { recursive: true });
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const filename = `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`;
+        cb(null, filename);
+    }
+});
+
+const documentFileFilter = (req, file, cb) => {
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only PDF, JPEG, and PNG files are allowed"), false);
+    }
+};
+
+const documentUpload = multer({
+    storage: documentStorage,
+    fileFilter: documentFileFilter,
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
@@ -112,6 +145,12 @@ router.get("/admin/support/ticket/:ticketId", authMiddleware, getSupportTicketBy
 router.put("/admin/support/ticket/:ticketId/status", authMiddleware, updateSupportTicketStatus);
 router.delete("/admin/support/ticket/:ticketId", authMiddleware, deleteSupportTicket);
 router.post("/admin/support/ticket/:ticketId/message", authMiddleware, sendMessage);
+
+
+// Fee Waiver Routes
+router.post("/support/fee-waiver", authMiddleware, documentUpload.single("document"), submitFeeWaiver);
+router.get("/teacher/fee-waiver-requests", authMiddleware, getFeeWaiverRequests);
+router.put("/teacher/fee-waiver/:feeWaiverId/status", authMiddleware, updateFeeWaiverStatus);
 
 
 module.exports = router;

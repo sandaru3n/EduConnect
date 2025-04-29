@@ -1,8 +1,10 @@
 const SupportCategory = require("../models/SupportCategory");
 const SupportSubcategory = require("../models/SupportSubcategory");
 const SupportTicket = require("../models/SupportTicket");
+const FeeWaiver = require("../models/FeeWaiver");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const path = require("path"); // Ensure this import is present
 
 // Submit a support ticket (for any authenticated user)
 exports.submitSupportTicket = async (req, res) => {
@@ -342,4 +344,87 @@ exports.sendMessage = async (req, res) => {
         res.status(500).json({ message: "Error sending message", error: error.message });
     }
 };
+
+// Submit a fee waiver application (for any authenticated user)
+exports.submitFeeWaiver = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const userId = req.user.id;
+        const documentPath = req.file ? `/uploads/documents/${path.basename(req.file.path)}` : undefined;
+
+        if (!reason) {
+            return res.status(400).json({ message: "Reason for financial hardship is required" });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const feeWaiver = new FeeWaiver({
+            studentId: userId,
+            reason,
+            documentPath
+        });
+        await feeWaiver.save();
+
+        res.status(201).json({ message: "Fee waiver application submitted successfully", feeWaiver });
+    } catch (error) {
+        console.error("Submit fee waiver error:", error);
+        res.status(500).json({ message: "Error submitting fee waiver application", error: error.message });
+    }
+};
+
+// Fetch all fee waiver requests (for any authenticated user)
+exports.getFeeWaiverRequests = async (req, res) => {
+    try {
+        const feeWaivers = await FeeWaiver.find()
+            .populate("studentId", "name email")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(feeWaivers);
+    } catch (error) {
+        console.error("Get fee waiver requests error:", error);
+        res.status(500).json({ message: "Error retrieving fee waiver requests", error: error.message });
+    }
+};
+
+// Update fee waiver request status (for any authenticated user)
+exports.updateFeeWaiverStatus = async (req, res) => {
+    try {
+        const { feeWaiverId } = req.params;
+        const { status, teacherComments, discountPercentage } = req.body;
+
+        if (!["Approved", "Rejected"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status value. Must be 'Approved' or 'Rejected'" });
+        }
+
+        if (status === "Approved" && (!discountPercentage || discountPercentage < 0 || discountPercentage > 100)) {
+            return res.status(400).json({ message: "Discount percentage must be between 0 and 100 when approving" });
+        }
+
+        const feeWaiver = await FeeWaiver.findById(feeWaiverId);
+        if (!feeWaiver) {
+            return res.status(404).json({ message: "Fee waiver request not found" });
+        }
+
+        if (feeWaiver.status !== "Pending") {
+            return res.status(400).json({ message: "This fee waiver request has already been processed" });
+        }
+
+        feeWaiver.status = status;
+        feeWaiver.teacherComments = teacherComments || "";
+        if (status === "Approved") {
+            feeWaiver.discountPercentage = discountPercentage || 0;
+        }
+        feeWaiver.updatedAt = new Date();
+        await feeWaiver.save();
+
+        res.status(200).json({ message: "Fee waiver request updated successfully", feeWaiver });
+    } catch (error) {
+        console.error("Update fee waiver status error:", error);
+        res.status(500).json({ message: "Error updating fee waiver status", error: error.message });
+    }
+};
+
 module.exports = exports;

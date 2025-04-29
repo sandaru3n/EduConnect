@@ -5,12 +5,13 @@ const User = require("../models/User");
 const Subscription = require("../models/Subscription");
 const StudyPack = require('../models/StudyPack'); // Add this line
 const StudyPackSubscription = require('../models/StudyPackSubscription'); // Add this line
+const FeeWaiver = require('../models/FeeWaiver');
 const mongoose = require('mongoose'); // Ensure this line is present
 const sendEmail = require('../config/email');
 
 exports.subscribeToClass = async (req, res) => {
   const { classId, cardNumber, expiryDate, cvv } = req.body;
-  const userId = req.user.id; // From authMiddleware
+  const userId = req.user.id;
 
   // Custom card validation
   if (!validateCard(cardNumber, expiryDate, cvv)) {
@@ -18,7 +19,7 @@ exports.subscribeToClass = async (req, res) => {
   }
 
   // Simulate payment processing
-  const paymentSuccess = processPayment(cardNumber); // Simulated for now
+  const paymentSuccess = processPayment(cardNumber);
   if (!paymentSuccess) {
       return res.status(500).json({ message: 'Payment processing failed' });
   }
@@ -34,24 +35,41 @@ exports.subscribeToClass = async (req, res) => {
           return res.status(404).json({ message: 'User not found' });
       }
 
+      // Fetch student's approved fee waiver (if any)
+      const feeWaiver = await FeeWaiver.findOne({ studentId: userId, status: "Approved" });
+
+      // Calculate discounted fee
+      let finalFee = classData.monthlyFee;
+      let discountPercentage = 0;
+      if (feeWaiver && feeWaiver.discountPercentage > 0) {
+          discountPercentage = feeWaiver.discountPercentage;
+          finalFee = classData.monthlyFee * (1 - discountPercentage / 100);
+      }
+
       let subscription = await StudentSubscription.findOne({ userId, classId });
       if (subscription) {
           // If subscription exists (inactive), reactivate it
           if (subscription.status === 'Inactive') {
               subscription.status = 'Active';
-              subscription.feePaid = classData.monthlyFee;
-              subscription.createdAt = new Date(); // Update payment date
+              subscription.feePaid = Math.round(finalFee); // Apply discount to reactivated subscription
+              subscription.createdAt = new Date();
               await subscription.save();
 
               // Send reactivation email
               await sendEmail(
                   user.email,
                   'Class Subscription Reactivated',
-                  `Hello ${user.name},\n\nYour subscription to the class "${classData.subject}" taught by ${classData.teacherId.name} has been successfully reactivated. The monthly fee of $${classData.monthlyFee} has been paid.\n\nHappy Learning!\nEduConnect Team`,
-                  `<h2>Class Subscription Reactivated</h2><p>Hello ${user.name},</p><p>Your subscription to the class "<strong>${classData.subject}</strong>" taught by <strong>${classData.teacherId.name}</strong> has been successfully reactivated. The monthly fee of <strong>$${classData.monthlyFee}</strong> has been paid.</p><p>Happy Learning!<br>EduConnect Team</p>`
+                  `Hello ${user.name},\n\nYour subscription to the class "${classData.subject}" taught by ${classData.teacherId.name} has been successfully reactivated. The monthly fee of $${classData.monthlyFee} has been reduced to $${Math.round(finalFee)} due to a ${discountPercentage}% fee waiver.\n\nHappy Learning!\nEduConnect Team`,
+                  `<h2>Class Subscription Reactivated</h2><p>Hello ${user.name},</p><p>Your subscription to the class "<strong>${classData.subject}</strong>" taught by <strong>${classData.teacherId.name}</strong> has been successfully reactivated. The monthly fee of <strong>$${classData.monthlyFee}</strong> has been reduced to <strong>$${Math.round(finalFee)}</strong> due to a <strong>${discountPercentage}%</strong> fee waiver.</p><p>Happy Learning!<br>EduConnect Team</p>`
               );
 
-              return res.status(200).json({ message: 'Subscription reactivated successfully', subscriptionId: subscription._id });
+              return res.status(200).json({ 
+                  message: 'Subscription reactivated successfully', 
+                  subscriptionId: subscription._id,
+                  originalFee: classData.monthlyFee,
+                  finalFee: Math.round(finalFee),
+                  discountPercentage
+              });
           } else {
               return res.status(400).json({ message: 'Already subscribed to this class' });
           }
@@ -61,7 +79,7 @@ exports.subscribeToClass = async (req, res) => {
       subscription = new StudentSubscription({
           userId,
           classId,
-          feePaid: classData.monthlyFee,
+          feePaid: Math.round(finalFee), // Apply discount to new subscription
       });
       await subscription.save();
 
@@ -69,13 +87,19 @@ exports.subscribeToClass = async (req, res) => {
       await sendEmail(
           user.email,
           'Class Subscription Confirmation',
-          `Hello ${user.name},\n\nYou have successfully subscribed to the class "${classData.subject}" taught by ${classData.teacherId.name}. The monthly fee of $${classData.monthlyFee} has been paid.\n\nHappy Learning!\nEduConnect Team`,
-          `<h2>Class Subscription Confirmation</h2><p>Hello ${user.name},</p><p>You have successfully subscribed to the class "<strong>${classData.subject}</strong>" taught by <strong>${classData.teacherId.name}</strong>. The monthly fee of <strong>$${classData.monthlyFee}</strong> has been paid.</p><p>Happy Learning!<br>EduConnect Team</p>`
+          `Hello ${user.name},\n\nYou have successfully subscribed to the class "${classData.subject}" taught by ${classData.teacherId.name}. The monthly fee of $${classData.monthlyFee} has been reduced to $${Math.round(finalFee)} due to a ${discountPercentage}% fee waiver.\n\nHappy Learning!\nEduConnect Team`,
+          `<h2>Class Subscription Confirmation</h2><p>Hello ${user.name},</p><p>You have successfully subscribed to the class "<strong>${classData.subject}</strong>" taught by <strong>${classData.teacherId.name}</strong>. The monthly fee of <strong>$${classData.monthlyFee}</strong> has been reduced to <strong>$${Math.round(finalFee)}</strong> due to a <strong>${discountPercentage}%</strong> fee waiver.</p><p>Happy Learning!<br>EduConnect Team</p>`
       );
 
-      res.status(201).json({ message: 'Subscription successful', subscriptionId: subscription._id });
+      res.status(201).json({ 
+          message: 'Subscription successful', 
+          subscriptionId: subscription._id,
+          originalFee: classData.monthlyFee,
+          finalFee: Math.round(finalFee),
+          discountPercentage
+      });
   } catch (error) {
-      console.error(error);
+      console.error("Subscribe to class error:", error);
       res.status(500).json({ message: 'Error processing subscription', error: error.message });
   }
 };
