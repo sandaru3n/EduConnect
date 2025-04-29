@@ -4,6 +4,11 @@ const Quiz = require("../models/Quiz");
 const QuizAttempt = require("../models/QuizAttempt");
 const Class = require("../models/Class");
 const StudentSubscription = require("../models/StudentSubscription");
+const User = require("../models/User"); // Add this import
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 exports.generateMCQs = async (req, res) => {
     try {
@@ -440,4 +445,145 @@ exports.getTeacherQuizAttempts = async (req, res) => {
     }
 };
 
+
+// Generate personalized learning path for a student
+exports.generatePersonalizedLearningPath = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        // Validate student role
+        const user = await User.findById(studentId);
+        if (!user || user.role !== "student") {
+            return res.status(403).json({ message: "Only students can access personalized learning paths" });
+        }
+
+        // Fetch student's quiz attempts
+        const quizAttempts = await QuizAttempt.find({ studentId })
+            .populate("quizId", "lessonName classId")
+            .populate({
+                path: "quizId",
+                populate: { path: "classId", select: "subject" }
+            });
+
+        if (!quizAttempts || quizAttempts.length === 0) {
+            return res.status(404).json({ message: "No quiz attempts found for this student" });
+        }
+
+        // Analyze performance
+        let totalMarks = 0;
+        let totalPossibleMarks = 0;
+        const topicPerformance = {};
+
+        for (const attempt of quizAttempts) {
+            const quiz = attempt.quizId;
+            const totalQuestions = quiz.questions.length;
+            totalMarks += attempt.marks;
+            totalPossibleMarks += totalQuestions;
+
+            // Analyze performance by topic (lessonName)
+            const topic = quiz.lessonName;
+            if (!topicPerformance[topic]) {
+                topicPerformance[topic] = { correct: 0, total: 0, subject: quiz.classId.subject };
+            }
+            attempt.answers.forEach(answer => {
+                topicPerformance[topic].total += 1;
+                if (answer.isCorrect) {
+                    topicPerformance[topic].correct += 1;
+                }
+            });
+        }
+
+        // Calculate overall performance and topic-wise performance
+        const overallPercentage = (totalMarks / totalPossibleMarks) * 100;
+        const weakTopics = [];
+        const topicDetails = Object.keys(topicPerformance).map(topic => {
+            const perf = topicPerformance[topic];
+            const percentage = (perf.correct / perf.total) * 100;
+            if (percentage < 60) {
+                weakTopics.push({ topic, subject: perf.subject, percentage });
+            }
+            return {
+                topic,
+                subject: perf.subject,
+                correct: perf.correct,
+                total: perf.total,
+                percentage: percentage.toFixed(2)
+            };
+        });
+
+        // Prepare data for Gemini
+        const performanceSummary = `
+Student Performance Summary:
+- Overall Score: ${overallPercentage.toFixed(2)}%
+- Total Quizzes Attempted: ${quizAttempts.length}
+- Topic-wise Performance:
+${topicDetails.map(t => `  - ${t.topic} (${t.subject}): ${t.percentage}% (${t.correct}/${t.total})`).join("\n")}
+
+Weak Topics (below 60%):
+${weakTopics.map(t => `  - ${t.topic} (${t.subject}): ${t.percentage}%`).join("\n") || "None"}
+        `;
+
+        // Generate prompt for Gemini
+        const prompt = `
+You are an expert academic tutor specializing in personalized education. Based on the following student performance data, generate a personalized learning path to help the student improve. The learning path should include:
+
+- A brief summary of the student's strengths and weaknesses.
+- A list of specific topics to focus on (prioritize weak topics with scores below 60%).
+- For each topic, recommend specific study resources (e.g., videos, articles, practice problems) and strategies to improve.
+- Provide motivational advice to encourage the student.
+
+Student Data:
+${performanceSummary}
+
+Return the response in the following JSON format:
+{
+  "summary": "Brief summary of strengths and weaknesses",
+  "focusAreas": [
+    {
+      "topic": "Topic name",
+      "subject": "Subject name",
+      "percentage": "Score percentage",
+      "recommendations": [
+        "Resource 1 (e.g., Video: Introduction to Topic)",
+        "Resource 2 (e.g., Practice: Topic Basics)",
+        "Strategy: Specific study tip"
+      ]
+    }
+  ],
+  "motivation": "Motivational message"
+}
+
+Ensure recommendations are practical, specific, and appropriate for high school students.
+        `;
+
+        // Call Gemini API
+        const result = await model.generateContent(prompt);
+        let responseText = await result.response.text();
+        console.log("Gemini Response for Learning Path:", responseText);
+
+        // Clean the response by removing markdown code block markers
+        responseText = responseText.replace(/```json\n?/, '').replace(/\n?```/, '').trim();
+
+        // Parse Gemini response
+        let learningPath;
+        try {
+            learningPath = JSON.parse(responseText);
+        } catch (error) {
+            console.error("Error parsing Gemini response:", error);
+            return res.status(500).json({ message: "Error parsing learning path from Gemini response" });
+        }
+
+        res.status(200).json({
+            message: "Personalized learning path generated successfully",
+            learningPath: {
+                summary: learningPath.summary,
+                focusAreas: learningPath.focusAreas,
+                motivation: learningPath.motivation
+            }
+        });
+    } catch (error) {
+        console.error("Generate personalized learning path error:", error);
+        res.status(500).json({ message: "Error generating personalized learning path", error: error.message });
+    }
+};
 module.exports = exports;

@@ -96,10 +96,14 @@ import InstituteSupportTicketDetails from "./features/dashboard/institute/Instit
 import FeeWaiverForm from "./features/dashboard/student/FeeWaiverForm";
 import FeeWaiverRequests from "./features/dashboard/teacher/FeeWaiverRequests";
 
+import PersonalizedPath from "./features/dashboard/student/PersonalizedPath";
+
 function App() {
     return (
         <Router>
             <Routes>
+
+            <Route path="/student/personalied-path" element={<ProtectedRoute role="student"><PersonalizedPath /></ProtectedRoute>} />
 
             <Route path="/student/fee-waiver" element={<ProtectedRoute role="student"><FeeWaiverForm /></ProtectedRoute>} />
             <Route path="/teacher/fee-waiver-requests" element={<ProtectedRoute role="teacher"><FeeWaiverRequests /></ProtectedRoute>} />
