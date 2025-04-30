@@ -1,10 +1,170 @@
 //backend/controllers/classController.js
+const mongoose = require("mongoose"); // Add this import
 const Class = require('../models/Class');
 const ClassMaterial = require('../models/ClassMaterial');
 const User = require('../models/User');
 const path = require('path');
 const fs = require('fs');
 const sendEmail = require('../config/email');
+
+// Create a new class (for teachers)
+exports.createClass = async (req, res) => {
+    try {
+        const { subject, monthlyFee, description } = req.body;
+        const teacherId = req.user.id;
+
+        // Validate input
+        if (!subject || !monthlyFee) {
+            return res.status(400).json({ message: "Subject and monthly fee are required" });
+        }
+
+        // Validate monthly fee as a positive number
+        const fee = Number(monthlyFee);
+        if (isNaN(fee) || fee <= 0) {
+            return res.status(400).json({ message: "Monthly fee must be a positive number" });
+        }
+
+        // Validate teacher role
+        const user = await User.findById(teacherId);
+        if (!user || user.role !== "teacher") {
+            return res.status(403).json({ message: "Only teachers can create classes" });
+        }
+
+        // Handle cover photo upload
+        let coverPhotoPath = null;
+        if (req.files && req.files.coverPhoto) {
+            const coverPhoto = req.files.coverPhoto[0];
+            const allowedTypes = ['image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(coverPhoto.mimetype)) {
+                return res.status(400).json({ message: "Cover photo must be a JPEG or PNG file" });
+            }
+            coverPhotoPath = `/uploads/cover-photos/${coverPhoto.filename}`;
+        }
+
+        // Create the class
+        const newClass = new Class({
+            subject,
+            monthlyFee: fee,
+            description,
+            teacherId,
+            coverPhoto: coverPhotoPath,
+            isActive: true
+        });
+        await newClass.save();
+
+        // Send email notification to the teacher
+        const subjectLine = "New Class Created Successfully";
+        const text = `Hello ${user.name},\n\nYour class "${subject}" has been created successfully. Monthly Fee: LKR ${monthlyFee}.\n\nEduConnect Team`;
+        const html = `
+            <h2>New Class Created</h2>
+            <p>Hello ${user.name},</p>
+            <p>Your class "<strong>${subject}</strong>" has been created successfully.</p>
+            <p>Monthly Fee: <strong>LKR ${monthlyFee}</strong></p>
+            <p>EduConnect Team</p>
+        `;
+        await sendEmail(user.email, subjectLine, text, html);
+
+        res.status(201).json({ message: "Class created successfully", class: newClass });
+    } catch (error) {
+        console.error("Create class error:", error);
+        res.status(500).json({ message: "Error creating class", error: error.message });
+    }
+};
+
+// Update an existing class (for teachers)
+exports.updateClass = async (req, res) => {
+    try {
+        const { classId } = req.params;
+        const { subject, monthlyFee, description } = req.body;
+        const teacherId = req.user.id;
+
+        // Validate class ID
+        if (!mongoose.Types.ObjectId.isValid(classId)) {
+            return res.status(400).json({ message: "Invalid class ID" });
+        }
+
+        // Find the class and ensure it belongs to the teacher
+        const classItem = await Class.findById(classId);
+        if (!classItem) {
+            return res.status(404).json({ message: "Class not found" });
+        }
+        if (classItem.teacherId.toString() !== teacherId) {
+            return res.status(403).json({ message: "Not authorized to update this class" });
+        }
+
+        // Validate teacher role
+        const user = await User.findById(teacherId);
+        if (!user || user.role !== "teacher") {
+            return res.status(403).json({ message: "Only teachers can update classes" });
+        }
+
+        // Update fields if provided
+        if (subject) {
+            if (!subject.trim() || subject.length < 2 || subject.length > 50) {
+                return res.status(400).json({ message: "Subject must be between 2 and 50 characters" });
+            }
+            classItem.subject = subject;
+        }
+
+        if (monthlyFee) {
+            const fee = Number(monthlyFee);
+            if (isNaN(fee) || fee <= 0) {
+                return res.status(400).json({ message: "Monthly fee must be a positive number" });
+            }
+            if (fee > 10000) {
+                return res.status(400).json({ message: "Monthly fee cannot exceed LKR 10,000" });
+            }
+            classItem.monthlyFee = fee;
+        }
+
+        if (description) {
+            if (description.length > 500) {
+                return res.status(400).json({ message: "Description must be less than 500 characters" });
+            }
+            classItem.description = description;
+        }
+
+        // Handle cover photo update
+        if (req.files && req.files.coverPhoto) {
+            const coverPhoto = req.files.coverPhoto[0];
+            const allowedTypes = ['image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(coverPhoto.mimetype)) {
+                return res.status(400).json({ message: "Cover photo must be a JPEG or PNG file" });
+            }
+
+            // Delete the old cover photo if it exists
+            if (classItem.coverPhoto) {
+                const oldPhotoPath = path.join(__dirname, '../src/public', classItem.coverPhoto);
+                if (fs.existsSync(oldPhotoPath)) {
+                    fs.unlinkSync(oldPhotoPath);
+                }
+            }
+
+            // Set the new cover photo path
+            classItem.coverPhoto = `/uploads/cover-photos/${coverPhoto.filename}`;
+        }
+
+        // Save the updated class to the database
+        await classItem.save();
+
+        // Send email notification to the teacher
+        const subjectLine = "Class Updated Successfully";
+        const text = `Hello ${user.name},\n\nYour class "${classItem.subject}" has been updated successfully. Monthly Fee: LKR ${classItem.monthlyFee}.\n\nEduConnect Team`;
+        const html = `
+            <h2>Class Updated</h2>
+            <p>Hello ${user.name},</p>
+            <p>Your class "<strong>${classItem.subject}</strong>" has been updated successfully.</p>
+            <p>Monthly Fee: <strong>LKR ${classItem.monthlyFee}</strong></p>
+            <p>EduConnect Team</p>
+        `;
+        await sendEmail(user.email, subjectLine, text, html);
+
+        res.status(200).json({ message: "Class updated successfully", class: classItem });
+    } catch (error) {
+        console.error("Update class error:", error);
+        res.status(500).json({ message: "Error updating class", error: error.message });
+    }
+};
 
 exports.getActiveClasses = async (req, res) => {
     try {
