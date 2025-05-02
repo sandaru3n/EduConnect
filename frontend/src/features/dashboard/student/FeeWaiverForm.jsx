@@ -1,18 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Document, Page, pdfjs } from "react-pdf";
-import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    Paper,
-    Alert,
-    CircularProgress,
-    IconButton
-} from "@mui/material";
-import { Clear as ClearIcon } from "@mui/icons-material";
+import { HiDocumentText, HiCheckCircle, HiXCircle, HiClock, HiPaperClip } from "react-icons/hi";
+import ClearIcon from '@mui/icons-material/Clear';
 import useAuth from "../../../hooks/useAuth";
 
 // Set up the PDF.js worker
@@ -20,7 +10,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 const FeeWaiverForm = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [reason, setReason] = useState("");
     const [document, setDocument] = useState(null);
     const [documentPreviewUrl, setDocumentPreviewUrl] = useState(null);
@@ -30,6 +19,30 @@ const FeeWaiverForm = () => {
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [imageError, setImageError] = useState(null);
+    const [feeWaivers, setFeeWaivers] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
+    const [historyError, setHistoryError] = useState(null);
+
+    // Fetch fee waiver history on mount
+    useEffect(() => {
+        const fetchFeeWaiverHistory = async () => {
+            setHistoryLoading(true);
+            try {
+                const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+                if (!userInfo || !userInfo.token) {
+                    throw new Error("User not authenticated");
+                }
+                const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+                const { data } = await axios.get("http://localhost:5000/api/auth/support/fee-waiver/history", config);
+                setFeeWaivers(data);
+                setHistoryLoading(false);
+            } catch (err) {
+                setHistoryError(err.response?.data?.message || "Failed to fetch fee waiver history");
+                setHistoryLoading(false);
+            }
+        };
+        fetchFeeWaiverHistory();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,7 +71,10 @@ const FeeWaiverForm = () => {
             setNumPages(null);
             setPageNumber(1);
             setImageError(null);
-            setTimeout(() => navigate(`/student/dashboard`), 2000);
+            // Refresh fee waiver history
+            const { data: updatedHistory } = await axios.get("http://localhost:5000/api/auth/support/fee-waiver/history", config);
+            setFeeWaivers(updatedHistory);
+            //
         } catch (err) {
             setError(err.response?.data?.message || "Error submitting fee waiver application");
         } finally {
@@ -71,7 +87,6 @@ const FeeWaiverForm = () => {
         setDocument(file);
         setImageError(null);
         if (file) {
-            // Create a temporary URL for previewing the file
             const url = URL.createObjectURL(file);
             console.log("Preview URL for document:", url);
             setDocumentPreviewUrl(url);
@@ -118,108 +133,234 @@ const FeeWaiverForm = () => {
         return ['jpg', 'jpeg', 'png'].includes(extension) ? 'image' : extension === 'pdf' ? 'pdf' : null;
     };
 
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "Approved":
+                return <HiCheckCircle className="w-5 h-5 text-green-600" />;
+            case "Rejected":
+                return <HiXCircle className="w-5 h-5 text-red-600" />;
+            case "Pending":
+            default:
+                return <HiClock className="w-5 h-5 text-yellow-600" />;
+        }
+    };
+
     return (
-        <Box sx={{ maxWidth: 800, mx: "auto", p: 3, mt: "50px" }}>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                <Typography variant="h4" gutterBottom>Apply for Fee Waiver</Typography>
-                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-                {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-                <form onSubmit={handleSubmit}>
-                    <TextField
-                        fullWidth
-                        label="Reason for Financial Hardship"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        variant="outlined"
-                        multiline
-                        rows={4}
-                        sx={{ mb: 2 }}
-                        required
-                    />
-                    <Typography variant="body1" sx={{ mb: 1 }}>
-                        Upload Supporting Document (PDF, JPEG, PNG, max 5MB)
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                        <input
-                            type="file"
-                            accept=".pdf,.jpeg,.jpg,.png"
-                            onChange={handleFileChange}
-                            style={{ marginRight: "16px" }}
-                        />
-                        {document && (
-                            <IconButton onClick={handleRemoveDocument} color="error">
-                                <ClearIcon />
-                            </IconButton>
+        <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+            <div className="flex flex-col lg:flex-row gap-6">
+                {/* Apply for Fee Waiver - Sticky Left Side */}
+                <div className="lg:w-3/5">
+                    <div className="sticky top-6 bg-white rounded-xl shadow-md border border-blue-100 p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <HiDocumentText className="w-10 h-10 text-blue-900" />
+                            <h2 className="text-4xl font-bold text-blue-900">Apply for Fee Waiver</h2>
+                        </div>
+                        {error && (
+                            <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                                {error}
+                            </div>
                         )}
-                    </Box>
-                    {documentPreviewUrl && (
-                        <Box sx={{ mb: 2, textAlign: "center" }}>
-                            <Typography variant="body1" sx={{ mb: 1 }}>
-                                Document Preview:
-                            </Typography>
-                            {getFileType(document) === "pdf" ? (
-                                <Box>
-                                    <Document
-                                        file={documentPreviewUrl}
-                                        onLoadSuccess={onDocumentLoadSuccess}
-                                        onLoadError={(error) => setError("Error loading PDF: " + error.message)}
-                                    >
-                                        <Page pageNumber={pageNumber} />
-                                    </Document>
-                                    <Box sx={{ mt: 2 }}>
-                                        <Typography variant="body2">
-                                            Page {pageNumber} of {numPages}
-                                        </Typography>
-                                        <Button
-                                            onClick={handlePreviousPage}
-                                            disabled={pageNumber <= 1}
-                                            sx={{ mr: 1 }}
+                        {success && (
+                            <div className="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+                                {success}
+                            </div>
+                        )}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <textarea
+                                    placeholder="Reason for Financial Hardship"
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-3 border rounded-md bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300 h-40 resize-none text-lg"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-base font-medium text-blue-900 mb-2">
+                                    Upload Supporting Document (PDF, JPEG, PNG, max 5MB)
+                                </label>
+                                <div className="flex items-center">
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpeg,.jpg,.png"
+                                        onChange={handleFileChange}
+                                        className="w-full px-4 py-3 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300 text-base"
+                                    />
+                                    {document && (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveDocument}
+                                            className="ml-3 text-red-600 hover:text-red-800 transition-all duration-300"
                                         >
-                                            Previous
-                                        </Button>
-                                        <Button
-                                            onClick={handleNextPage}
-                                            disabled={pageNumber >= numPages}
-                                        >
-                                            Next
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            ) : getFileType(document) === "image" ? (
-                                <Box>
-                                    {imageError ? (
-                                        <Typography variant="body1" color="error">
-                                            {imageError}
-                                        </Typography>
-                                    ) : (
-                                        <img
-                                            src={documentPreviewUrl}
-                                            alt="Fee Waiver Document Preview"
-                                            style={{ maxWidth: "100%", maxHeight: "300px" }}
-                                            onError={handleImageError}
-                                        />
+                                            <ClearIcon fontSize="large" />
+                                        </button>
                                     )}
-                                </Box>
-                            ) : (
-                                <Typography variant="body1" color="error">
-                                    Unsupported file type
-                                </Typography>
+                                </div>
+                            </div>
+                            {documentPreviewUrl && (
+                                <div className="text-center">
+                                    <p className="text-blue-900 font-medium text-lg mb-3">Document Preview:</p>
+                                    {getFileType(document) === "pdf" ? (
+                                        <div>
+                                            <Document
+                                                file={documentPreviewUrl}
+                                                onLoadSuccess={onDocumentLoadSuccess}
+                                                onLoadError={(error) => setError("Error loading PDF: " + error.message)}
+                                            >
+                                                <Page pageNumber={pageNumber} />
+                                            </Document>
+                                            <div className="mt-3">
+                                                <p className="text-blue-600 text-sm">
+                                                    Page {pageNumber} of {numPages}
+                                                </p>
+                                                <div className="flex justify-center gap-3 mt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handlePreviousPage}
+                                                        disabled={pageNumber <= 1}
+                                                        className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
+                                                    >
+                                                        Previous
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleNextPage}
+                                                        disabled={pageNumber >= numPages}
+                                                        className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
+                                                    >
+                                                        Next
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : getFileType(document) === "image" ? (
+                                        <div>
+                                            {imageError ? (
+                                                <p className="text-red-600">{imageError}</p>
+                                            ) : (
+                                                <img
+                                                    src={documentPreviewUrl}
+                                                    alt="Fee Waiver Document Preview"
+                                                    className="max-w-full h-auto rounded-md shadow-sm mx-auto"
+                                                    style={{ maxHeight: "400px" }}
+                                                    onError={handleImageError}
+                                                />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-red-600">Unsupported file type</p>
+                                    )}
+                                </div>
                             )}
-                        </Box>
-                    )}
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        disabled={loading}
-                        sx={{ py: 1.5, textTransform: 'none' }}
-                    >
-                        {loading ? <CircularProgress size={24} /> : "Submit"}
-                    </Button>
-                </form>
-            </Paper>
-        </Box>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full bg-blue-600 text-white py-4 rounded-md hover:bg-blue-700 transition-all duration-300 font-semibold shadow-md transform hover:scale-105 text-lg ${
+                                    loading ? "opacity-50 cursor-not-allowed" : ""
+                                }`}
+                            >
+                                {loading ? (
+                                    <svg className="animate-spin h-6 w-6 mx-auto text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                ) : (
+                                    "Submit Application"
+                                )}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Fee Waiver History - Right Side */}
+                <div className="lg:w-2/5">
+                    <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <HiDocumentText className="w-6 h-6 text-blue-900" />
+                            <h2 className="text-2xl font-bold text-blue-900">Fee Waiver History</h2>
+                        </div>
+                        {historyLoading ? (
+                            <div className="flex justify-center py-4">
+                                <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                            </div>
+                        ) : historyError ? (
+                            <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                                {historyError}
+                            </div>
+                        ) : feeWaivers.length === 0 ? (
+                            <div className="text-center p-4 bg-white rounded-lg border border-blue-100">
+                                <p className="text-blue-600">No fee waiver applications found.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {feeWaivers.map((waiver, index) => (
+                                    <div
+                                        key={waiver._id}
+                                        className={`bg-white rounded-lg shadow-sm border p-4 transition-all duration-300 ${
+                                            waiver.status === "Approved"
+                                                ? "border-green-500 bg-green-50/30"
+                                                : waiver.status === "Rejected"
+                                                ? "border-red-200"
+                                                : "border-blue-100 hover:border-blue-200"
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-600 font-semibold w-6">{index + 1}.</span>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        {getStatusIcon(waiver.status)}
+                                                        <h4 className="text-base font-semibold text-blue-900">
+                                                            Fee Waiver Application
+                                                        </h4>
+                                                    </div>
+                                                    <p className="text-blue-600 text-sm mt-1">
+                                                        Reason: {waiver.reason}
+                                                    </p>
+                                                    <p className="text-blue-600 text-sm">
+                                                        Status: {waiver.status}
+                                                    </p>
+                                                    {waiver.status === "Approved" && (
+                                                        <p className="text-blue-600 text-sm">
+                                                            Discount: {waiver.discountPercentage}%
+                                                        </p>
+                                                    )}
+                                                    {waiver.teacherComments && (
+                                                        <p className="text-blue-600 text-sm">
+                                                            Teacher Comments: {waiver.teacherComments}
+                                                        </p>
+                                                    )}
+                                                    <p className="text-blue-600 text-sm">
+                                                        Submitted: {new Date(waiver.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                    <p className="text-blue-600 text-sm">
+                                                        Updated: {new Date(waiver.updatedAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {waiver.documentPath && (
+                                                <a
+                                                    href={`http://localhost:5000${waiver.documentPath}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                                                >
+                                                    <HiPaperClip className="w-4 h-4" />
+                                                    <span className="text-sm">View</span>
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

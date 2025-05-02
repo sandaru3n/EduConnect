@@ -427,4 +427,25 @@ exports.updateFeeWaiverStatus = async (req, res) => {
     }
 };
 
+// Get fee waiver history for the logged-in student
+exports.getFeeWaiverHistory = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if (!user || user.role !== "student") {
+            return res.status(403).json({ message: "Only students can access fee waiver history" });
+        }
+
+        const feeWaivers = await FeeWaiver.find({ studentId: userId })
+            .select("reason documentPath status discountPercentage teacherComments createdAt updatedAt")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(feeWaivers);
+    } catch (error) {
+        console.error("Get fee waiver history error:", error);
+        res.status(500).json({ message: "Error fetching fee waiver history", error: error.message });
+    }
+};
+
+
 module.exports = exports;
