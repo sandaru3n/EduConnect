@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Document, Page, pdfjs } from "react-pdf";
-import { HiDocumentText, HiCheckCircle, HiXCircle, HiClock, HiPaperClip } from "react-icons/hi";
+import { HiDocumentText, HiCheckCircle, HiXCircle, HiClock, HiPaperClip} from "react-icons/hi";
 import ClearIcon from '@mui/icons-material/Clear';
 import useAuth from "../../../hooks/useAuth";
 
@@ -22,6 +22,33 @@ const FeeWaiverForm = () => {
     const [feeWaivers, setFeeWaivers] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(true);
     const [historyError, setHistoryError] = useState(null);
+    const [classes, setClasses] = useState([]);
+    const [selectedClass, setSelectedClass] = useState("");
+    const [classesLoading, setClassesLoading] = useState(true);
+    const [classesError, setClassesError] = useState(null);
+    const [openDocumentDialog, setOpenDocumentDialog] = useState(false);
+    const [selectedDocument, setSelectedDocument] = useState(null);
+
+    // Fetch all classes on mount
+    useEffect(() => {
+        const fetchClasses = async () => {
+            setClassesLoading(true);
+            try {
+                const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+                if (!userInfo || !userInfo.token) {
+                    throw new Error("User not authenticated");
+                }
+                const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+                const { data } = await axios.get("http://localhost:5000/api/auth/support/student-classes", config);
+                setClasses(data);
+                setClassesLoading(false);
+            } catch (err) {
+                setClassesError(err.response?.data?.message || "Failed to fetch classes");
+                setClassesLoading(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     // Fetch fee waiver history on mount
     useEffect(() => {
@@ -53,6 +80,7 @@ const FeeWaiverForm = () => {
         try {
             const formData = new FormData();
             formData.append("reason", reason);
+            formData.append("classId", selectedClass); // Include selected class
             if (document) {
                 formData.append("document", document);
             }
@@ -66,6 +94,7 @@ const FeeWaiverForm = () => {
 
             setSuccess(data.message);
             setReason("");
+            setSelectedClass("");
             setDocument(null);
             setDocumentPreviewUrl(null);
             setNumPages(null);
@@ -74,7 +103,6 @@ const FeeWaiverForm = () => {
             // Refresh fee waiver history
             const { data: updatedHistory } = await axios.get("http://localhost:5000/api/auth/support/fee-waiver/history", config);
             setFeeWaivers(updatedHistory);
-            //
         } catch (err) {
             setError(err.response?.data?.message || "Error submitting fee waiver application");
         } finally {
@@ -129,7 +157,7 @@ const FeeWaiverForm = () => {
 
     const getFileType = (file) => {
         if (!file) return null;
-        const extension = file.name.split('.').pop().toLowerCase();
+        const extension = file.name ? file.name.split('.').pop().toLowerCase() : file.split('.').pop().toLowerCase();
         return ['jpg', 'jpeg', 'png'].includes(extension) ? 'image' : extension === 'pdf' ? 'pdf' : null;
     };
 
@@ -143,6 +171,21 @@ const FeeWaiverForm = () => {
             default:
                 return <HiClock className="w-5 h-5 text-yellow-600" />;
         }
+    };
+
+    const handleOpenDocumentDialog = (documentPath) => {
+        console.log("Opening document:", `http://localhost:5000${documentPath}`);
+        setSelectedDocument(documentPath);
+        setPageNumber(1);
+        setNumPages(null);
+        setImageError(null);
+        setOpenDocumentDialog(true);
+    };
+
+    const handleCloseDocumentDialog = () => {
+        setOpenDocumentDialog(false);
+        setSelectedDocument(null);
+        setImageError(null);
     };
 
     return (
@@ -165,7 +208,39 @@ const FeeWaiverForm = () => {
                                 {success}
                             </div>
                         )}
+                        {classesError && (
+                            <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                                {classesError}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-base font-medium text-blue-900 mb-2">
+                                    Select Class
+                                </label>
+                                {classesLoading ? (
+                                    <div className="flex justify-start py-2">
+                                        <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        </svg>
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={selectedClass}
+                                        onChange={(e) => setSelectedClass(e.target.value)}
+                                        required
+                                        className="w-full px-4 py-3 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300 text-lg"
+                                    >
+                                        <option value="">Select a class</option>
+                                        {classes.map((cls) => (
+                                            <option key={cls._id} value={cls._id}>
+                                                {cls.subject} (Teacher: {cls.teacherId?.name || "N/A"})
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
                             <div>
                                 <textarea
                                     placeholder="Reason for Financial Hardship"
@@ -318,6 +393,9 @@ const FeeWaiverForm = () => {
                                                         </h4>
                                                     </div>
                                                     <p className="text-blue-600 text-sm mt-1">
+                                                        Class: {waiver.classId?.subject || "N/A"}
+                                                    </p>
+                                                    <p className="text-blue-600 text-sm">
                                                         Reason: {waiver.reason}
                                                     </p>
                                                     <p className="text-blue-600 text-sm">
@@ -342,15 +420,13 @@ const FeeWaiverForm = () => {
                                                 </div>
                                             </div>
                                             {waiver.documentPath && (
-                                                <a
-                                                    href={`http://localhost:5000${waiver.documentPath}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    onClick={() => handleOpenDocumentDialog(waiver.documentPath)}
                                                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
                                                 >
                                                     <HiPaperClip className="w-4 h-4" />
                                                     <span className="text-sm">View</span>
-                                                </a>
+                                                </button>
                                             )}
                                         </div>
                                     </div>
@@ -360,6 +436,77 @@ const FeeWaiverForm = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Dialog for viewing documents */}
+            {openDocumentDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-3xl w-full">
+                        <h3 className="text-xl font-bold text-blue-900 mb-4">View Document</h3>
+                        <div className="text-center">
+                            {selectedDocument && (
+                                <>
+                                    {getFileType(selectedDocument) === "pdf" ? (
+                                        <div>
+                                            <Document
+                                                file={`http://localhost:5000${selectedDocument}`}
+                                                onLoadSuccess={onDocumentLoadSuccess}
+                                                onLoadError={(error) => setError("Error loading PDF: " + error.message)}
+                                            >
+                                                <Page pageNumber={pageNumber} />
+                                            </Document>
+                                            <div className="mt-3">
+                                                <p className="text-blue-600 text-sm">
+                                                    Page {pageNumber} of {numPages}
+                                                </p>
+                                                <div className="flex justify-center gap-3 mt-2">
+                                                    <button
+                                                        onClick={handlePreviousPage}
+                                                        disabled={pageNumber <= 1}
+                                                        className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
+                                                    >
+                                                        Previous
+                                                    </button>
+                                                    <button
+                                                        onClick={handleNextPage}
+                                                        disabled={pageNumber >= numPages}
+                                                        className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
+                                                    >
+                                                        Next
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : getFileType(selectedDocument) === "image" ? (
+                                        <div>
+                                            {imageError ? (
+                                                <p className="text-red-600">{imageError}</p>
+                                            ) : (
+                                                <img
+                                                    src={`http://localhost:5000${selectedDocument}`}
+                                                    alt="Fee Waiver Document"
+                                                    className="max-w-full h-auto rounded-md mx-auto"
+                                                    style={{ maxHeight: "500px" }}
+                                                    onError={handleImageError}
+                                                />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-red-600">Unsupported file type</p>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={handleCloseDocumentDialog}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

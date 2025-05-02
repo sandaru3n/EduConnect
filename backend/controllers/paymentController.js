@@ -35,8 +35,8 @@ exports.subscribeToClass = async (req, res) => {
           return res.status(404).json({ message: 'User not found' });
       }
 
-      // Fetch student's approved fee waiver (if any)
-      const feeWaiver = await FeeWaiver.findOne({ studentId: userId, status: "Approved" });
+      // Fetch student's approved fee waiver for this specific class (if any)
+      const feeWaiver = await FeeWaiver.findOne({ studentId: userId, classId, status: "Approved" });
 
       // Calculate discounted fee
       let finalFee = classData.monthlyFee;
