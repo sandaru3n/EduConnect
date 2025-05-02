@@ -1,5 +1,10 @@
+//frontend/src/features/dashboard/teacher/FeeWaiverRequests.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
+import StudentSidebar from "../../../components/TeacherSidebar/index";
+import StudentHeader from "../../../components/TeacherHeader/index";
+
 import axios from "axios";
 import { Document, Page, pdfjs } from "react-pdf";
 import { HiDocumentText, HiPaperClip } from "react-icons/hi";
@@ -10,7 +15,7 @@ import { HiDocumentText, HiPaperClip } from "react-icons/hi";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const FeeWaiverRequests = () => {
-    const navigate = useNavigate();
+  
     const [requests, setRequests] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -25,99 +30,202 @@ const FeeWaiverRequests = () => {
     const [pageNumber, setPageNumber] = useState(1);
     const [imageError, setImageError] = useState(null);
 
-    useEffect(() => {
-        const fetchRequests = async () => {
-            setLoading(true);
-            try {
-                const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-                if (!userInfo || !userInfo.token) {
-                    throw new Error("User not authenticated");
-                }
-                const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/auth/teacher/fee-waiver-requests", config);
-                setRequests(data);
-            } catch (err) {
-                setError(err.response?.data?.message || "Error loading fee waiver requests");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRequests();
-    }, []);
+  const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-    const handleOpenDialog = (request) => {
-        setSelectedRequest(request);
-        setStatus("");
-        setTeacherComments("");
-        setDiscountPercentage(0);
-        setOpenDialog(true);
-    };
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-        setSelectedRequest(null);
-    };
-
-    const handleSubmit = async () => {
+  useEffect(() => {
+    const fetchRequests = async () => {
+        setLoading(true);
         try {
             const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+            if (!userInfo || !userInfo.token) {
+                throw new Error("User not authenticated");
+            }
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.put(
-                `http://localhost:5000/api/auth/teacher/fee-waiver/${selectedRequest._id}/status`,
-                { status, teacherComments, discountPercentage },
-                config
-            );
-
-            setRequests(requests.map(req => req._id === selectedRequest._id ? data.feeWaiver : req));
-            handleCloseDialog();
+            const { data } = await axios.get("http://localhost:5000/api/auth/teacher/fee-waiver-requests", config);
+            setRequests(data);
         } catch (err) {
-            setError(err.response?.data?.message || "Error updating fee waiver request");
+            setError(err.response?.data?.message || "Error loading fee waiver requests");
+        } finally {
+            setLoading(false);
         }
     };
+    fetchRequests();
+}, []);
 
-    const handleOpenDocumentDialog = (documentPath) => {
-        console.log("Opening document:", `http://localhost:5000${documentPath}`);
-        setSelectedDocument(documentPath);
-        setPageNumber(1);
-        setNumPages(null);
-        setImageError(null);
-        setOpenDocumentDialog(true);
+const handleOpenDialog = (request) => {
+    setSelectedRequest(request);
+    setStatus("");
+    setTeacherComments("");
+    setDiscountPercentage(0);
+    setOpenDialog(true);
+};
+
+const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedRequest(null);
+};
+
+const handleSubmit = async () => {
+    try {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+        const { data } = await axios.put(
+            `http://localhost:5000/api/auth/teacher/fee-waiver/${selectedRequest._id}/status`,
+            { status, teacherComments, discountPercentage },
+            config
+        );
+
+        setRequests(requests.map(req => req._id === selectedRequest._id ? data.feeWaiver : req));
+        handleCloseDialog();
+    } catch (err) {
+        setError(err.response?.data?.message || "Error updating fee waiver request");
+    }
+};
+
+const handleOpenDocumentDialog = (documentPath) => {
+    console.log("Opening document:", `http://localhost:5000${documentPath}`);
+    setSelectedDocument(documentPath);
+    setPageNumber(1);
+    setNumPages(null);
+    setImageError(null);
+    setOpenDocumentDialog(true);
+};
+
+const handleCloseDocumentDialog = () => {
+    setOpenDocumentDialog(false);
+    setSelectedDocument(null);
+    setImageError(null);
+};
+
+const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
+};
+
+const handlePreviousPage = () => {
+    if (pageNumber > 1) {
+        setPageNumber(pageNumber - 1);
+    }
+};
+
+const handleNextPage = () => {
+    if (pageNumber < numPages) {
+        setPageNumber(pageNumber + 1);
+    }
+};
+
+const handleImageError = () => {
+    setImageError("Failed to load image. The file may not exist or is inaccessible.");
+};
+
+const getFileType = (filePath) => {
+    if (!filePath) return null;
+    const extension = filePath.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png'].includes(extension) ? 'image' : extension === 'pdf' ? 'pdf' : null;
+};
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobileView = window.innerWidth <= 768;
+      setIsMobile(mobileView);
+      setIsSidebarCollapsed(mobileView); // Auto-collapse on mobile
     };
 
-    const handleCloseDocumentDialog = () => {
-        setOpenDocumentDialog(false);
-        setSelectedDocument(null);
-        setImageError(null);
-    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    const onDocumentLoadSuccess = ({ numPages }) => {
-        setNumPages(numPages);
-    };
+  const pathnames = location.pathname.split("/").filter((x) => x);
+  const breadcrumbItems = pathnames.map((value, index) => {
+    const last = index === pathnames.length - 1;
+    const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+    const displayName = value.charAt(0).toUpperCase() + value.slice(1);
 
-    const handlePreviousPage = () => {
-        if (pageNumber > 1) {
-            setPageNumber(pageNumber - 1);
-        }
-    };
+    return last ? (
+      <Typography key={to} color="text.primary">
+        {displayName}
+      </Typography>
+    ) : (
+      <MuiLink
+        key={to}
+        component={Link}
+        to={to}
+        underline="hover"
+        color="inherit"
+      >
+        {displayName}
+      </MuiLink>
+    );
+  });
 
-    const handleNextPage = () => {
-        if (pageNumber < numPages) {
-            setPageNumber(pageNumber + 1);
-        }
-    };
+  // Get the current page name for the tab title
+  const pageTitle = pathnames.length > 0 
+    ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1)
+    : "Dashboard"; // Default title if no pathnames
 
-    const handleImageError = () => {
-        setImageError("Failed to load image. The file may not exist or is inaccessible.");
-    };
+  // Update document title when location changes
+  useEffect(() => {
+    document.title = `TeacherDashboard - EduConnect`; // You can customize the format
+  }, [location, pageTitle]);
 
-    const getFileType = (filePath) => {
-        if (!filePath) return null;
-        const extension = filePath.split('.').pop().toLowerCase();
-        return ['jpg', 'jpeg', 'png'].includes(extension) ? 'image' : extension === 'pdf' ? 'pdf' : null;
-    };
+  return (
+    <div>
+      <StudentHeader 
+        isSidebarCollapsed={isSidebarCollapsed}
+        toggleSidebar={toggleSidebar}
+        isMobile={isMobile}
+      />
+      
+      <div className="flex min-h-screen">
+        <div
+          className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+            isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+          }`}
+        >
+          <StudentSidebar 
+            isCollapsed={isSidebarCollapsed} 
+            toggleSidebar={toggleSidebar} 
+          />
+        </div>
 
-    return (
-        <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+        <div
+          className={`flex-1 transition-all duration-300 ${
+            isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+          }`}
+        >
+          <div
+            className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+              isSidebarCollapsed 
+                ? "ml-[60px] w-[calc(100%-60px)]" 
+                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+            }`}
+          >
+            {/* Breadcrumbs */}
+        <div
+          className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
+            isSidebarCollapsed
+              ? "ml-[60px] w-[calc(100%-60px)]"
+              : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+          }`}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <MuiLink component={Link} to="/student" underline="hover" color="inherit">
+              Student
+            </MuiLink>
+            {breadcrumbItems}
+          </Breadcrumbs>
+          </div></div>
+        
+          
+          <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+          <div className="max-w-7xl mx-auto p-6 bg-white-50 min-h-screen">
             <div className="bg-white rounded-xl shadow-md border border-blue-100 p-8">
                 <div className="flex items-center gap-3 mb-6">
                     <HiDocumentText className="w-8 h-8 text-blue-900" />
@@ -330,7 +438,12 @@ const FeeWaiverRequests = () => {
                 </div>
             )}
         </div>
-    );
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default FeeWaiverRequests;

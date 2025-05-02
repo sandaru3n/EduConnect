@@ -1,4 +1,11 @@
+//frontend/src/features/dashboard/student/FeeWaiverForm.jsx
+import StudentSidebar from "../../../components/StudentSidebar/index";
+import StudentHeader from "../../../components/StudentHeader/index";
+import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+
+
 import axios from "axios";
 import { Document, Page, pdfjs } from "react-pdf";
 import { HiDocumentText, HiCheckCircle, HiXCircle, HiClock, HiPaperClip} from "react-icons/hi";
@@ -188,11 +195,90 @@ const FeeWaiverForm = () => {
         setImageError(null);
     };
 
+    const location = useLocation();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    const toggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
+
+    useEffect(() => {
+        const handleResize = () => {
+            const mobileView = window.innerWidth <= 768;
+            setIsMobile(mobileView);
+            setIsSidebarCollapsed(mobileView);
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const pathnames = location.pathname.split("/").filter((x) => x);
+    const breadcrumbItems = pathnames.map((value, index) => {
+        const last = index === pathnames.length - 1;
+        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+        const displayName = value.charAt(0).toUpperCase() + value.slice(1);
+
+        return last ? (
+            <Typography key={to} color="text.primary">{displayName}</Typography>
+        ) : (
+            <MuiLink key={to} component={Link} to={to} underline="hover" color="inherit">
+                {displayName}
+            </MuiLink>
+        );
+    });
+
+    
+
+    
+
     return (
-        <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+        <div>
+            <StudentHeader 
+                isSidebarCollapsed={isSidebarCollapsed}
+                toggleSidebar={toggleSidebar}
+                isMobile={isMobile}
+            />
+            
+            <div className="flex min-h-screen">
+                <div
+                    className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+                        isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+                    }`}
+                >
+                    <StudentSidebar 
+                        isCollapsed={isSidebarCollapsed} 
+                        toggleSidebar={toggleSidebar} 
+                    />
+                </div>
+
+                <div
+                    className={`flex-1 transition-all duration-300 ${
+                        isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+                    }`}
+                >
+                    <div
+                        className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+                            isSidebarCollapsed 
+                                ? "ml-[60px] w-[calc(100%-60px)]" 
+                                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                        }`}
+                    >
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <MuiLink component={Link} to="/student" underline="hover" color="inherit">
+                                Student
+                            </MuiLink>
+                            {breadcrumbItems}
+                        </Breadcrumbs>
+                    </div>
+                    
+                    <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+                    <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Apply for Fee Waiver - Sticky Left Side */}
-                <div className="lg:w-3/5">
+                <div className="lg:w-3/5 ">
                     <div className="sticky top-6 bg-white rounded-xl shadow-md border border-blue-100 p-8">
                         <div className="flex items-center gap-3 mb-6">
                             <HiDocumentText className="w-10 h-10 text-blue-900" />
@@ -213,7 +299,7 @@ const FeeWaiverForm = () => {
                                 {classesError}
                             </div>
                         )}
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-1">
                             <div>
                                 <label className="block text-base font-medium text-blue-900 mb-2">
                                     Select Class
@@ -508,7 +594,18 @@ const FeeWaiverForm = () => {
                 </div>
             )}
         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
 export default FeeWaiverForm;
+
+
+
+
+
+
+
