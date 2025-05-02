@@ -2,9 +2,11 @@ const SupportCategory = require("../models/SupportCategory");
 const SupportSubcategory = require("../models/SupportSubcategory");
 const SupportTicket = require("../models/SupportTicket");
 const FeeWaiver = require("../models/FeeWaiver");
+const Class = require('../models/Class');
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const path = require("path"); // Ensure this import is present
+const sendEmail = require("../config/email");
 
 // Submit a support ticket (for any authenticated user)
 exports.submitSupportTicket = async (req, res) => {
@@ -345,15 +347,14 @@ exports.sendMessage = async (req, res) => {
     }
 };
 
-// Submit a fee waiver application (for any authenticated user)
 exports.submitFeeWaiver = async (req, res) => {
     try {
-        const { reason } = req.body;
+        const { reason, classId } = req.body;
         const userId = req.user.id;
         const documentPath = req.file ? `/uploads/documents/${path.basename(req.file.path)}` : undefined;
 
-        if (!reason) {
-            return res.status(400).json({ message: "Reason for financial hardship is required" });
+        if (!reason || !classId) {
+            return res.status(400).json({ message: "Reason and class selection are required" });
         }
 
         const user = await User.findById(userId);
@@ -361,8 +362,14 @@ exports.submitFeeWaiver = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        const classData = await Class.findById(classId);
+        if (!classData) {
+            return res.status(404).json({ message: "Class not found" });
+        }
+
         const feeWaiver = new FeeWaiver({
             studentId: userId,
+            classId,
             reason,
             documentPath
         });
@@ -389,11 +396,12 @@ exports.getFeeWaiverRequests = async (req, res) => {
     }
 };
 
-// Update fee waiver request status (for any authenticated user)
+// Update fee waiver request status
 exports.updateFeeWaiverStatus = async (req, res) => {
     try {
         const { feeWaiverId } = req.params;
         const { status, teacherComments, discountPercentage } = req.body;
+        const teacherId = req.user.id;
 
         if (!["Approved", "Rejected"].includes(status)) {
             return res.status(400).json({ message: "Invalid status value. Must be 'Approved' or 'Rejected'" });
@@ -403,9 +411,14 @@ exports.updateFeeWaiverStatus = async (req, res) => {
             return res.status(400).json({ message: "Discount percentage must be between 0 and 100 when approving" });
         }
 
-        const feeWaiver = await FeeWaiver.findById(feeWaiverId);
+        const feeWaiver = await FeeWaiver.findById(feeWaiverId).populate("classId");
         if (!feeWaiver) {
             return res.status(404).json({ message: "Fee waiver request not found" });
+        }
+
+        // Ensure the teacher is the owner of the class
+        if (feeWaiver.classId.teacherId.toString() !== teacherId) {
+            return res.status(403).json({ message: "You are not authorized to review this fee waiver request" });
         }
 
         if (feeWaiver.status !== "Pending") {
@@ -419,6 +432,19 @@ exports.updateFeeWaiverStatus = async (req, res) => {
         }
         feeWaiver.updatedAt = new Date();
         await feeWaiver.save();
+
+        // Notify the student via email
+        const student = await User.findById(feeWaiver.studentId);
+        if (student) {
+            const subject = `Fee Waiver Request ${status}`;
+            const text = `Hello ${student.name},\n\nYour fee waiver request for the class "${feeWaiver.classId.subject}" has been ${status.toLowerCase()}.\n${
+                status === "Approved" ? `You have been granted a ${feeWaiver.discountPercentage}% discount on the class fee.` : ""
+            }${teacherComments ? `\nTeacher Comments: ${teacherComments}` : ""}\n\nEduConnect Team`;
+            const html = `<h2>Fee Waiver Request ${status}</h2><p>Hello ${student.name},</p><p>Your fee waiver request for the class "<strong>${feeWaiver.classId.subject}</strong>" has been <strong>${status.toLowerCase()}</strong>.</p>${
+                status === "Approved" ? `<p>You have been granted a <strong>${feeWaiver.discountPercentage}%</strong> discount on the class fee.</p>` : ""
+            }${teacherComments ? `<p><strong>Teacher Comments:</strong> ${teacherComments}</p>` : ""}<p>EduConnect Team</p>`;
+            await sendEmail(student.email, subject, text, html);
+        }
 
         res.status(200).json({ message: "Fee waiver request updated successfully", feeWaiver });
     } catch (error) {
@@ -437,13 +463,60 @@ exports.getFeeWaiverHistory = async (req, res) => {
         }
 
         const feeWaivers = await FeeWaiver.find({ studentId: userId })
-            .select("reason documentPath status discountPercentage teacherComments createdAt updatedAt")
+            .populate("classId", "subject monthlyFee")
+            .select("classId reason documentPath status discountPercentage teacherComments createdAt updatedAt")
             .sort({ createdAt: -1 });
 
         res.status(200).json(feeWaivers);
     } catch (error) {
         console.error("Get fee waiver history error:", error);
         res.status(500).json({ message: "Error fetching fee waiver history", error: error.message });
+    }
+};
+
+// Fetch all classes for the student (subscribed or not)
+exports.getStudentClasses = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if (!user || user.role !== "student") {
+            return res.status(403).json({ message: "Only students can access class list" });
+        }
+
+        const classes = await Class.find({ isActive: true })
+            .select("subject teacherId monthlyFee")
+            .populate("teacherId", "name");
+
+        res.status(200).json(classes);
+    } catch (error) {
+        console.error("Get student classes error:", error);
+        res.status(500).json({ message: "Error fetching classes", error: error.message });
+    }
+};
+
+// Fetch fee waiver requests for the logged-in teacher's classes
+exports.getFeeWaiverRequestsForTeacher = async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+        const user = await User.findById(teacherId);
+        if (!user || !["teacher", "institute"].includes(user.role)) {
+            return res.status(403).json({ message: "Only teachers and institutes can access fee waiver requests" });
+        }
+
+        // Fetch classes owned by the teacher
+        const teacherClasses = await Class.find({ teacherId }).select("_id");
+        const classIds = teacherClasses.map(cls => cls._id);
+
+        // Fetch fee waiver requests for those classes
+        const feeWaivers = await FeeWaiver.find({ classId: { $in: classIds } })
+            .populate("studentId", "name email")
+            .populate("classId", "subject monthlyFee")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(feeWaivers);
+    } catch (error) {
+        console.error("Get fee waiver requests for teacher error:", error);
+        res.status(500).json({ message: "Error retrieving fee waiver requests", error: error.message });
     }
 };
 

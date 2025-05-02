@@ -25,7 +25,8 @@ const {
     updateSupportTicketStatus, deleteSupportTicket, getUserSupportTickets, getUserSupportTicketById, sendMessage,submitFeeWaiver,
     getFeeWaiverRequests,
     updateFeeWaiverStatus,
-    getFeeWaiverHistory
+    getFeeWaiverHistory,
+    getStudentClasses, getFeeWaiverRequestsForTeacher
 } = require("../controllers/supportController");
 const router = express.Router();
 
@@ -153,5 +154,7 @@ router.post("/support/fee-waiver", authMiddleware, documentUpload.single("docume
 router.get("/teacher/fee-waiver-requests", authMiddleware, getFeeWaiverRequests);
 router.put("/teacher/fee-waiver/:feeWaiverId/status", authMiddleware, updateFeeWaiverStatus);
 router.get("/support/fee-waiver/history", authMiddleware, getFeeWaiverHistory); 
+router.get("/support/student-classes", authMiddleware, getStudentClasses); // Add this route
+router.get("/teacher/fee-waiver-requests", authMiddleware, getFeeWaiverRequestsForTeacher); // Add this route
 
 module.exports = router;
