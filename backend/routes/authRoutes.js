@@ -30,6 +30,8 @@ const {
 } = require("../controllers/supportController");
 const router = express.Router();
 
+const { getAdminDashboardMetrics } = require("../controllers/dashboardController"); // New import
+
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
@@ -157,4 +159,7 @@ router.get("/support/fee-waiver/history", authMiddleware, getFeeWaiverHistory);
 router.get("/support/student-classes", authMiddleware, getStudentClasses); // Add this route
 router.get("/teacher/fee-waiver-requests", authMiddleware, getFeeWaiverRequestsForTeacher); // Add this route
 
+
+// Dashboard routes
+router.get("/dashboard/admin-metrics", getAdminDashboardMetrics); // Removed authMiddleware
 module.exports = router;

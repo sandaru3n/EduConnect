@@ -1,9 +1,9 @@
-// frontend/src/features/dashboard/admin/AdminDashboard.jsx
 import { useState, useEffect } from "react";
 import { Breadcrumbs, Link as MuiLink, Typography, Box, Paper, Grid, IconButton, Button, Divider, Avatar, Tooltip, LinearProgress, CircularProgress } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import AdminSidebar from "../../../components/AdminSidebar/index";
 import AdminHeader from "../../../components/AdminHeader/index";
+import axios from "axios";
 
 // Icons
 import {
@@ -14,54 +14,23 @@ import {
   Payment as PaymentIcon,
   Assignment as AssignmentIcon,
   Person as PersonIcon,
-  School as SchoolIcon,
   Notifications as NotificationsIcon,
-  Email as EmailIcon,
   KeyboardArrowRight as ArrowRightIcon,
   Add as AddIcon,
   Refresh as RefreshIcon,
-  Launch as LaunchIcon,
 } from "@mui/icons-material";
 
-// Mock data for dashboard
-const statsData = [
-  {
-    id: 1,
-    title: "Total Students",
-    value: 2437,
-    change: "+12%",
-    trend: "up",
-    icon: <PeopleIcon />,
-    color: "#4f46e5"
-  },
-  {
-    id: 2,
-    title: "Total Revenue",
-    value: "$18,423",
-    change: "+23%",
-    trend: "up",
-    icon: <PaymentIcon />,
-    color: "#0ea5e9"
-  },
-  {
-    id: 3,
-    title: "Active Courses",
-    value: 72,
-    change: "+5",
-    trend: "up",
-    icon: <MenuBookIcon />,
-    color: "#10b981"
-  },
-  {
-    id: 4,
-    title: "Subscription Plans",
-    value: 5,
-    change: "0",
-    trend: "neutral",
-    icon: <AssignmentIcon />,
-    color: "#f59e0b"
-  },
-];
+// Utility function to convert hex to RGBA
+const hexToRGBA = (hex, alpha) => {
+  if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) {
+    return `rgba(0, 0, 0, ${alpha})`; // Fallback
+  }
+  const cleanHex = hex.replace('#', '');
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 const recentActivities = [
   {
@@ -158,6 +127,24 @@ const AdminDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState([]);
+
+  // Fetch dashboard metrics from the backend
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      setLoading(true);
+      try {
+        const { data } = await axios.get("http://localhost:5000/api/auth/dashboard/admin-metrics");
+        setStatsData(data);
+      } catch (err) {
+        console.error("Error fetching dashboard metrics:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetrics();
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -207,10 +194,26 @@ const AdminDashboard = () => {
     );
   });
 
+  // Map icon strings to actual MUI icons
+  const getIconComponent = (iconName) => {
+    switch (iconName) {
+      case "PeopleIcon":
+        return <PeopleIcon />;
+      case "PaymentIcon":
+        return <PaymentIcon />;
+      case "MenuBookIcon":
+        return <MenuBookIcon />;
+      case "AssignmentIcon":
+        return <AssignmentIcon />;
+      default:
+        return null;
+    }
+  };
+
   // Get the current page name for the tab title
   const pageTitle = pathnames.length > 0
     ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1)
-    : "Dashboard"; // Default title if no pathnames
+    : "Dashboard";
 
   // Update document title when location changes
   useEffect(() => {
@@ -313,7 +316,7 @@ const AdminDashboard = () => {
                   Dashboard
                 </Typography>
                 <Typography variant="subtitle1" color="text.secondary">
-                  Welcome back! Here's what's happening with your platform today.
+                  Welcome back! Here s what s happening with your platform today.
                 </Typography>
               </Box>
 
@@ -347,11 +350,12 @@ const AdminDashboard = () => {
                         sx={{
                           p: 3,
                           borderRadius: 2,
+                          bgcolor: hexToRGBA(stat.color, 0.2), // Fixed: Use RGBA with 80% opacity
                           height: '100%',
                           transition: 'transform 0.3s, box-shadow 0.3s',
                           '&:hover': {
                             transform: 'translateY(-4px)',
-                            boxShadow: 3
+                            boxShadow: 3,
                           }
                         }}
                       >
@@ -381,13 +385,13 @@ const AdminDashboard = () => {
                           </Box>
                           <Avatar
                             sx={{
-                              bgcolor: `${stat.color}15`,
+                              bgcolor: `white`,
                               color: stat.color,
                               width: 48,
                               height: 48
                             }}
                           >
-                            {stat.icon}
+                            {getIconComponent(stat.icon)}
                           </Avatar>
                         </Box>
                       </Paper>
