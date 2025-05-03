@@ -187,6 +187,60 @@ exports.subscribeToStudyPack = async (req, res) => {
     }
   };
 
+  // New endpoint to fetch receipt details for a specific payment
+exports.getReceiptDetails = async (req, res) => {
+  try {
+      const { subscriptionId } = req.params;
+      const userId = req.user.id;
+
+      const subscription = await StudentSubscription.findOne({ _id: subscriptionId, userId })
+          .populate({
+              path: 'classId',
+              populate: { path: 'teacherId', select: 'name' }
+          })
+          .populate('userId', 'name email');
+
+      if (!subscription) {
+          return res.status(404).json({ message: "Subscription not found" });
+      }
+
+      // Fetch fee waiver details if any
+      const feeWaiver = await FeeWaiver.findOne({ studentId: userId, classId: subscription.classId._id, status: "Approved" });
+
+      // Calculate original fee, discount, and final fee
+      const originalFee = subscription.classId.monthlyFee;
+      let discountPercentage = feeWaiver ? feeWaiver.discountPercentage : 0;
+      let finalFee = subscription.feePaid; // Already includes discount if applied
+
+      // Generate a random 7-digit invoice number
+      const randomNumber = Math.floor(1000000 + Math.random() * 9000000); // Random 7-digit number
+      const invoiceNumber = `INV-${randomNumber}`;
+
+      const receiptDetails = {
+          invoiceNumber: invoiceNumber,
+          studentName: subscription.userId.name,
+          studentEmail: subscription.userId.email,
+          className: subscription.classId.subject,
+          teacherName: subscription.classId.teacherId.name,
+          originalFee: originalFee,
+          discountPercentage: discountPercentage,
+          finalFee: finalFee,
+          paymentDate: subscription.createdAt,
+          paymentMethod: subscription.paymentMethod || "Credit Card", // Assumed if not stored
+          status: subscription.status
+      };
+
+      res.status(200).json(receiptDetails);
+  } catch (error) {
+      console.error("Error fetching receipt details:", error);
+      res.status(500).json({ message: "Error fetching receipt details", error: error.message });
+  }
+};
+
+
+
+
+
 // Simple card validation function (unchanged)
 function validateCard(cardNumber, expiryDate, cvv) {
     const cardRegex = /^\d{16}$/;
