@@ -34,6 +34,9 @@ const { getAdminDashboardMetrics } = require("../controllers/dashboardController
 
 const { getTeacherSubscriptionHistory, getTeacherPaymentHistory } = require("../controllers/TeacherSubscriptionController"); // New import
 
+const { getReceiptDetails,subscribeToClass,subscribeToStudyPack} = require('../controllers/paymentController');
+const {getPaymentHistory} = require('../controllers/stusubscriptionController')
+
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
@@ -168,5 +171,11 @@ router.get("/dashboard/admin-metrics", getAdminDashboardMetrics); // Removed aut
 //  routes
 router.get("/dashboard/teacher-subscription-history", authMiddleware, getTeacherSubscriptionHistory);
 router.get("/dashboard/teacher-payment-history", authMiddleware, getTeacherPaymentHistory);
+
+// Payment routes
+router.post("/subscriptions/class", authMiddleware, subscribeToClass);
+router.post("/subscriptions/study-pack", authMiddleware, subscribeToStudyPack);
+router.get("/subscriptions/payment-history", authMiddleware, getPaymentHistory);
+router.get("/subscriptions/receipt/:subscriptionId", authMiddleware, getReceiptDetails);
 
 module.exports = router;
