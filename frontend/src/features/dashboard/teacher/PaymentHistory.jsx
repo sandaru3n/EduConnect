@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from "@mui/material";
 import { HiDocumentText } from "react-icons/hi";
-import jsPDF from "jspdf"; // Use default import
+import jsPDF from "jspdf";
 import autoTable from 'jspdf-autotable';
 
 const PaymentHistory = () => {
@@ -63,10 +63,18 @@ const PaymentHistory = () => {
         throw new Error("jsPDF instance is not properly initialized");
       }
 
+      // Add site logo
+      // Option 1: Use the logo file from public/ (ensure logo.png exists in public/)
+      doc.addImage("/educonnetlogo.png", "PNG", 19, 17, 35, 30, undefined, 'FAST'); // Adjust dimensions as needed
+      // Option 2: Use a base64 string if the file approach doesn't work
+      // const logoBase64 = "data:image/png;base64,iVBORw0KGgo..."; // Replace with your logo's base64 string
+      // doc.addImage(logoBase64, "PNG", 10, 10, 30, 30, undefined, 'FAST');
+
       // Add "INVOICE" title
       doc.setFontSize(24);
+      doc.setFont("helvetica", "bold");
       doc.setTextColor(31, 58, 138); // #1e3a8a
-      doc.text("INVOICE", 105, 20, { align: "center" });
+      doc.text("INVOICE", 105, 20, { align: "center"});
 
       // Add invoice details
       doc.setFontSize(12);
@@ -79,7 +87,7 @@ const PaymentHistory = () => {
       doc.setFontSize(14);
       doc.text("Invoice Details", 20, 90);
       doc.setFontSize(12);
-      autoTable(doc, { // Pass doc directly to autoTable
+      autoTable(doc, {
         startY: 100,
         head: [["Description", "Price"]],
         body: [
@@ -176,7 +184,7 @@ const PaymentHistory = () => {
         <DialogContent>
           {selectedInvoice && (
             <Box>
-              {/* Site Logo (Placeholder) */}
+              {/* Site Logo */}
               <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                 <img src="/logo.png" alt="Site Logo" style={{ width: "100px", height: "auto" }} onError={(e) => e.target.style.display = 'none'} />
               </Box>

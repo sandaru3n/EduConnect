@@ -83,7 +83,7 @@ exports.getTeacherPaymentHistory = async (req, res) => {
                     paymentMethod: "Credit Card", // Assumed
                     status: "Completed", // Assumed
                     createdAt: paymentDate,
-                    invoiceNumber: invoiceNumber, // Updated to 7-digit format
+                    invoiceNumber: invoiceNumber,
                     description: `Monthly subscription payment for ${user.subscriptionId?.plan || "Unknown Plan"}`,
                     subtotal: subscriptionPrice
                 });
