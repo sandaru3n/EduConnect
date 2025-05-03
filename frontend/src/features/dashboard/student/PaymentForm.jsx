@@ -9,27 +9,40 @@ import {
   Button, 
   Divider, 
   InputAdornment, 
-  Paper 
+  Paper,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
-import { CreditCard, CalendarToday, Lock } from '@mui/icons-material';
+import { CreditCard, CalendarToday, Lock, ArrowBack } from '@mui/icons-material';
+
+// Define the base URL for the backend (can be moved to a config file)
+const BASE_URL = 'http://localhost:5000';
 
 const PaymentForm = () => {
     const [cardNumber, setCardNumber] = useState('');
     const [expiryDate, setExpiryDate] = useState('');
     const [cvv, setCvv] = useState('');
+    const [cardholderName, setCardholderName] = useState('');
+    const [addressLine1, setAddressLine1] = useState('');
+    const [addressLine2, setAddressLine2] = useState('');
+    const [city, setCity] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [termsAccepted, setTermsAccepted] = useState(false);
     const [classDetails, setClassDetails] = useState(null);
+    const [errors, setErrors] = useState({
+        cardNumber: false,
+        expiryDate: false,
+        cvv: false,
+    });
     const navigate = useNavigate();
     const { classId } = useParams();
-
-    // Define the base URL for the backend (can be moved to a config file)
-    const BASE_URL = 'http://localhost:5000';
 
     useEffect(() => {
         const fetchClassDetails = async () => {
             try {
                 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get(`http://localhost:5000/api/payments/class-details/${classId}`, config);
+                const { data } = await axios.get(`${BASE_URL}/api/payments/class-details/${classId}`, config);
                 setClassDetails(data);
             } catch (error) {
                 console.error('Error fetching class details:', error);
@@ -40,14 +53,77 @@ const PaymentForm = () => {
         fetchClassDetails();
     }, [classId]);
 
+    const handleCardNumberChange = (e) => {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        if (value.length <= 16) { // Limit to 16 digits
+            setCardNumber(value);
+            setErrors((prev) => ({ ...prev, cardNumber: value.length !== 16 }));
+        }
+    };
+
+    const handleCvcChange = (e) => {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        if (value.length <= 4) { // Limit to 4 digits
+            setCvv(value);
+            setErrors((prev) => ({ ...prev, cvv: value.length < 3 || value.length > 4 }));
+        }
+    };
+
+    const handleExpiryDateChange = (e) => {
+        let value = e.target.value.replace(/[^0-9/]/g, ''); // Allow only digits and "/"
+        let digits = value.replace(/\D/g, ''); // Extract digits only for processing
+
+        if (digits.length <= 4) { // Limit to 4 digits (MMYY)
+            if (digits.length <= 2) {
+                // If only month digits are entered, remove any trailing "/"
+                value = digits;
+            } else {
+                // Format as MM/YY
+                value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+            }
+            setExpiryDate(value);
+            setErrors((prev) => ({
+                ...prev,
+                expiryDate: !/^(0[1-9]|1[0-2])\/\d{2}$/.test(value) && value.length === 5
+            }));
+        }
+    };
+
+    const validateCardDetails = () => {
+        const cardRegex = /^\d{16}$/;
+        const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
+        const cvvRegex = /^\d{3,4}$/;
+
+        const newErrors = {
+            cardNumber: !cardRegex.test(cardNumber),
+            expiryDate: !expiryRegex.test(expiryDate),
+            cvv: !cvvRegex.test(cvv),
+        };
+
+        setErrors(newErrors);
+        return !Object.values(newErrors).some(error => error);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate card details
+        if (!validateCardDetails()) {
+            return;
+        }
+
+        // Validate terms acceptance
+        if (!termsAccepted) {
+            alert('Please accept the terms to proceed.');
+            return;
+        }
+
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
             const config = {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
-            const response = await axios.post('http://localhost:5000/api/payments/subscribe', {
+            const response = await axios.post(`${BASE_URL}/api/payments/subscribe`, {
                 classId,
                 cardNumber,
                 expiryDate,
@@ -61,46 +137,65 @@ const PaymentForm = () => {
         }
     };
 
+    const handleBack = () => {
+        navigate(-1); // Navigate back to the previous page
+    };
+
     return (
         <Box
             sx={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%)',
+                backgroundColor: '#fff',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                p: { xs: 2, md: 4 },
+                p: { xs: 2, md: -4 },
+                position: 'relative', // For absolute positioning of the back button
             }}
         >
             <Paper
                 sx={{
-                    maxWidth: 1200,
+                    maxWidth: 900,
                     width: '100%',
-                    borderRadius: 3,
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                    overflow: 'hidden',
+                    borderRadius: 0,
+                    boxShadow: 'none',
                     backgroundColor: '#fff',
-                    transition: 'all 0.3s ease-in-out',
-                    '&:hover': {
-                        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
-                    },
                 }}
             >
-                <Grid container spacing={0}>
+                <Box sx={{ position: 'absolute', top: 6, left: 250 }}>
+                    <Button
+                        onClick={handleBack}
+                        startIcon={<ArrowBack sx={{ color: '#6b7280' }} />}
+                        sx={{
+                            textTransform: 'none',
+                            color: '#6b7280',
+                            fontSize: '0.875rem',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                                backgroundColor: 'transparent',
+                                color: '#3b82f6',
+                            },
+                        }}
+                    >
+                        Back
+                    </Button>
+                </Box>
+                <Grid container spacing={0} sx={{ pt: 1 }}>
                     {/* Left Section: Class Details */}
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={5}>
                         <Box
                             sx={{
-                                p: 4,
-                                background: 'linear-gradient(135deg, #e8f0fe 0%, #d1e0ff 100%)',
+                                p: { xs: 2, md: 4 },
+                                backgroundColor: '#fff',
+                                borderRight: { xs: 'none', md: '1px solid #e5e7eb' },
                                 height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: 2,
                             }}
                         >
-                            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1e3a8a', mb: 2 }}>
-                                Class Details
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#000', mb: 2 }}>
+                                Subscribe to {classDetails?.className}
                             </Typography>
                             {classDetails ? (
                                 <>
@@ -109,7 +204,7 @@ const PaymentForm = () => {
                                         <Box
                                             sx={{
                                                 width: '100%',
-                                                height: 200,
+                                                height: 150,
                                                 borderRadius: 2,
                                                 overflow: 'hidden',
                                                 mb: 2,
@@ -127,7 +222,7 @@ const PaymentForm = () => {
                                         <Box
                                             sx={{
                                                 width: '100%',
-                                                height: 200,
+                                                height: 150,
                                                 borderRadius: 2,
                                                 backgroundColor: '#e5e7eb',
                                                 display: 'flex',
@@ -143,41 +238,56 @@ const PaymentForm = () => {
                                         </Box>
                                     )}
 
-                                    {/* Class Name */}
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#374151' }}>
-                                        Class: {classDetails.className}
+                                    <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                        {classDetails.className}
                                     </Typography>
-
-                                    {/* Teacher Name */}
-                                    <Typography variant="body1" sx={{ color: '#374151' }}>
-                                        <strong>Teacher:</strong> {classDetails.teacherName}
+                                    <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                        Taught by {classDetails.teacherName}
                                     </Typography>
-
-                                    {/* Monthly Fee */}
-                                    <Typography variant="body1" sx={{ color: '#374151' }}>
-                                        <strong>Monthly Fee:</strong> ${classDetails.monthlyFee}
-                                    </Typography>
-
-                                    {/* Discount (if applicable) */}
-                                    {classDetails.discountPercentage > 0 ? (
-                                        <>
-                                            <Typography variant="body1" sx={{ color: '#22c55e' }}>
-                                                <strong>Discount:</strong> {classDetails.discountPercentage}% off
-                                            </Typography>
-                                            <Typography variant="body1" sx={{ color: '#374151' }}>
-                                                <strong>Final Fee:</strong> ${classDetails.finalFee}
-                                            </Typography>
-                                        </>
-                                    ) : (
-                                        <Typography variant="body1" sx={{ color: '#374151' }}>
-                                            <strong>Final Fee:</strong> ${classDetails.monthlyFee}
+                                    <Divider sx={{ my: 1 }} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                            Monthly Fee
                                         </Typography>
+                                        <Typography variant="body1" sx={{ color: '#000' }}>
+                                            ${classDetails.monthlyFee}
+                                        </Typography>
+                                    </Box>
+                                    {classDetails.discountPercentage > 0 && (
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                                Discount ({classDetails.discountPercentage}%)
+                                            </Typography>
+                                            <Typography variant="body1" sx={{ color: '#22c55e' }}>
+                                                -${(classDetails.monthlyFee - classDetails.finalFee).toFixed(2)}
+                                            </Typography>
+                                        </Box>
                                     )}
-
-                                    {/* Description */}
-                                    <Typography variant="body1" sx={{ color: '#374151' }}>
-                                        <strong>Description:</strong> {classDetails.description || 'No description available.'}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                            Subtotal
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ color: '#000' }}>
+                                            ${classDetails.discountPercentage > 0 ? classDetails.finalFee : classDetails.monthlyFee}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body1" sx={{ color: '#6b7280' }}>
+                                            Tax
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ color: '#000' }}>
+                                            $0.00
+                                        </Typography>
+                                    </Box>
+                                    <Divider sx={{ my: 1 }} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#000' }}>
+                                            Total due today
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#000' }}>
+                                            ${classDetails.discountPercentage > 0 ? classDetails.finalFee : classDetails.monthlyFee}
+                                        </Typography>
+                                    </Box>
                                 </>
                             ) : (
                                 <Typography variant="body1" color="text.secondary">
@@ -188,10 +298,10 @@ const PaymentForm = () => {
                     </Grid>
 
                     {/* Right Section: Payment Form */}
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={7}>
                         <Box
                             sx={{
-                                p: 4,
+                                p: { xs: 2, md: 4 },
                                 backgroundColor: '#fff',
                                 height: '100%',
                                 display: 'flex',
@@ -199,148 +309,324 @@ const PaymentForm = () => {
                                 gap: 2,
                             }}
                         >
-                            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1e3a8a', mb: 2 }}>
-                                Payment Details
-                            </Typography>
                             <form onSubmit={handleSubmit}>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#000', mb: 1 }}>
+                                    Payment method
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
+                                    Card information
+                                </Typography>
                                 <TextField
                                     fullWidth
-                                    label="Card Number"
-                                    placeholder="1234 5678 9012 3456"
+                                    placeholder="Card number"
                                     value={cardNumber}
-                                    onChange={(e) => setCardNumber(e.target.value)}
+                                    onChange={handleCardNumberChange}
                                     required
                                     variant="outlined"
+                                    error={errors.cardNumber}
+                                    helperText={errors.cardNumber ? 'Your card number must be 16 digits.' : ''}
                                     InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <CreditCard sx={{ color: '#1e3a8a' }} />
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <CreditCard sx={{ color: '#6b7280' }} />
                                             </InputAdornment>
                                         ),
                                     }}
                                     sx={{
                                         mb: 2,
                                         '& .MuiOutlinedInput-root': {
-                                            borderRadius: 2,
+                                            borderRadius: 1,
                                             backgroundColor: '#fff',
-                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                                            borderColor: errors.cardNumber ? '#ef4444' : '#d1d5db',
                                             '&:hover fieldset': {
-                                                borderColor: '#1e3a8a',
+                                                borderColor: errors.cardNumber ? '#ef4444' : '#9ca3af',
                                             },
                                             '&.Mui-focused fieldset': {
-                                                borderColor: '#1e3a8a',
-                                                boxShadow: '0 0 0 3px rgba(30, 58, 138, 0.1)',
+                                                borderColor: errors.cardNumber ? '#ef4444' : '#3b82f6',
                                             },
                                         },
-                                        '& .MuiInputLabel-root': {
-                                            color: '#6b7280',
-                                            '&.Mui-focused': {
-                                                color: '#1e3a8a',
-                                            },
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderWidth: '1px',
+                                        },
+                                        '& .MuiInputBase-input': {
+                                            py: 1.5,
+                                            fontSize: '0.875rem',
+                                            color: '#000',
                                         },
                                     }}
                                 />
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={6}>
                                         <TextField
                                             fullWidth
-                                            label="Expiry Date"
                                             placeholder="MM/YY"
                                             value={expiryDate}
-                                            onChange={(e) => setExpiryDate(e.target.value)}
+                                            onChange={handleExpiryDateChange}
                                             required
                                             variant="outlined"
-                                            InputProps={{
-                                                startAdornment: (
-                                                    <InputAdornment position="start">
-                                                        <CalendarToday sx={{ color: '#1e3a8a' }} />
-                                                    </InputAdornment>
-                                                ),
-                                            }}
+                                            error={errors.expiryDate}
+                                            helperText={errors.expiryDate ? 'Invalid expiry date.' : ''}
                                             sx={{
                                                 mb: 2,
                                                 '& .MuiOutlinedInput-root': {
-                                                    borderRadius: 2,
+                                                    borderRadius: 1,
                                                     backgroundColor: '#fff',
-                                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                                                    borderColor: errors.expiryDate ? '#ef4444' : '#d1d5db',
                                                     '&:hover fieldset': {
-                                                        borderColor: '#1e3a8a',
+                                                        borderColor: errors.expiryDate ? '#ef4444' : '#9ca3af',
                                                     },
                                                     '&.Mui-focused fieldset': {
-                                                        borderColor: '#1e3a8a',
-                                                        boxShadow: '0 0 0 3px rgba(30, 58, 138, 0.1)',
+                                                        borderColor: errors.expiryDate ? '#ef4444' : '#3b82f6',
                                                     },
                                                 },
-                                                '& .MuiInputLabel-root': {
-                                                    color: '#6b7280',
-                                                    '&.Mui-focused': {
-                                                        color: '#1e3a8a',
-                                                    },
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderWidth: '1px',
+                                                },
+                                                '& .MuiInputBase-input': {
+                                                    py: 1.5,
+                                                    fontSize: '0.875rem',
+                                                    color: '#000',
                                                 },
                                             }}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={6}>
                                         <TextField
                                             fullWidth
-                                            label="CVV"
-                                            placeholder="123"
+                                            placeholder="CVC"
                                             value={cvv}
-                                            onChange={(e) => setCvv(e.target.value)}
+                                            onChange={handleCvcChange}
                                             required
                                             variant="outlined"
-                                            InputProps={{
-                                                startAdornment: (
-                                                    <InputAdornment position="start">
-                                                        <Lock sx={{ color: '#1e3a8a' }} />
-                                                    </InputAdornment>
-                                                ),
-                                            }}
+                                            error={errors.cvv}
+                                            helperText={errors.cvv ? 'CVC must be 3-4 digits.' : ''}
                                             sx={{
                                                 mb: 2,
                                                 '& .MuiOutlinedInput-root': {
-                                                    borderRadius: 2,
+                                                    borderRadius: 1,
                                                     backgroundColor: '#fff',
-                                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                                                    borderColor: errors.cvv ? '#ef4444' : '#d1d5db',
                                                     '&:hover fieldset': {
-                                                        borderColor: '#1e3a8a',
+                                                        borderColor: errors.cvv ? '#ef4444' : '#9ca3af',
                                                     },
                                                     '&.Mui-focused fieldset': {
-                                                        borderColor: '#1e3a8a',
-                                                        boxShadow: '0 0 0 3px rgba(30, 58, 138, 0.1)',
+                                                        borderColor: errors.cvv ? '#ef4444' : '#3b82f6',
                                                     },
                                                 },
-                                                '& .MuiInputLabel-root': {
-                                                    color: '#6b7280',
-                                                    '&.Mui-focused': {
-                                                        color: '#1e3a8a',
-                                                    },
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderWidth: '1px',
+                                                },
+                                                '& .MuiInputBase-input': {
+                                                    py: 1.5,
+                                                    fontSize: '0.875rem',
+                                                    color: '#000',
                                                 },
                                             }}
                                         />
                                     </Grid>
                                 </Grid>
+                                <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
+                                    Cardholder name
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    placeholder="Full name on card"
+                                    value={cardholderName}
+                                    onChange={(e) => setCardholderName(e.target.value)}
+                                    required
+                                    variant="outlined"
+                                    sx={{
+                                        mb: 2,
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 1,
+                                            backgroundColor: '#fff',
+                                            borderColor: '#d1d5db',
+                                            '&:hover fieldset': {
+                                                borderColor: '#9ca3af',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#3b82f6',
+                                            },
+                                        },
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderWidth: '1px',
+                                        },
+                                        '& .MuiInputBase-input': {
+                                            py: 1.5,
+                                            fontSize: '0.875rem',
+                                            color: '#000',
+                                        },
+                                    }}
+                                />
+                                <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
+                                    Billing address
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    placeholder="Address line 1"
+                                    value={addressLine1}
+                                    onChange={(e) => setAddressLine1(e.target.value)}
+                                    required
+                                    variant="outlined"
+                                    sx={{
+                                        mb: 2,
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 1,
+                                            backgroundColor: '#fff',
+                                            borderColor: '#d1d5db',
+                                            '&:hover fieldset': {
+                                                borderColor: '#9ca3af',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#3b82f6',
+                                            },
+                                        },
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderWidth: '1px',
+                                        },
+                                        '& .MuiInputBase-input': {
+                                            py: 1.5,
+                                            fontSize: '0.875rem',
+                                            color: '#000',
+                                        },
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    placeholder="Address line 2"
+                                    value={addressLine2}
+                                    onChange={(e) => setAddressLine2(e.target.value)}
+                                    variant="outlined"
+                                    sx={{
+                                        mb: 2,
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 1,
+                                            backgroundColor: '#fff',
+                                            borderColor: '#d1d5db',
+                                            '&:hover fieldset': {
+                                                borderColor: '#9ca3af',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#3b82f6',
+                                            },
+                                        },
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderWidth: '1px',
+                                        },
+                                        '& .MuiInputBase-input': {
+                                            py: 1.5,
+                                            fontSize: '0.875rem',
+                                            color: '#000',
+                                        },
+                                    }}
+                                />
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            fullWidth
+                                            placeholder="City"
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                            required
+                                            variant="outlined"
+                                            sx={{
+                                                mb: 2,
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 1,
+                                                    backgroundColor: '#fff',
+                                                    borderColor: '#d1d5db',
+                                                    '&:hover fieldset': {
+                                                        borderColor: '#9ca3af',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: '#3b82f6',
+                                                    },
+                                                },
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderWidth: '1px',
+                                                },
+                                                '& .MuiInputBase-input': {
+                                                    py: 1.5,
+                                                    fontSize: '0.875rem',
+                                                    color: '#000',
+                                                },
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            fullWidth
+                                            placeholder="Postal code"
+                                            value={postalCode}
+                                            onChange={(e) => setPostalCode(e.target.value)}
+                                            required
+                                            variant="outlined"
+                                            sx={{
+                                                mb: 2,
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 1,
+                                                    backgroundColor: '#fff',
+                                                    borderColor: '#d1d5db',
+                                                    '&:hover fieldset': {
+                                                        borderColor: '#9ca3af',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: '#3b82f6',
+                                                    },
+                                                },
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderWidth: '1px',
+                                                },
+                                                '& .MuiInputBase-input': {
+                                                    py: 1.5,
+                                                    fontSize: '0.875rem',
+                                                    color: '#000',
+                                                },
+                                            }}
+                                        />
+                                    </Grid>
+                                </Grid>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={termsAccepted}
+                                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                                            sx={{
+                                                color: '#d1d5db',
+                                                '&.Mui-checked': {
+                                                    color: '#3b82f6',
+                                                },
+                                            }}
+                                        />
+                                    }
+                                    label={
+                                        <Typography variant="body2" sx={{ color: '#6b7280' }}>
+                                            You'll be charged the amount and at the frequency listed above until you cancel, which you can do at any time. By subscribing, you agree to EduConnect's <a href="/terms" target="_blank" style={{ color: '#3b82f6' }}>Terms of Use</a> and <a href="/privacy" target="_blank" style={{ color: '#3b82f6' }}>Privacy Policy</a>.
+                                        </Typography>
+                                    }
+                                    sx={{ mb: 2 }}
+                                />
                                 <Button
                                     type="submit"
                                     variant="contained"
                                     fullWidth
                                     sx={{
-                                        backgroundColor: '#1e3a8a',
+                                        backgroundColor: '#10a375',
                                         borderRadius: 2,
                                         py: 1.5,
-                                        textTransform: 'none',
+                                        textTransform: 'uppercase',
                                         fontWeight: 'bold',
                                         color: '#fff',
                                         boxShadow: '0 3px 6px rgba(0, 0, 0, 0.1)',
                                         transition: 'all 0.3s ease-in-out',
                                         '&:hover': {
-                                            backgroundColor: '#1e40af',
+                                            backgroundColor: '#168864',
                                             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
                                             transform: 'translateY(-1px)',
                                         },
                                     }}
                                 >
-                                    Pay Now
+                                    Subscribe
                                 </Button>
                             </form>
                         </Box>
