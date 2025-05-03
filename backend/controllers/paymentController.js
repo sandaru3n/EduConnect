@@ -187,6 +187,46 @@ exports.subscribeToStudyPack = async (req, res) => {
     }
   };
 
+  // New endpoint to fetch class details for payment form
+exports.getClassDetails = async (req, res) => {
+  try {
+      const { classId } = req.params;
+      const userId = req.user.id;
+
+      // Fetch class details with teacher name
+      const classData = await Class.findById(classId).populate('teacherId', 'name');
+      if (!classData) {
+          return res.status(404).json({ message: 'Class not found' });
+      }
+
+      // Fetch student's approved fee waiver for this specific class (if any)
+      const feeWaiver = await FeeWaiver.findOne({ studentId: userId, classId, status: "Approved" });
+
+      // Calculate discounted fee
+      let finalFee = classData.monthlyFee;
+      let discountPercentage = 0;
+      if (feeWaiver && feeWaiver.discountPercentage > 0) {
+          discountPercentage = feeWaiver.discountPercentage;
+          finalFee = classData.monthlyFee * (1 - discountPercentage / 100);
+      }
+
+      const classDetails = {
+          className: classData.subject,
+          teacherName: classData.teacherId.name,
+          monthlyFee: classData.monthlyFee,
+          finalFee: Math.round(finalFee),
+          discountPercentage,
+          description: classData.description,
+          coverPhoto: classData.coverPhoto || null,
+      };
+
+      res.status(200).json(classDetails);
+  } catch (error) {
+      console.error("Error fetching class details:", error);
+      res.status(500).json({ message: "Error fetching class details", error: error.message });
+  }
+};
+
   // New endpoint to fetch receipt details for a specific payment
 exports.getReceiptDetails = async (req, res) => {
   try {
