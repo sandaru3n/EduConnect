@@ -67,63 +67,21 @@ const AdminSidebar = ({ isCollapsed}) => {
         
 
         {/* Payment */}
-        {/* Users with Submenu */}
         <li>
           <Button
+            component={Link}
+            to="/institute/payment-history"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
-            onClick={() => toggleSubmenu(4)}
           >
-            <MdPayments
+            <MdPayments 
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Payment History</span>}
-            {!isCollapsed && (
-              <span className="ml-auto">
-                <FaAngleDown
-                  className={`transition-transform duration-300 ${
-                    submenuIndex === 4 ? "rotate-180" : ""
-                  }`}
-                />
-              </span>
-            )}
           </Button>
-
-          {/* Submenu with Smooth Collapse */}
-          {!isCollapsed && (
-            <Collapse
-              isOpened={submenuIndex === 4}
-              theme={{
-                collapse: "ReactCollapse--collapse transition-all duration-300 ease-in-out",
-              }}
-            >
-              <ul className="w-full space-y-1 mt-1">
-                <li>
-                  <Button
-                    component={Link}
-                    to="/admin/users/add"
-                    className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
-                  >
-                    <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    Add User
-                  </Button>
-                </li>
-                <li>
-                  <Button
-                    component={Link}
-                    to="/admin/users/list"
-                    className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
-                  >
-                    <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
-                    User List
-                  </Button>
-                </li>
-              </ul>
-            </Collapse>
-          )}
         </li>
 
 
