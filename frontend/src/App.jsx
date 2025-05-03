@@ -100,12 +100,16 @@ import PersonalizedPath from "./features/dashboard/student/PersonalizedPath";
 
 import TeacherPaymentHistory from "./features/dashboard/teacher/PaymentHistory";
 
+import InstitutePaymentHistory from "./features/dashboard/institute/PaymentHistory"
+
 function App() {
     return (
         <Router>
             <Routes>
 
             <Route path="/teacher/payment-history" element={<ProtectedRoute role="teacher"><TeacherPaymentHistory /></ProtectedRoute>} />
+            <Route path="/institute/payment-history" element={<ProtectedRoute role="institute"><InstitutePaymentHistory /></ProtectedRoute>} />
+
 
             <Route path="/student/personalied-path" element={<ProtectedRoute role="student"><PersonalizedPath /></ProtectedRoute>} />
 
