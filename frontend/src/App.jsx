@@ -98,10 +98,14 @@ import FeeWaiverRequests from "./features/dashboard/teacher/FeeWaiverRequests";
 
 import PersonalizedPath from "./features/dashboard/student/PersonalizedPath";
 
+import TeacherPaymentHistory from "./features/dashboard/teacher/PaymentHistory";
+
 function App() {
     return (
         <Router>
             <Routes>
+
+            <Route path="/teacher/payment-history" element={<ProtectedRoute role="teacher"><TeacherPaymentHistory /></ProtectedRoute>} />
 
             <Route path="/student/personalied-path" element={<ProtectedRoute role="student"><PersonalizedPath /></ProtectedRoute>} />
 

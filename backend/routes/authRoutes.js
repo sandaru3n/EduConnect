@@ -32,6 +32,8 @@ const router = express.Router();
 
 const { getAdminDashboardMetrics } = require("../controllers/dashboardController"); // New import
 
+const { getTeacherSubscriptionHistory, getTeacherPaymentHistory } = require("../controllers/TeacherSubscriptionController"); // New import
+
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
@@ -162,4 +164,9 @@ router.get("/teacher/fee-waiver-requests", authMiddleware, getFeeWaiverRequestsF
 
 // Dashboard routes
 router.get("/dashboard/admin-metrics", getAdminDashboardMetrics); // Removed authMiddleware
+
+//  routes
+router.get("/dashboard/teacher-subscription-history", authMiddleware, getTeacherSubscriptionHistory);
+router.get("/dashboard/teacher-payment-history", authMiddleware, getTeacherPaymentHistory);
+
 module.exports = router;
