@@ -68,9 +68,9 @@ exports.getTeacherPaymentHistory = async (req, res) => {
             const dueDate = new Date(paymentDate);
             dueDate.setDate(dueDate.getDate() + 30);
 
-            // Generate a 7-digit invoice number (e.g., INV-0000001)
-            const invoiceNumberSeq = (i + 1).toString().padStart(7, '0'); // Pad with leading zeros
-            const invoiceNumber = `INV-${invoiceNumberSeq}`;
+            // Generate a random 7-digit invoice number (e.g., INV-1234567)
+            const randomNumber = Math.floor(1000000 + Math.random() * 9000000); // Random 7-digit number
+            const invoiceNumber = `INV-${randomNumber}`;
 
             // Only include payments up to the current date
             if (paymentDate <= currentDate) {
