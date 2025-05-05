@@ -100,13 +100,22 @@ import PersonalizedPath from "./features/dashboard/student/PersonalizedPath";
 
 import TeacherPaymentHistory from "./features/dashboard/teacher/PaymentHistory";
 
-import InstitutePaymentHistory from "./features/dashboard/institute/PaymentHistory"
+import InstitutePaymentHistory from "./features/dashboard/institute/PaymentHistory";
+
+import ManageMaterials from "./features/dashboard/teacher/ManageMaterials";
+import SelectClassForMaterials from "./features/dashboard/teacher/SelectClassForMaterials";
 
 function App() {
     return (
         <Router>
             <Routes>
 
+
+            <Route path="/teacher/classes/select" element={<ProtectedRoute role="teacher"><SelectClassForMaterials /></ProtectedRoute>} />
+            <Route path="/:classId/materials" element={<ProtectedRoute role="teacher"><ManageMaterials /></ProtectedRoute>} />
+
+
+            <Route path="/teacher/classes/managematerials" element={<ProtectedRoute role="teacher"><ManageMaterials /></ProtectedRoute>} />
             <Route path="/teacher/payment-history" element={<ProtectedRoute role="teacher"><TeacherPaymentHistory /></ProtectedRoute>} />
             <Route path="/institute/payment-history" element={<ProtectedRoute role="institute"><InstitutePaymentHistory /></ProtectedRoute>} />
 
