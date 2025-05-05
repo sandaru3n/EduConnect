@@ -11,9 +11,12 @@ import {
   InputAdornment, 
   Paper,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  Modal,
+  Fade
 } from '@mui/material';
-import { CreditCard, CalendarToday, Lock, ArrowBack } from '@mui/icons-material';
+import { CreditCard, CalendarToday, Lock, ArrowBack, CheckCircle } from '@mui/icons-material';
+import Confetti from 'react-confetti';
 
 // Define the base URL for the backend (can be moved to a config file)
 const BASE_URL = 'http://localhost:5000';
@@ -34,6 +37,7 @@ const PaymentForm = () => {
         expiryDate: false,
         cvv: false,
     });
+    const [showSuccessModal, setShowSuccessModal] = useState(false); // State for success modal
     const navigate = useNavigate();
     const { classId } = useParams();
 
@@ -75,10 +79,8 @@ const PaymentForm = () => {
 
         if (digits.length <= 4) { // Limit to 4 digits (MMYY)
             if (digits.length <= 2) {
-                // If only month digits are entered, remove any trailing "/"
                 value = digits;
             } else {
-                // Format as MM/YY
                 value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
             }
             setExpiryDate(value);
@@ -129,12 +131,16 @@ const PaymentForm = () => {
                 expiryDate,
                 cvv
             }, config);
-            alert(response.data.message); // "Subscription successful" or "Subscription reactivated successfully"
-            navigate('/student/dashboard/my-classes');
+            setShowSuccessModal(true); // Show the success modal
         } catch (error) {
             console.error('Payment error:', error);
             alert('Payment failed: ' + (error.response?.data?.message || 'Please try again'));
         }
+    };
+
+    const handleCloseSuccessModal = () => {
+        setShowSuccessModal(false);
+        navigate('/student/dashboard/my-classes'); // Redirect after closing the modal
     };
 
     const handleBack = () => {
@@ -366,6 +372,13 @@ const PaymentForm = () => {
                                             variant="outlined"
                                             error={errors.expiryDate}
                                             helperText={errors.expiryDate ? 'Invalid expiry date.' : ''}
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <CalendarToday sx={{ color: '#6b7280' }} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{
                                                 mb: 2,
                                                 '& .MuiOutlinedInput-root': {
@@ -400,6 +413,13 @@ const PaymentForm = () => {
                                             variant="outlined"
                                             error={errors.cvv}
                                             helperText={errors.cvv ? 'CVC must be 3-4 digits.' : ''}
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <Lock sx={{ color: '#6b7280' }} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{
                                                 mb: 2,
                                                 '& .MuiOutlinedInput-root': {
@@ -633,6 +653,55 @@ const PaymentForm = () => {
                     </Grid>
                 </Grid>
             </Paper>
+
+            {/* Success Modal */}
+            <Modal
+                open={showSuccessModal}
+                onClose={handleCloseSuccessModal}
+                closeAfterTransition
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+                <Fade in={showSuccessModal}>
+                    <Box
+                        sx={{
+                            bgcolor: '#ffffff',
+                            borderRadius: 2,
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                            p: 4,
+                            textAlign: 'center',
+                            position: 'relative',
+                            width: '90%',
+                            maxWidth: 400,
+                        }}
+                    >
+                        <Confetti width={400} height={400} numberOfPieces={200} recycle={false} />
+                        <CheckCircle sx={{ fontSize: 60, color: '#10a375', mb: 2 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#111827', mb: 1 }}>
+                            Subscription Successful!
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#6b7280', mb: 3 }}>
+                            You have successfully subscribed to the class "{classDetails?.className}". Enjoy your learning journey!
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            onClick={handleCloseSuccessModal}
+                            sx={{
+                                backgroundColor: '#4f46e5',
+                                color: '#ffffff',
+                                fontWeight: 500,
+                                py: 1,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                '&:hover': {
+                                    backgroundColor: '#4338ca',
+                                },
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </Box>
+                </Fade>
+            </Modal>
         </Box>
     );
 };
