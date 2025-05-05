@@ -105,6 +105,8 @@ import InstitutePaymentHistory from "./features/dashboard/institute/PaymentHisto
 import ManageMaterials from "./features/dashboard/teacher/ManageMaterials";
 import SelectClassForMaterials from "./features/dashboard/teacher/SelectClassForMaterials";
 
+import StudyPackPaymentForm from "./features/dashboard/student/StudyPackPaymentForm";
+
 function App() {
     return (
         <Router>
@@ -191,7 +193,7 @@ function App() {
 
                 <Route path="/admin/refund-management" element={<ProtectedRoute role="admin"><RefundManagement /></ProtectedRoute>} />
 
-
+                <Route path="/student/studypacks/payment/:studyPackId" element={<StudyPackPaymentForm />} />
 
                 <Route path="/teacher/dashboard" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
                 <Route path="/teacher/classes/add" element={<ProtectedRoute role="teacher"><TeacherCreateClass/></ProtectedRoute>} />
