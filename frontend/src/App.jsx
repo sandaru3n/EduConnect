@@ -107,12 +107,15 @@ import SelectClassForMaterials from "./features/dashboard/teacher/SelectClassFor
 
 import StudyPackPaymentForm from "./features/dashboard/student/StudyPackPaymentForm";
 
+import TeacherList from "./features/dashboard/admin/TeacherList";
+
 function App() {
     return (
         <Router>
             <Routes>
 
-
+            
+            <Route path="/admin/teachers" element={<ProtectedRoute role="admin"><TeacherList /></ProtectedRoute>} />
             <Route path="/teacher/classes/select" element={<ProtectedRoute role="teacher"><SelectClassForMaterials /></ProtectedRoute>} />
             <Route path="/:classId/materials" element={<ProtectedRoute role="teacher"><ManageMaterials /></ProtectedRoute>} />
 

@@ -166,7 +166,7 @@ const AdminSidebar = ({ isCollapsed}) => {
         <li>
           <Button
             component={Link}
-            to="/logout"
+            to="/admin/teachers"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
@@ -176,7 +176,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             <FaChalkboardTeacher
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Teachers</span>}
+            {!isCollapsed && <span>All Teachers</span>}
           </Button>
         </li>
 
