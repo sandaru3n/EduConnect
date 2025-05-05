@@ -14,6 +14,8 @@ import { styled } from "@mui/material/styles";
 import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import backgroundImage from '../../assets/avatars/thumb-1.jpg';
+
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     "& .MuiBadge-badge": {
@@ -107,6 +109,9 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
     const unreadCount = notices.filter(notice => notice?.unread).length;
     const openMyAcc = Boolean(anchorMyacc);
     const openNotif = Boolean(anchorNotif);
+
+    // Default profile picture
+    const defaultProfilePicture = backgroundImage;
 
     return (
         <header
@@ -227,7 +232,7 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
                         onClick={handleClickMyacc}
                     >
                         <img
-                            src={user?.profilePicture || "https://ecme-react.themenate.net/img/avatars/thumb-1.jpg"}
+                            src={user?.profilePicture ? `http://localhost:5000${user.profilePicture}` : defaultProfilePicture}
                             alt={user?.name || "User"}
                             className="w-full h-full object-cover"
                         />
@@ -272,11 +277,11 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
                         <MenuItem onClick={handleCloseMyacc} className="!bg-white">
                             <div className="flex items-center gap-3">
                                 <div className="rounded-full w-[35px] h-[35px] overflow-hidden">
-                                    <img
-                                        src={user?.profilePicture || "https://ecme-react.themenate.net/img/avatars/thumb-1.jpg"}
-                                        alt={user?.name || "User"}
-                                        className="w-full h-full object-cover"
-                                    />
+                                <img
+                            src={user?.profilePicture ? `http://localhost:5000${user.profilePicture}` : defaultProfilePicture}
+                            alt={user?.name || "User"}
+                            className="w-full h-full object-cover"
+                        />
                                 </div>
                                 <div className="info">
                                     <h3 className="text-[15px] font-[500] leading-5">{user?.name || "User"}</h3>
