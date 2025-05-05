@@ -44,27 +44,46 @@ exports.getMyClasses = async (req, res) => {
 };
 
 exports.getPaymentHistory = async (req, res) => {
-    try {
+  try {
       const payments = await StudentSubscription.find({ userId: req.user.id })
-        .populate({
-          path: 'classId',
-          select: 'subject teacherId',
-          populate: {
-            path: 'teacherId',
-            select: 'name',
-          },
-        })
-        .sort({ createdAt: -1 });
-  
+          .populate({
+              path: 'classId',
+              select: 'subject teacherId coverPhoto monthlyFee description', // Include coverPhoto and other relevant fields
+              populate: {
+                  path: 'teacherId',
+                  select: 'name',
+              },
+          })
+          .sort({ createdAt: -1 });
+
       if (!payments.length) {
-        return res.status(200).json([]);
+          return res.status(200).json([]);
       }
-  
-      res.status(200).json(payments);
-    } catch (error) {
+
+      // Map the payments to ensure the response includes the expected fields
+      const formattedPayments = payments.map(payment => ({
+          _id: payment._id,
+          classId: payment.classId ? {
+              _id: payment.classId._id,
+              subject: payment.classId.subject,
+              coverPhoto: payment.classId.coverPhoto,
+              monthlyFee: payment.classId.monthlyFee,
+              description: payment.classId.description,
+              teacherId: payment.classId.teacherId ? {
+                  _id: payment.classId.teacherId._id,
+                  name: payment.classId.teacherId.name,
+              } : null,
+          } : null,
+          feePaid: payment.feePaid || payment.classId?.monthlyFee || 0, // Ensure feePaid is set
+          status: payment.status,
+          createdAt: payment.createdAt,
+      }));
+
+      res.status(200).json(formattedPayments);
+  } catch (error) {
       console.error('Error fetching payment history:', error);
       res.status(500).json({ message: 'Server error fetching payment history' });
-    }
-  };
+  }
+};
 
 //
