@@ -278,7 +278,30 @@ exports.getReceiptDetails = async (req, res) => {
 };
 
 
-
+exports.getStudyPackDetails = async (req, res) => {
+    try {
+      const { studyPackId } = req.params;
+      const userId = req.user.id;
+  
+      const studyPack = await StudyPack.findById(studyPackId);
+      if (!studyPack) {
+        return res.status(404).json({ message: 'Study pack not found' });
+      }
+  
+      const studyPackDetails = {
+        title: studyPack.title,
+        subject: studyPack.subject,
+        price: studyPack.price,
+        fileCount: studyPack.fileCount,
+        coverPhoto: studyPack.coverPhotoPath ? `http://localhost:5000${studyPack.coverPhotoPath}` : null, // Use coverPhotoPath and rename to coverPhoto
+      };
+  
+      res.status(200).json(studyPackDetails);
+    } catch (error) {
+      console.error("Error fetching study pack details:", error);
+      res.status(500).json({ message: "Error fetching study pack details", error: error.message });
+    }
+  };
 
 
 // Simple card validation function (unchanged)
