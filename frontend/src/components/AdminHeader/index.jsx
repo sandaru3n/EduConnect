@@ -14,6 +14,7 @@ import Badge from "@mui/material/Badge";
 import { styled } from "@mui/material/styles";
 import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import backgroundImage from '../../assets/avatars/thumb-1.jpg';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -55,6 +56,9 @@ const AdminHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
 
   const openMyAcc = Boolean(anchorMyacc);
 
+  // Default profile picture
+      const defaultProfilePicture = backgroundImage;
+
   return (
     <header
       className={`fixed top-0 left-0 w-full bg-[#fff] shadow-md flex items-center justify-between py-2 px-4 transition-all duration-300 z-40 ${
@@ -87,10 +91,10 @@ const AdminHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
             onClick={handleClickMyacc}
           >
             <img
-              src="https://ecme-react.themenate.net/img/avatars/thumb-1.jpg"
-              alt="User Avatar"
-              className="w-full h-full object-cover"
-            />
+                            src={user?.profilePicture ? `http://localhost:5000${user.profilePicture}` : defaultProfilePicture}
+                            alt={user?.name || "User"}
+                            className="w-full h-full object-cover"
+                        />
           </div>
 
           <Menu
@@ -132,11 +136,11 @@ const AdminHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
             <MenuItem onClick={handleCloseMyacc} className="!bg-white">
               <div className="flex items-center gap-3">
                 <div className="rounded-full w-[35px] h-[35px] overflow-hidden">
-                  <img
-                    src="https://ecme-react.themenate.net/img/avatars/thumb-1.jpg"
-                    alt="User Avatar"
-                    className="w-full h-full object-cover"
-                  />
+                <img
+                            src={user?.profilePicture ? `http://localhost:5000${user.profilePicture}` : defaultProfilePicture}
+                            alt={user?.name || "User"}
+                            className="w-full h-full object-cover"
+                        />
                 </div>
                 <div className="info">
                   <h3 className="text-[15px] font-[500] leading-5">{user.name}</h3>

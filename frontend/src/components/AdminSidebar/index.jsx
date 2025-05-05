@@ -37,7 +37,7 @@ const AdminSidebar = ({ isCollapsed}) => {
         <div className="py-2 w-full flex justify-center">
           <Link to="/admin/dashboard">
             <img
-              src="../../src/assets/educonnetlogo.jpg"
+              src="../../src/assets/educonnetlogo.png"
               alt="Logo"
               className="w-[120px] transition-all duration-300"
             />
@@ -194,7 +194,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             <BsFillBuildingsFill
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Institutes</span>}
+            {!isCollapsed && <span>All Institutes</span>}
           </Button>
         </li>
 
