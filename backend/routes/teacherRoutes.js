@@ -5,8 +5,10 @@ const router = express.Router();
 const authMiddleware = require("../middleware/auth");
 const Class = require("../models/Class");
 const { uploadMaterial } = require("../controllers/classController");
+const ClassMaterial = require("../models/ClassMaterial");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -145,6 +147,109 @@ router.put("/classes/:classId", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "Invalid class ID" });
         }
         res.status(500).json({ message: "Server error while updating class" });
+    }
+});
+
+
+// Fetch all materials for the teacher's classes
+router.get("/materials", authMiddleware, async (req, res) => {
+    try {
+        const classes = await Class.find({ teacherId: req.user.id });
+        const classIds = classes.map(cls => cls._id);
+        const materials = await ClassMaterial.find({ classId: { $in: classIds } })
+            .populate('classId', 'subject');
+        res.status(200).json(materials);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching materials" });
+    }
+});
+
+// Update a material
+router.put("/materials/:materialId", authMiddleware, upload.fields([{ name: 'file', maxCount: 1 }]), async (req, res) => {
+    try {
+        const { materialId } = req.params;
+        const { title, lessonName, type, uploadDate, classId } = req.body;
+        const userId = req.user.id;
+
+        const material = await ClassMaterial.findById(materialId);
+        if (!material) {
+            return res.status(404).json({ message: "Material not found" });
+        }
+
+        const classItem = await Class.findById(classId);
+        if (!classItem || classItem.teacherId.toString() !== userId) {
+            return res.status(403).json({ message: "Not authorized" });
+        }
+
+        if (!title || !lessonName || !type || !uploadDate) {
+            return res.status(400).json({ message: "Title, lesson name, type, and upload date are required" });
+        }
+
+        if (!['pdf', 'video', 'link'].includes(type)) {
+            return res.status(400).json({ message: "Invalid material type" });
+        }
+
+        let content = req.body.content;
+        if (type === 'link') {
+            if (!content) {
+                return res.status(400).json({ message: "URL is required for link type" });
+            }
+        } else if (req.files && req.files.file) {
+            // Delete the old file if it exists
+            if (material.content && material.content.startsWith('/uploads/materials')) {
+                const oldFilePath = path.join(__dirname, '../src/public', material.content);
+                if (fs.existsSync(oldFilePath)) {
+                    fs.unlinkSync(oldFilePath);
+                }
+            }
+            content = `/uploads/materials/${req.files.file[0].filename}`;
+        }
+
+        material.title = title;
+        material.lessonName = lessonName;
+        material.type = type;
+        material.content = content || material.content;
+        material.uploadDate = new Date(uploadDate);
+        material.classId = classId;
+
+        await material.save();
+        res.status(200).json(material);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error updating material", error: error.message });
+    }
+});
+
+// Delete a material
+router.delete("/materials/:materialId", authMiddleware, async (req, res) => {
+    try {
+        const { materialId } = req.params;
+        const userId = req.user.id;
+
+        const material = await ClassMaterial.findById(materialId);
+        if (!material) {
+            return res.status(404).json({ message: "Material not found" });
+        }
+
+        const classItem = await Class.findById(material.classId);
+        if (!classItem || classItem.teacherId.toString() !== userId) {
+            return res.status(403).json({ message: "Not authorized" });
+        }
+
+        // Delete the file if it exists
+        if (material.content && material.content.startsWith('/uploads/materials')) {
+            const filePath = path.join(__dirname, '../src/public', material.content);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        await ClassMaterial.deleteOne({ _id: materialId });
+        res.status(200).json({ message: "Material deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error deleting material", error: error.message });
     }
 });
 
