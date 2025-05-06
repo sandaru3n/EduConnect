@@ -299,8 +299,8 @@ const EBookDashboard = () => {
             }`}
           >
             <Breadcrumbs aria-label="breadcrumb">
-              <MuiLink component={Link} to="/student" underline="hover" color="inherit">
-                Student
+              <MuiLink component={Link} to="/teacher/dashboard" underline="hover" color="inherit">
+                Dashboard
               </MuiLink>
               {breadcrumbItems}
             </Breadcrumbs>
