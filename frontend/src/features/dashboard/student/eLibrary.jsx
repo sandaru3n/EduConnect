@@ -1,5 +1,4 @@
-//frontend/src/features/dashboard/student/eLibrary.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import {
   Breadcrumbs,
@@ -41,7 +40,6 @@ import {
   Category as CategoryIcon,
   Person as PersonIcon,
   CalendarToday as CalendarIcon,
-  Bookmark as BookmarkIcon,
   MenuBook as MenuBookIcon,
   ArrowDownward as ArrowDownwardIcon,
   ArrowUpward as ArrowUpwardIcon,
@@ -60,9 +58,8 @@ const EBookDashboard = () => {
   const [categories, setCategories] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [sortBy, setSortBy] = useState('newest');
-  const [viewMode, setViewMode] = useState('grid');
   const [downloading, setDownloading] = useState(null);
-  const [viewingEBookId, setViewingEBookId] = useState(null); // Added state for viewing
+  const [viewingEBookId, setViewingEBookId] = useState(null);
 
   const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -237,36 +234,31 @@ const EBookDashboard = () => {
     setViewingEBookId(null);
   };
 
-  // Calculate cover background color based on category
-  const getCategoryColor = (category) => {
-    if (!category) return '#6b7280'; // gray-500
-
-    const colors = {
-      'Fiction': '#3b82f6', // blue-500
-      'Science': '#10b981', // emerald-500
-      'History': '#f59e0b', // amber-500
-      'Mathematics': '#8b5cf6', // violet-500
-      'Programming': '#ef4444', // red-500
-      'Business': '#06b6d4', // cyan-500
-      'Philosophy': '#ec4899', // pink-500
-      'Psychology': '#14b8a6', // teal-500
-      'Religion': '#64748b', // slate-500
-      'Self-Help': '#a855f7', // purple-500
-    };
-
-    const lowerCategory = category.toLowerCase();
-    for (const [key, value] of Object.entries(colors)) {
-      if (lowerCategory.includes(key.toLowerCase())) {
-        return value;
-      }
+  // Function to generate a random hex color
+  const generateRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
     }
+    return color;
+  };
 
-    const firstChar = category.charAt(0).toLowerCase();
-    const charCode = firstChar.charCodeAt(0) - 97;
-    const colorKeys = Object.keys(colors);
-    const colorIndex = Math.abs(charCode) % colorKeys.length;
+  // Memoized category-color mapping to ensure consistency across renders
+  const categoryColors = useMemo(() => {
+    const colors = {};
+    categories.forEach(category => {
+      if (!colors[category]) {
+        colors[category] = generateRandomColor();
+      }
+    });
+    return colors;
+  }, [categories]);
 
-    return colors[colorKeys[colorIndex]];
+  // Function to get the color for a category
+  const getCategoryColor = (category) => {
+    if (!category) return '#6b7280'; // Default color if category is undefined
+    return categoryColors[category] || '#6b7280';
   };
 
   const formatDate = (dateString) => {
@@ -320,7 +312,7 @@ const EBookDashboard = () => {
                 <Button
                   variant="outlined"
                   onClick={handleBackToList}
-                  sx={{ mb: 2 }}
+                  sx={{ mb: 2, borderRadius: 2 }}
                   startIcon={<BookIcon />}
                 >
                   Back to Library
@@ -330,7 +322,7 @@ const EBookDashboard = () => {
                   width="100%"
                   height="600px"
                   title={eBooks.find(eBook => eBook._id === viewingEBookId).title}
-                  style={{ border: 'none', borderRadius: '8px' }}
+                  style={{ border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
               </Box>
             ) : (
@@ -342,7 +334,7 @@ const EBookDashboard = () => {
                       className="text-2xl md:text-3xl font-bold text-gray-800"
                       sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
                     >
-                      <MenuBookIcon fontSize="large" sx={{ color: '#4f46e5' }} />
+                      
                       Student E-Library
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
@@ -351,7 +343,7 @@ const EBookDashboard = () => {
                   </Box>
                 </Box>
 
-                <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+                <Paper elevation={0} sx={{ p: 3, mb: 4, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                   <Grid container spacing={3}>
                     <Grid item xs={12} md={5}>
                       <TextField
@@ -361,6 +353,15 @@ const EBookDashboard = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         variant="outlined"
                         size="small"
+                        sx={{
+                          bgcolor: '#f9fafb',
+                          borderRadius: 2,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                            '&:hover fieldset': { borderColor: '#3b82f6' },
+                            '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
+                          },
+                        }}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -390,6 +391,12 @@ const EBookDashboard = () => {
                           value={filters.category}
                           onChange={(e) => handleFilterChange('category', e.target.value)}
                           label="Category"
+                          sx={{
+                            bgcolor: '#f9fafb',
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                          }}
                           startAdornment={
                             <InputAdornment position="start">
                               <CategoryIcon fontSize="small" color="action" />
@@ -412,6 +419,12 @@ const EBookDashboard = () => {
                           value={filters.author}
                           onChange={(e) => handleFilterChange('author', e.target.value)}
                           label="Author"
+                          sx={{
+                            bgcolor: '#f9fafb',
+                            borderRadius: 2,
+                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                          }}
                           startAdornment={
                             <InputAdornment position="start">
                               <PersonIcon fontSize="small" color="action" />
@@ -435,6 +448,12 @@ const EBookDashboard = () => {
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
                             label="Sort By"
+                            sx={{
+                              bgcolor: '#f9fafb',
+                              borderRadius: 2,
+                              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                            }}
                           >
                             <MenuItem value="newest">Newest First</MenuItem>
                             <MenuItem value="oldest">Oldest First</MenuItem>
@@ -449,7 +468,7 @@ const EBookDashboard = () => {
                           color="primary"
                           onClick={resetFilters}
                           disabled={!searchTerm && !filters.category && !filters.author && !filters.uploadDate}
-                          sx={{ minWidth: 'auto' }}
+                          sx={{ minWidth: 'auto', borderRadius: 2 }}
                         >
                           <FilterIcon />
                         </Button>
@@ -465,7 +484,7 @@ const EBookDashboard = () => {
                 </Box>
 
                 {error && (
-                  <Alert severity="error" sx={{ mb: 4 }}>
+                  <Alert severity="error" sx={{ mb: 4, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                     {error}
                   </Alert>
                 )}
@@ -476,8 +495,8 @@ const EBookDashboard = () => {
                       <Grid item xs={12} sm={6} md={4} lg={3} key={item}>
                         <Skeleton
                           variant="rectangular"
-                          height={300}
-                          sx={{ borderRadius: 2 }}
+                          height={340}
+                          sx={{ borderRadius: 3 }}
                           animation="wave"
                         />
                       </Grid>
@@ -488,14 +507,15 @@ const EBookDashboard = () => {
                     elevation={0}
                     sx={{
                       p: 6,
-                      borderRadius: 2,
+                      borderRadius: 3,
                       textAlign: 'center',
-                      border: '1px dashed #ccc',
-                      bgcolor: 'white'
+                      border: '1px dashed #d1d5db',
+                      bgcolor: 'white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                     }}
                   >
                     <BookIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#111827' }}>
                       No eBooks Found
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -508,6 +528,7 @@ const EBookDashboard = () => {
                         variant="outlined"
                         onClick={resetFilters}
                         startIcon={<FilterIcon />}
+                        sx={{ borderRadius: 2 }}
                       >
                         Clear Filters
                       </Button>
@@ -518,27 +539,57 @@ const EBookDashboard = () => {
                     {filteredBooks.map(eBook => (
                       <Grid item xs={12} sm={6} md={4} lg={3} key={eBook._id}>
                         <Card
-                          elevation={1}
+                          elevation={0}
                           sx={{
                             height: '100%',
                             display: 'flex',
                             flexDirection: 'column',
-                            borderRadius: 2,
+                            borderRadius: 3,
                             overflow: 'hidden',
-                            transition: 'transform 0.3s, box-shadow 0.3s',
+                            bgcolor: '#ffffff',
+                            boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+                            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                             '&:hover': {
-                              transform: 'translateY(-4px)',
-                              boxShadow: 3
-                            }
+                              transform: 'translateY(-6px)',
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.12)'
+                            },
+                            position: 'relative'
                           }}
                         >
+                          {/* Category Ribbon */}
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 12,
+                              left: 12,
+                              bgcolor: getCategoryColor(eBook.category),
+                              color: '#fff',
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: 1,
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              textTransform: 'uppercase',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                              zIndex: 1
+                            }}
+                          >
+                            {eBook.category}
+                          </Box>
+
+                          {/* Cover Image or Placeholder */}
                           {eBook.coverPhotoUrl ? (
                             <CardMedia
                               component="img"
                               height="200"
                               image={eBook.coverPhotoUrl}
                               alt={eBook.title}
-                              sx={{ objectFit: 'cover' }}
+                              sx={{
+                                objectFit: 'cover',
+                                borderBottom: `2px solid ${getCategoryColor(eBook.category)}`,
+                                transition: 'opacity 0.3s ease',
+                                '&:hover': { opacity: 0.95 }
+                              }}
                             />
                           ) : (
                             <Box
@@ -548,9 +599,9 @@ const EBookDashboard = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 flexDirection: 'column',
-                                backgroundColor: getCategoryColor(eBook.category) + '15',
+                                background: `linear-gradient(135deg, ${getCategoryColor(eBook.category)}15, #ffffff)`,
                                 position: 'relative',
-                                overflow: 'hidden'
+                                borderBottom: `2px solid ${getCategoryColor(eBook.category)}`
                               }}
                             >
                               <Box
@@ -558,7 +609,7 @@ const EBookDashboard = () => {
                                   position: 'absolute',
                                   top: -30,
                                   left: -20,
-                                  opacity: 0.15,
+                                  opacity: 0.1,
                                   transform: 'rotate(-20deg)',
                                   fontSize: 120
                                 }}
@@ -566,14 +617,19 @@ const EBookDashboard = () => {
                                 <BookIcon fontSize="inherit" sx={{ color: getCategoryColor(eBook.category) }} />
                               </Box>
                               <Typography
-                                variant="h5"
+                                variant="h6"
                                 component="div"
                                 sx={{
                                   color: getCategoryColor(eBook.category),
-                                  fontWeight: 'bold',
+                                  fontWeight: 700,
                                   textAlign: 'center',
-                                  px: 2,
-                                  zIndex: 1
+                                  px: 3,
+                                  zIndex: 1,
+                                  display: '-webkit-box',
+                                  WebkitBoxOrient: 'vertical',
+                                  WebkitLineClamp: 3,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
                                 }}
                               >
                                 {eBook.title}
@@ -581,73 +637,71 @@ const EBookDashboard = () => {
                             </Box>
                           )}
 
-                          <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                            <Typography
-                              variant="h6"
-                              component="div"
-                              gutterBottom
-                              sx={{
-                                fontWeight: 'bold',
-                                display: '-webkit-box',
-                                WebkitBoxOrient: 'vertical',
-                                WebkitLineClamp: 2,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                height: 48
-                              }}
-                            >
-                              {eBook.title}
-                            </Typography>
+                          <CardContent sx={{ flexGrow: 1, py: 2, px: 3 }}>
+                            {/* Title with Tooltip */}
+                            <Tooltip title={eBook.title} placement="top" arrow>
+                              <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{
+                                  fontWeight: 700,
+                                  color: '#111827',
+                                  mb: 1,
+                                  display: '-webkit-box',
+                                  WebkitBoxOrient: 'vertical',
+                                  WebkitLineClamp: 2,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  height: 48,
+                                  lineHeight: '1.3em'
+                                }}
+                              >
+                                {eBook.title}
+                              </Typography>
+                            </Tooltip>
 
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <PersonIcon fontSize="small" color="action" sx={{ mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
+                            {/* Author */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1 }}>
+                              <PersonIcon fontSize="small" sx={{ color: '#6b7280' }} />
+                              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
                                 {eBook.author}
                               </Typography>
                             </Box>
 
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CategoryIcon fontSize="small" color="action" sx={{ mr: 1 }} />
-                              <Chip
-                                label={eBook.category}
-                                size="small"
-                                sx={{
-                                  bgcolor: getCategoryColor(eBook.category) + '15',
-                                  color: getCategoryColor(eBook.category),
-                                  fontWeight: 'medium'
-                                }}
-                              />
-                            </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CalendarIcon fontSize="small" color="action" sx={{ mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                {formatDate(eBook.uploadDate)}
-                              </Typography>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <DownloadIcon fontSize="small" color="action" sx={{ mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                {eBook.downloadCount} {eBook.downloadCount === 1 ? 'download' : 'downloads'}
-                              </Typography>
+                            {/* Date and Downloads */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <CalendarIcon fontSize="small" sx={{ color: '#6b7280' }} />
+                                <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                                  {formatDate(eBook.uploadDate)}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <DownloadIcon fontSize="small" sx={{ color: '#6b7280' }} />
+                                <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                                  {eBook.downloadCount}
+                                </Typography>
+                              </Box>
                             </Box>
                           </CardContent>
 
-                          <Divider />
-
-                          <CardActions sx={{ p: 2, pt: 1, justifyContent: 'space-between' }}>
+                          <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between', bgcolor: '#fafafa' }}>
                             <Button
                               variant="contained"
-                              startIcon={downloading === eBook._id ? <CircularProgress size={20} color="inherit" /> : <DownloadIcon />}
+                              startIcon={downloading === eBook._id ? <CircularProgress size={16} color="inherit" /> : <DownloadIcon />}
                               onClick={() => handleDownload(eBook._id)}
                               disabled={downloading === eBook._id}
                               sx={{
-                                borderRadius: 1,
-                                bgcolor: "#4f46e5",
-                                '&:hover': { bgcolor: "#4338ca" },
+                                borderRadius: 2,
+                                bgcolor: getCategoryColor(eBook.category),
+                                '&:hover': { bgcolor: `${getCategoryColor(eBook.category)}d9` },
+                                fontSize: '0.875rem',
+                                fontWeight: 500,
+                                px: 2,
+                                py: 0.75,
                                 flex: 1,
-                                mr: 1
+                                mr: 1,
+                                transition: 'background-color 0.3s ease'
                               }}
                             >
                               {downloading === eBook._id ? 'Downloading...' : 'Download'}
@@ -657,15 +711,21 @@ const EBookDashboard = () => {
                               startIcon={<VisibilityIcon />}
                               onClick={() => handleViewOnline(eBook._id)}
                               sx={{
-                                borderRadius: 1,
+                                borderRadius: 2,
+                                borderColor: getCategoryColor(eBook.category),
+                                color: getCategoryColor(eBook.category),
+                                '&:hover': {
+                                  borderColor: `${getCategoryColor(eBook.category)}d9`,
+                                  color: `${getCategoryColor(eBook.category)}d9`,
+                                  bgcolor: `${getCategoryColor(eBook.category)}15`
+                                },
+                                fontSize: '0.875rem',
+                                fontWeight: 500,
+                                px: 2,
+                                py: 0.75,
                                 flex: 1,
                                 ml: 1,
-                                color: "#4f46e5",
-                                borderColor: "#4f46e5",
-                                '&:hover': {
-                                  borderColor: "#4338ca",
-                                  color: "#4338ca"
-                                }
+                                transition: 'all 0.3s ease'
                               }}
                             >
                               View
