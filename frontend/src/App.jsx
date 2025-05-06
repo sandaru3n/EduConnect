@@ -110,11 +110,13 @@ import StudyPackPaymentForm from "./features/dashboard/student/StudyPackPaymentF
 import TeacherList from "./features/dashboard/admin/TeacherList";
 import InstituteList from "./features/dashboard/admin/InstituteList";
 
+import AddTeacherPage from "./features/dashboard/institute/AddTeacherPage";
+
 function App() {
     return (
         <Router>
             <Routes>
-
+            <Route path="/institute/add-teacher" element={<ProtectedRoute role="institute"><AddTeacherPage /></ProtectedRoute>} />
             <Route path="/admin/teachers" element={<ProtectedRoute role="admin"><TeacherList /></ProtectedRoute>} />
             <Route path="/admin/institutes" element={<ProtectedRoute role="admin"><InstituteList /></ProtectedRoute>} />
             <Route path="/teacher/classes/select" element={<ProtectedRoute role="teacher"><SelectClassForMaterials /></ProtectedRoute>} />

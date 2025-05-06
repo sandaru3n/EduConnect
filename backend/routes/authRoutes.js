@@ -14,7 +14,9 @@ const { register, login, updateProfile, getProfile,requestPasswordReset,verifyRe
     deleteAdminNotice,
     getAdminNoticesForUser,
     markAdminNoticeAsRead,
-    TeacherInstitutegetNoticeById} = require("../controllers/authController");
+    TeacherInstitutegetNoticeById,
+    addTeacher,
+    getTeachersByInstitute} = require("../controllers/authController");
     const {getTeacherQuizAttempts} = require("../controllers/quizController");
 const { getSubscribedStudents } = require("../controllers/teacherReportController");
 
@@ -177,5 +179,11 @@ router.post("/subscriptions/class", authMiddleware, subscribeToClass);
 router.post("/subscriptions/study-pack", authMiddleware, subscribeToStudyPack);
 router.get("/subscriptions/payment-history", authMiddleware, getPaymentHistory);
 router.get("/subscriptions/receipt/:subscriptionId", authMiddleware, getReceiptDetails);
+
+
+router.post('/add-teacher', authMiddleware, addTeacher);
+router.get('/teachers', authMiddleware, getTeachersByInstitute);
+
+
 
 module.exports = router;
