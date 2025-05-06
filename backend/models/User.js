@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema({
         enum: ["active", "inactive"], 
         default: "inactive" 
     }, // For teacher/institute
+     // For teacher/institute
+     addedByInstitute: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }, // Tracks which institute added this teacher
     createdAt: { type: Date, default: Date.now },
 });
 

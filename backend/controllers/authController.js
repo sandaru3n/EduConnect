@@ -4,6 +4,7 @@ const generateToken = require("../config/jwt");
 
 const Notice = require("../models/Notice");
 const Class = require("../models/Class");
+const Subscription = require("../models/Subscription"); // Added for teacher account limit
 const StudentSubscription = require("../models/StudentSubscription");
 const TeacherInstituteNotice = require("../models/TeacherInstituteNotice")
 
@@ -758,5 +759,96 @@ exports.TeacherInstitutegetNoticeById = async (req, res) => {
         res.status(500).json({ message: "Error retrieving notice", error: error.message });
     }
 };
+
+// New endpoint: Institute adds a teacher with a default password
+exports.addTeacher = async (req, res) => {
+    try {
+        const instituteId = req.user.id;
+        const { name, email, age } = req.body;
+
+        // Validate institute role
+        const institute = await User.findById(instituteId);
+        if (!institute || institute.role !== "institute") {
+            return res.status(403).json({ message: "Only institutes can add teachers" });
+        }
+
+        // Check if email already exists
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: "Email already in use" });
+        }
+
+        // Get the institute's subscription
+        const subscription = await Subscription.findById(institute.subscriptionId);
+        if (!subscription) {
+            return res.status(400).json({ message: "Institute subscription not found" });
+        }
+
+        // Check teacher account limit
+        const teacherCount = await User.countDocuments({
+            role: "teacher",
+            addedByInstitute: instituteId
+        });
+
+        if (teacherCount >= subscription.teacherAccounts) {
+            return res.status(403).json({ message: "Teacher account limit reached for your subscription plan" });
+        }
+
+        // Generate a default password
+        const defaultPassword = "teacher123"; // You can make this more dynamic or configurable
+
+        // Create the teacher
+        const teacher = await User.create({
+            name,
+            email,
+            password: defaultPassword,
+            role: "teacher",
+            age,
+            subscriptionId: institute.subscriptionId,
+            subscriptionStatus: "active", // Inherit institute's subscription status
+            addedByInstitute: instituteId
+        });
+
+        res.status(201).json({
+            message: "Teacher added successfully",
+            teacher: {
+                _id: teacher._id,
+                name: teacher.name,
+                email: teacher.email,
+                role: teacher.role,
+                defaultPassword: defaultPassword // Send default password to institute
+            }
+        });
+    } catch (error) {
+        console.error("Add teacher error:", error);
+        res.status(500).json({ message: "Error adding teacher", error: error.message });
+    }
+};
+
+// New endpoint: Get teachers added by the institute
+exports.getTeachersByInstitute = async (req, res) => {
+    try {
+        const instituteId = req.user.id;
+
+        // Validate institute role
+        const institute = await User.findById(instituteId);
+        if (!institute || institute.role !== "institute") {
+            return res.status(403).json({ message: "Only institutes can view their added teachers" });
+        }
+
+        // Get teachers added by this institute
+        const teachers = await User.find({
+            role: "teacher",
+            addedByInstitute: instituteId
+        }).select('-password');
+
+        res.status(200).json(teachers);
+    } catch (error) {
+        console.error("Get teachers by institute error:", error);
+        res.status(500).json({ message: "Error retrieving teachers", error: error.message });
+    }
+};
+
+
 
 module.exports = exports;
