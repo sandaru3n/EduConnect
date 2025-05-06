@@ -56,7 +56,7 @@ const TeacherDashboard = () => {
 
   // Update document title when location changes
   useEffect(() => {
-    document.title = `TeacherDashboard - EduConnect`; // You can customize the format
+    document.title = `Institute Dashboard - EduConnect`; // You can customize the format
   }, [location, pageTitle]);
 
   return (
