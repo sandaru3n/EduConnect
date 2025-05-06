@@ -6,9 +6,9 @@ import { motion, useScroll, useSpring, useTransform, useMotionValue } from 'fram
 import logo from './assets/educonnetlogo.png';
 import heroBg from './assets/Homepage02.jpg';
 import studentImg from './assets/student.jpg';
-import feature1 from './assets/program01.jpg';
-import feature2 from './assets/program02.jpg';
-import feature3 from './assets/program03.jpg';
+import feature1 from './assets/learning.png';
+import feature2 from './assets/stats.png';
+import feature3 from './assets/verified.png';
 
 
 import testimonial1 from './assets/testimonial1.jpg';
@@ -120,7 +120,7 @@ const HomePage = () => {
       </motion.nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-32 pb-20 px-6 lg:px-16 flex items-center">
+      <section className="min-h-screen bg-blue-100 pt-32 pb-20 px-6 lg:px-16 flex items-center">
         <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
@@ -139,7 +139,7 @@ const HomePage = () => {
             <motion.button 
   whileHover={{ scale: 1.05 }}
   whileTap={{ scale: 0.95 }}
-  className="bg-green-600 text-white px-8 py-4 rounded-full text-lg shadow-lg 
+  className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg shadow-lg 
             hover:bg-green-700 hover:shadow-green-600/30 transition-all
             focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2
             active:bg-green-700 duration-300"
@@ -204,7 +204,7 @@ const HomePage = () => {
                 initial={{ y: 50, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ delay: index * 0.2 }}
-                className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow"
+                className="bg-purple-100 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow"
               >
                 <div className="bg-primary/10 p-4 rounded-xl w-max mb-6">
                   <img src={feature.icon} alt={feature.title} className="w-12 h-12" />
@@ -337,12 +337,19 @@ const HomePage = () => {
               Join thousands of learners already experiencing the future of education
             </p>
             <div className="flex justify-center gap-4">
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                className="bg-primary text-white px-8 py-4 rounded-full text-lg shadow-lg hover:shadow-primary/30"
-              >
-                Start Free Trial
-              </motion.button>
+            <motion.button 
+  whileHover={{ 
+    scale: 1.05,
+    boxShadow: "0 4px 14px rgba(246, 130, 31, 0.35)"
+  }}
+  whileTap={{ scale: 0.98 }}
+  className="bg-[#F6821F] text-white px-8 py-4 rounded-full text-lg font-semibold
+            shadow-lg hover:bg-[#F56B00] hover:shadow-[#F6821F]/30 transition-all
+            duration-300 focus:outline-none focus:ring-2 focus:ring-[#F6821F]
+            focus:ring-offset-2 active:bg-[#E55F00]"
+>
+  Start Free Trial
+</motion.button>
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 className="border-2 border-primary text-primary px-8 py-4 rounded-full text-lg hover:bg-primary/10"
