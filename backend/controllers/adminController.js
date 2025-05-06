@@ -1,5 +1,145 @@
 const User = require('../models/User');
 
+// Get all institutes (admin role check in controller)
+exports.getAllInstitutes = async (req, res) => {
+    try {
+        // Check if the user is an admin
+        const user = await User.findById(req.user.id);
+        if (!user || user.role !== 'admin') {
+            return res.status(403).json({ message: 'Access denied. Admin only.' });
+        }
+
+        const institutes = await User.find({ role: 'institute' }).select(
+            'name email contactNumber subscriptionStatus createdAt'
+        );
+        res.status(200).json(institutes);
+    } catch (error) {
+        console.error('Error fetching institutes:', error);
+        res.status(500).json({ message: 'Error fetching institutes', error: error.message });
+    }
+};
+
+
+exports.banInstitute = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied. Admin only.' });
+      }
+  
+      const { instituteId } = req.params;
+      const institute = await User.findById(instituteId);
+  
+      if (!institute) {
+        return res.status(404).json({ message: 'Institute not found' });
+      }
+  
+      if (institute.role !== 'institute') {
+        return res.status(400).json({ message: 'User is not an institute' });
+      }
+  
+      institute.subscriptionStatus = 'inactive';
+      await institute.save();
+  
+      res.status(200).json({ message: 'Institute banned successfully', institute });
+    } catch (error) {
+      console.error('Error banning institute:', error);
+      res.status(500).json({ message: 'Error banning institute', error: error.message });
+    }
+  };
+  
+  exports.unbanInstitute = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied. Admin only.' });
+      }
+  
+      const { instituteId } = req.params;
+      const institute = await User.findById(instituteId);
+  
+      if (!institute) {
+        return res.status(404).json({ message: 'Institute not found' });
+      }
+  
+      if (institute.role !== 'institute') {
+        return res.status(400).json({ message: 'User is not an institute' });
+      }
+  
+      institute.subscriptionStatus = 'active';
+      await institute.save();
+  
+      res.status(200).json({ message: 'Institute unbanned successfully', institute });
+    } catch (error) {
+      console.error('Error unbanning institute:', error);
+      res.status(500).json({ message: 'Error unbanning institute', error: error.message });
+    }
+  };
+  
+  exports.deleteInstitute = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied. Admin only.' });
+      }
+  
+      const { instituteId } = req.params;
+      const institute = await User.findById(instituteId);
+  
+      if (!institute) {
+        return res.status(404).json({ message: 'Institute not found' });
+      }
+  
+      if (institute.role !== 'institute') {
+        return res.status(400).json({ message: 'User is not an institute' });
+      }
+  
+      await institute.deleteOne();
+      res.status(200).json({ message: 'Institute removed successfully' });
+    } catch (error) {
+      console.error('Error removing institute:', error);
+      res.status(500).json({ message: 'Error removing institute', error: error.message });
+    }
+  };
+  
+  exports.updateInstitute = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Access denied. Admin only.' });
+      }
+  
+      const { instituteId } = req.params;
+      const { name, email, contactNumber } = req.body;
+  
+      const institute = await User.findById(instituteId);
+  
+      if (!institute) {
+        return res.status(404).json({ message: 'Institute not found' });
+      }
+  
+      if (institute.role !== 'institute') {
+        return res.status(400).json({ message: 'User is not an institute' });
+      }
+  
+      if (name) institute.name = name;
+      if (email) {
+        const emailExists = await User.findOne({ email, _id: { $ne: instituteId } });
+        if (emailExists) {
+          return res.status(400).json({ message: 'Email is already in use' });
+        }
+        institute.email = email;
+      }
+      if (contactNumber) institute.contactNumber = contactNumber;
+  
+      await institute.save();
+      res.status(200).json({ message: 'Institute updated successfully', institute });
+    } catch (error) {
+      console.error('Error updating institute:', error);
+      res.status(500).json({ message: 'Error updating institute', error: error.message });
+    }
+  };
+
 // Get all teachers (admin role check in controller)
 exports.getAllTeachers = async (req, res) => {
     try {
