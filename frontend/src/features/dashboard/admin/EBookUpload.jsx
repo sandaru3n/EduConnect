@@ -28,6 +28,9 @@ import {
   Snackbar, 
   Collapse, 
   IconButton as MuiIconButton,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -36,6 +39,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import CategoryIcon from '@mui/icons-material/Category';
 import AdminSidebar from "../../../components/AdminSidebar/index";
 import AdminHeader from "../../../components/AdminHeader/index";
 import jsPDF from 'jspdf';
@@ -294,6 +300,11 @@ const EBookUpload = () => {
     doc.save('ebooks_list.pdf');
   };
 
+  // Calculate metrics for dashboard cards
+  const totalEBooks = eBooks.length;
+  const totalDownloads = eBooks.reduce((sum, eBook) => sum + (eBook.downloadCount || 0), 0);
+  const totalCategories = categories.length;
+
   const pathnames = location.pathname.split("/").filter((x) => x);
   const breadcrumbItems = pathnames.map((value, index) => {
     const last = index === pathnames.length - 1;
@@ -397,6 +408,55 @@ const EBookUpload = () => {
                 ? 'Update information for the selected eBook'
                 : 'Upload new eBooks to the library collection'}
             </Typography>
+
+            {/* Dashboard Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ bgcolor: '#ffffff', borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <LibraryBooksIcon sx={{ fontSize: 40, color: '#4f46e5' }} />
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
+                        Total eBooks
+                      </Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827' }}>
+                        {totalEBooks}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ bgcolor: '#ffffff', borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <DownloadForOfflineIcon sx={{ fontSize: 40, color: '#16a34a' }} />
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
+                        Total Downloads
+                      </Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827' }}>
+                        {totalDownloads}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ bgcolor: '#ffffff', borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <CategoryIcon sx={{ fontSize: 40, color: '#f59e0b' }} />
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
+                        Total Categories
+                      </Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827' }}>
+                        {totalCategories}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
 
             {/* Alert Message */}
             {error && (
