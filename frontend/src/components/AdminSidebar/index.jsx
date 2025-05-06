@@ -268,23 +268,7 @@ const AdminSidebar = ({ isCollapsed}) => {
           </Button>
         </li>
 
-        {/* Discounts*/}
-        <li>
-          <Button
-            component={Link}
-            to="/logout"
-            className={`${
-              isCollapsed
-                ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
-                : "w-full !justify-start !px-3"
-            } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
-          >
-            <MdDiscount
-              className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
-            />
-            {!isCollapsed && <span>Discounts</span>}
-          </Button>
-        </li>
+        
 
 
         {/* Support Ticket */}
