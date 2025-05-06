@@ -335,7 +335,7 @@ const EBookDashboard = () => {
                       sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
                     >
                       
-                      Student E-Library
+                      E-Library
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
                       Browse and download educational materials for your studies
