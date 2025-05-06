@@ -16,22 +16,30 @@ import {
   Link as MuiLink,
   CircularProgress,
   Alert,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  TablePagination,
-  IconButton,
-  Modal,
-  Fade,
-  Snackbar,
+  TextField, 
+  Select, 
+  MenuItem, 
+  FormControl, 
+  InputLabel, 
+  TablePagination, 
+  IconButton, 
+  Modal, 
+  Fade, 
+  Snackbar, 
+  Collapse, 
+  IconButton as MuiIconButton,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DownloadIcon from '@mui/icons-material/Download';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AdminSidebar from "../../../components/AdminSidebar/index";
 import AdminHeader from "../../../components/AdminHeader/index";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -49,6 +57,7 @@ const EBookUpload = () => {
     eBookId: null
   });
   const [eBooks, setEBooks] = useState([]);
+  const [filteredEBooks, setFilteredEBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +68,10 @@ const EBookUpload = () => {
   const [successMessage, setSuccessMessage] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [eBookToDelete, setEBookToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterOpen, setFilterOpen] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
@@ -86,6 +99,21 @@ const EBookUpload = () => {
       setPreviewUrl(formData.coverPhoto || '');
     }
   }, [formData.coverPhoto]);
+
+  useEffect(() => {
+    const filtered = eBooks.filter((eBook) => {
+      const matchesSearch =
+        eBook.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        eBook.author.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesCategory = filterCategory === '' || eBook.category === filterCategory;
+      const matchesStatus = filterStatus === '' || eBook.status === filterStatus;
+
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+    setFilteredEBooks(filtered);
+    setPage(0); // Reset page to 0 when filters change
+  }, [eBooks, searchTerm, filterCategory, filterStatus]);
 
   const fetchEBooks = async () => {
     setLoading(true);
@@ -204,6 +232,66 @@ const EBookUpload = () => {
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Title', 'Author', 'Category', 'Status', 'Downloads', 'Created At'];
+    const rows = filteredEBooks.map(eBook => [
+      `"${eBook.title}"`,
+      `"${eBook.author}"`,
+      `"${eBook.category}"`,
+      eBook.status.charAt(0).toUpperCase() + eBook.status.slice(1),
+      eBook.downloadCount || 0,
+      new Date(eBook.uploadDate).toLocaleDateString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'ebooks_list.csv';
+    link.click();
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('eBooks List', 14, 22);
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+
+    const tableColumn = ['Title', 'Author', 'Category', 'Status', 'Downloads', 'Created At'];
+    const tableRows = filteredEBooks.map(eBook => [
+      eBook.title,
+      eBook.author,
+      eBook.category,
+      eBook.status.charAt(0).toUpperCase() + eBook.status.slice(1),
+      eBook.downloadCount || 0,
+      new Date(eBook.uploadDate).toLocaleDateString()
+    ]);
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229] },
+      styles: { fontSize: 10, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 30 },
+      },
+    });
+
+    doc.save('ebooks_list.pdf');
   };
 
   const pathnames = location.pathname.split("/").filter((x) => x);
@@ -572,19 +660,151 @@ const EBookUpload = () => {
                     </Typography>
                   </Box>
                   <Box sx={{ p: 3 }}>
+                    {/* Filter and Export Section */}
+                    <Box sx={{ mb: 3 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          bgcolor: '#ffffff',
+                          borderRadius: 2,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          p: 2,
+                          border: '1px solid #e5e7eb'
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <FilterListIcon sx={{ color: '#4f46e5' }} />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#111827' }}>
+                            Filters
+                          </Typography>
+                        </Box>
+                        <MuiIconButton onClick={() => setFilterOpen(!filterOpen)}>
+                          {filterOpen ? <ExpandLessIcon sx={{ color: '#4f46e5' }} /> : <ExpandMoreIcon sx={{ color: '#4f46e5' }} />}
+                        </MuiIconButton>
+                      </Box>
+                      <Collapse in={filterOpen}>
+                        <Box
+                          sx={{
+                            bgcolor: '#ffffff',
+                            borderRadius: 2,
+                            p: 2,
+                            mt: 1,
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center' }}>
+                            <TextField
+                              variant="outlined"
+                              size="small"
+                              placeholder="Search by title or author..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              sx={{
+                                flex: 1,
+                                bgcolor: '#f9fafb',
+                                borderRadius: 2,
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: 2,
+                                  '&:hover fieldset': { borderColor: '#3b82f6' },
+                                  '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
+                                },
+                              }}
+                            />
+                            <FormControl sx={{ width: { xs: '100%', md: 200 } }} size="small">
+                              <InputLabel sx={{ color: '#6b7280' }}>Category</InputLabel>
+                              <Select
+                                value={filterCategory}
+                                onChange={(e) => setFilterCategory(e.target.value)}
+                                label="Category"
+                                sx={{
+                                  bgcolor: '#f9fafb',
+                                  borderRadius: 2,
+                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                                }}
+                              >
+                                <MenuItem value="">All Categories</MenuItem>
+                                {categories.map((category) => (
+                                  <MenuItem key={category} value={category}>{category}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <FormControl sx={{ width: { xs: '100%', md: 150 } }} size="small">
+                              <InputLabel sx={{ color: '#6b7280' }}>Status</InputLabel>
+                              <Select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                label="Status"
+                                sx={{
+                                  bgcolor: '#f9fafb',
+                                  borderRadius: 2,
+                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6' },
+                                }}
+                              >
+                                <MenuItem value="">All Statuses</MenuItem>
+                                <MenuItem value="active">Active</MenuItem>
+                                <MenuItem value="inactive">Inactive</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Box>
+                        </Box>
+                      </Collapse>
+                    </Box>
+
+                    {/* Export Buttons */}
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<DownloadIcon />}
+                        onClick={exportToCSV}
+                        sx={{
+                          textTransform: 'none',
+                          bgcolor: '#4f46e5',
+                          '&:hover': { bgcolor: '#4338ca' },
+                          borderRadius: 1,
+                          px: 2,
+                          py: 0.5,
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        Export CSV
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<PictureAsPdfIcon />}
+                        onClick={exportToPDF}
+                        sx={{
+                          textTransform: 'none',
+                          bgcolor: '#4f46e5',
+                          '&:hover': { bgcolor: '#4338ca' },
+                          borderRadius: 1,
+                          px: 2,
+                          py: 0.5,
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        Export PDF
+                      </Button>
+                    </Box>
+
                     {loading ? (
                       <Box sx={{ textAlign: 'center', py: 8 }}>
                         <CircularProgress sx={{ color: '#4f46e5' }} size={40} thickness={5} />
                         <Typography sx={{ color: '#6b7280', mt: 2, fontSize: '0.875rem' }}>Loading eBooks...</Typography>
                       </Box>
-                    ) : eBooks.length === 0 ? (
+                    ) : filteredEBooks.length === 0 ? (
                       <Box sx={{ textAlign: 'center', py: 8 }}>
                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                         <Typography variant="h6" sx={{ mt: 2, color: '#111827', fontSize: '1rem' }}>No eBooks found</Typography>
                         <Typography sx={{ mt: 1, color: '#6b7280', fontSize: '0.875rem' }}>
-                          Start by uploading a new eBook.
+                          {searchTerm || filterCategory || filterStatus ? 'Try adjusting your search or filters.' : 'Start by uploading a new eBook.'}
                         </Typography>
                       </Box>
                     ) : (
@@ -602,7 +822,7 @@ const EBookUpload = () => {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {eBooks
+                            {filteredEBooks
                               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                               .map((eBook) => (
                                 <TableRow key={eBook._id} sx={{ '&:hover': { bgcolor: '#f9fafb' } }}>
@@ -683,7 +903,7 @@ const EBookUpload = () => {
                     <TablePagination
                       rowsPerPageOptions={[8]}
                       component="div"
-                      count={eBooks.length}
+                      count={filteredEBooks.length}
                       rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
