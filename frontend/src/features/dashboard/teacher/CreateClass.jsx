@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Breadcrumbs, Link as MuiLink, Typography, IconButton } from "@mui/material";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
 import TeacherSidebar from "../../../components/TeacherSidebar/index";
 import TeacherHeader from "../../../components/TeacherHeader/index";
 import axios from "axios";
-import { Clear as ClearIcon } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CreateClass = () => {
     const [subject, setSubject] = useState("");
@@ -13,6 +14,7 @@ const CreateClass = () => {
     const [coverPhoto, setCoverPhoto] = useState(null);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
+    const [notification, setNotification] = useState({ message: "", type: "" });
     const navigate = useNavigate();
     const location = useLocation();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -89,14 +91,18 @@ const CreateClass = () => {
             }
 
             await axios.post(
-                "http://localhost:5000/api/classes/create", // Correct endpoint
+                "http://localhost:5000/api/classes/create",
                 formData,
                 config
             );
 
-            navigate("/teacher/dashboard");
+            setNotification({ message: "Class created successfully! Redirecting...", type: "success" });
+            setTimeout(() => navigate("/teacher/classses/view-all"), 1500);
         } catch (error) {
-            setError(error.response?.data?.message || "Error creating class");
+            setNotification({
+                message: error.response?.data?.message || "Error creating class",
+                type: "error",
+            });
         }
     };
 
@@ -148,141 +154,201 @@ const CreateClass = () => {
     }, [location, pageTitle]);
 
     return (
-        <div>
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-gray-100">
+            {/* Notification */}
+            <AnimatePresence>
+                {notification.message && (
+                    <motion.div
+                        initial={{ opacity: 0, x: "100%" }}
+                        animate={{ opacity: 0.9, x: 16 }}
+                        exit={{ opacity: 0, x: "100%" }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className={`fixed top-4 right-0 px-4 py-2 rounded-l-md shadow-lg text-white text-xs font-medium z-50 ${
+                            notification.type === "success" ? "bg-green-500" : "bg-red-500"
+                        }`}
+                    >
+                        {notification.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <TeacherHeader 
                 isSidebarCollapsed={isSidebarCollapsed}
                 toggleSidebar={toggleSidebar}
                 isMobile={isMobile}
             />
-            
-            <div className="flex min-h-screen">
-                <div
-                    className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
-                        isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
-                    }`}
-                >
-                    <TeacherSidebar 
-                        isCollapsed={isSidebarCollapsed} 
-                        toggleSidebar={toggleSidebar} 
-                    />
-                </div>
 
-                <div
-                    className={`flex-1 transition-all duration-300 ${
-                        isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
-                    }`}
-                >
-                    <div
-                        className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
-                            isSidebarCollapsed 
-                                ? "ml-[60px] w-[calc(100%-60px)]" 
-                                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
-                        }`}
-                    >
-                        <Breadcrumbs aria-label="breadcrumb">
-                            <MuiLink component={Link} to="/teacher" underline="hover" color="inherit">
-                                Teacher
-                            </MuiLink>
-                            {breadcrumbItems}
-                        </Breadcrumbs>
-                    </div>
-                    
-                    <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
-                        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-gray-100 to-teal-50 flex items-center justify-center p-4">
-                            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
-                                <h2 className="text-3xl font-extrabold text-center text-indigo-700 mb-6 tracking-tight">
-                                    Create New Class
-                                </h2>
-                                {error && (
-                                    <p className="text-red-600 bg-red-100 p-3 rounded-md text-center mb-6 shadow-sm">
-                                        {error}
-                                    </p>
-                                )}
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div>
-                                        <input
-                                            type="text"
-                                            placeholder="Subject"
-                                            value={subject}
-                                            onChange={(e) => setSubject(e.target.value)}
-                                            required
-                                            className={`w-full px-4 py-2 border rounded-md bg-indigo-50 text-indigo-900 placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 ${
-                                                validationErrors.subject ? 'border-red-300' : 'border-indigo-300'
-                                            }`}
-                                        />
-                                        {validationErrors.subject && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.subject}</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <input
-                                            type="number"
-                                            placeholder="Monthly Fee (LKR)"
-                                            value={monthlyFee}
-                                            onChange={(e) => setMonthlyFee(e.target.value)}
-                                            required
-                                            className={`w-full px-4 py-2 border rounded-md bg-teal-50 text-teal-900 placeholder-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 ${
-                                                validationErrors.monthlyFee ? 'border-red-300' : 'border-teal-300'
-                                            }`}
-                                        />
-                                        {validationErrors.monthlyFee && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.monthlyFee}</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <textarea
-                                            placeholder="Class Description"
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            className={`w-full px-4 py-2 border rounded-md bg-purple-50 text-purple-900 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32 resize-none transition-all duration-300 ${
-                                                validationErrors.description ? 'border-red-300' : 'border-purple-300'
-                                            }`}
-                                        />
-                                        {validationErrors.description && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.description}</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Upload Cover Photo (JPEG, PNG, max 5MB)
-                                        </label>
-                                        <div className="flex items-center">
+            <div className="flex min-h-screen">
+                                <div
+                                  className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+                                    isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+                                  }`}
+                                >
+                                  <TeacherSidebar 
+                                    isCollapsed={isSidebarCollapsed} 
+                                    toggleSidebar={toggleSidebar} 
+                                  />
+                                </div>
+                        
+                                <div
+                                  className={`flex-1 transition-all duration-300 ${
+                                    isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+                                  }`}
+                                >
+                                  <div
+                                    className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+                                      isSidebarCollapsed 
+                                        ? "ml-[60px] w-[calc(100%-60px)]" 
+                                        : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                                    }`}
+                                  >
+                                    {/* Breadcrumbs */}
+                                <div
+                                  className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
+                                    isSidebarCollapsed
+                                      ? "ml-[60px] w-[calc(100%-60px)]"
+                                      : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                                  }`}
+                                >
+                                  <Breadcrumbs aria-label="breadcrumb">
+                                    
+                                    {breadcrumbItems}
+                                  </Breadcrumbs>
+                                  </div></div>
+                                
+                                  
+                                  <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, ease: "easeOut" }}
+                            className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow-xl space-y-6"
+                        >
+                            <h2 className="text-3xl font-extrabold text-center text-indigo-600 tracking-tight">
+                                Create New Class
+                            </h2>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                {/* Class Details Section */}
+                                <div>
+                                    <h3 className="text-base font-semibold text-gray-800 mb-2">Class Details</h3>
+                                    <div className="space-y-4">
+                                        {/* Subject */}
+                                        <div>
                                             <input
-                                                type="file"
-                                                accept="image/jpeg,image/png"
-                                                onChange={handleFileChange}
-                                                className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                                                type="text"
+                                                placeholder="Subject"
+                                                value={subject}
+                                                onChange={(e) => setSubject(e.target.value)}
+                                                required
+                                                className={`h-10 w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ${
+                                                    validationErrors.subject ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             />
-                                            {coverPhoto && (
-                                                <IconButton onClick={handleRemoveCoverPhoto} color="error">
-                                                    <ClearIcon />
-                                                </IconButton>
+                                            {validationErrors.subject && (
+                                                <p className="text-red-500 text-xs mt-1">{validationErrors.subject}</p>
                                             )}
                                         </div>
-                                        {validationErrors.coverPhoto && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.coverPhoto}</p>
+
+                                        {/* Monthly Fee */}
+                                        <div>
+                                            <input
+                                                type="number"
+                                                placeholder="Monthly Fee ($)"
+                                                value={monthlyFee}
+                                                onChange={(e) => setMonthlyFee(e.target.value)}
+                                                required
+                                                className={`h-10 w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ${
+                                                    validationErrors.monthlyFee ? "border-red-500" : "border-gray-200"
+                                                }`}
+                                            />
+                                            {validationErrors.monthlyFee && (
+                                                <p className="text-red-500 text-xs mt-1">{validationErrors.monthlyFee}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Description */}
+                                        <div>
+                                            <textarea
+                                                placeholder="Class Description (Optional)"
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                                className={`h-24 w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 resize-none ${
+                                                    validationErrors.description ? "border-red-500" : "border-gray-200"
+                                                }`}
+                                            />
+                                            {validationErrors.description && (
+                                                <p className="text-red-500 text-xs mt-1">{validationErrors.description}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Cover Photo Section */}
+                                <div>
+                                    <h3 className="text-base font-semibold text-gray-800 mb-2">Cover Photo (Optional)</h3>
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png"
+                                            onChange={handleFileChange}
+                                            className="h-10 w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+                                        />
+                                        {coverPhoto && (
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                type="button"
+                                                onClick={handleRemoveCoverPhoto}
+                                                className="absolute right-2 top-2 text-red-500 hover:text-red-700"
+                                            >
+                                                <svg
+                                                    className="w-5 h-5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M6 18L18 6M6 6l12 12"
+                                                    />
+                                                </svg>
+                                            </motion.button>
                                         )}
                                     </div>
+                                    {validationErrors.coverPhoto && (
+                                        <p className="text-red-500 text-xs mt-1">{validationErrors.coverPhoto}</p>
+                                    )}
                                     {coverPhoto && (
-                                        <div className="mt-2 text-center">
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="mt-2"
+                                        >
                                             <p className="text-sm font-medium text-gray-700 mb-1">Cover Photo Preview:</p>
                                             <img
                                                 src={URL.createObjectURL(coverPhoto)}
                                                 alt="Cover Photo Preview"
-                                                className="max-w-full h-auto rounded-md shadow-sm"
-                                                style={{ maxHeight: "200px" }}
+                                                className="w-full h-40 object-cover rounded-lg shadow-sm"
                                             />
-                                        </div>
+                                        </motion.div>
                                     )}
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-md hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold shadow-md transform hover:scale-105"
-                                    >
-                                        Create Class
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                                </div>
+
+                                {/* Submit Button */}
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    type="submit"
+                                    className="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 shadow-md"
+                                >
+                                    Create Class
+                                </motion.button>
+                            </form>
+                        </motion.div>
                     </div>
                 </div>
             </div>
