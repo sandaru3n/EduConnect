@@ -153,7 +153,7 @@ const DoubtResolver = () => {
                             {breadcrumbItems}
                         </Breadcrumbs>
                     </div>
-
+                    <div className=" p-4 md:p-6 overflow-y-auto "></div>
                     <Box sx={{ maxWidth: 800, mx: "auto", p: 3, mt: "50px" }}>
                         <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                             <Typography variant="h4" gutterBottom>AI Doubt Resolver</Typography>
