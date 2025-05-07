@@ -20,6 +20,7 @@
     "@mui/x-data-grid": "^7.27.3",
     "@nivo/line": "^0.88.0",
     "@nivo/pie": "^0.88.0",
+    "@react-pdf/renderer": "^4.3.0",
     "@reduxjs/toolkit": "^2.6.0",
     "@stripe/react-stripe-js": "^3.3.0",
     "@stripe/stripe-js": "^5.10.0",

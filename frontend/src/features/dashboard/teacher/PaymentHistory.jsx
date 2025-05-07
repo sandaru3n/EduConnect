@@ -9,7 +9,6 @@ import StudentHeader from "../../../components/TeacherHeader/index";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from "@mui/material";
-import { HiDocumentText } from "react-icons/hi";
 import jsPDF from "jspdf";
 import autoTable from 'jspdf-autotable';
 
@@ -220,7 +219,7 @@ const PaymentHistory = () => {
           <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
           <Box sx={{ maxWidth: "1200px", mx: "auto", p: 3, mt: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-        <HiDocumentText style={{ fontSize: "2rem", color: "#1e3a8a" }} />
+        
         <Typography variant="h4" fontWeight="bold" color="text.primary">
           Payment History
         </Typography>
