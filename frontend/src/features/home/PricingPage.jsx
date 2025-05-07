@@ -72,7 +72,7 @@ const PricingPage = () => {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="fixed top-0 left-0 w-full flex items-center justify-between px-6 py-4 z-50 transition-all duration-500 bg-white/80 backdrop-blur-md shadow-sm"
       >
         <motion.div whileHover={{ scale: 1.25 }}>
