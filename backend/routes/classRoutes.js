@@ -10,7 +10,7 @@ const {
     getExtensionRequests,
     handleExtensionRequest,
     createClass,
-    updateClass,
+    updateClass,getTeacherClassesForDashboard,
     deleteClass // Add the new method
 } = require('../controllers/classController');
 const authMiddleware = require('../middleware/auth');
@@ -91,6 +91,8 @@ router.put("/:classId", authMiddleware, coverPhotoUpload.fields([{ name: "coverP
 
 // Delete a class (Teacher)
 router.delete("/:classId", authMiddleware, deleteClass);
+
+router.get('/teacher-classes-dashboard', authMiddleware, getTeacherClassesForDashboard);
 
 module.exports = router;
 

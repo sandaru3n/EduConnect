@@ -586,4 +586,55 @@ Ensure recommendations are practical, specific, and appropriate for high school 
         res.status(500).json({ message: "Error generating personalized learning path", error: error.message });
     }
 };
+
+exports.getTeacherQuizHistorynew = async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+        const quizzes = await Quiz.find({ teacherId })
+            .populate("classId", "subject");
+        res.status(200).json(quizzes);
+    } catch (error) {
+        console.error("Get teacher quiz history error:", error);
+        res.status(500).json({ message: "Error retrieving quiz history", error: error.message });
+    }
+};
+
+exports.getTeacherQuizAttempts = async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+
+        // Find all classes owned by the teacher
+        const classes = await Class.find({ teacherId });
+        const classIds = classes.map(cls => cls._id);
+
+        // Find all quizzes for those classes
+        const quizzes = await Quiz.find({ classId: { $in: classIds } });
+        const quizIds = quizzes.map(quiz => quiz._id);
+
+        // Find all quiz attempts for those quizzes
+        const quizAttempts = await QuizAttempt.find({ quizId: { $in: quizIds } })
+            .populate("studentId", "name")
+            .populate("quizId", "lessonName")
+            .populate({
+                path: "quizId",
+                populate: { path: "classId", select: "subject" }
+            })
+            .sort({ marks: -1 }); // Sort by marks in descending order (highest first)
+
+        // Calculate total marks for each attempt
+        const quizAttemptsWithTotal = await Promise.all(quizAttempts.map(async (attempt) => {
+            const quiz = await Quiz.findById(attempt.quizId._id);
+            return {
+                ...attempt.toObject(),
+                totalMarks: quiz.questions.length
+            };
+        }));
+
+        res.status(200).json(quizAttemptsWithTotal);
+    } catch (error) {
+        console.error("Get teacher quiz attempts error:", error);
+        res.status(500).json({ message: "Error retrieving quiz attempts", error: error.message });
+    }
+};
+
 module.exports = exports;
