@@ -10,7 +10,7 @@ const {
     getStudentQuizHistory,
     getTeacherQuizHistory,
     updateQuizTimer,
-    deleteQuiz,
+    deleteQuiz,getTeacherQuizHistorynew,getTeacherQuizAttempts,
     generatePersonalizedLearningPath
 } = require("../controllers/quizController");
 const authMiddleware = require("../middleware/auth");
@@ -80,5 +80,12 @@ router.delete("/:quizId", authMiddleware, deleteQuiz);
 
 // Generate personalized learning path (Student)
 router.get("/student/learning-path", authMiddleware, generatePersonalizedLearningPath);
+
+router.get('/teacher/history2', authMiddleware, getTeacherQuizHistorynew);
+
+// Get teacher quiz attempts (Teacher)
+router.get("/teacherquizattempts", authMiddleware, getTeacherQuizAttempts);
+
+
 
 module.exports = router;

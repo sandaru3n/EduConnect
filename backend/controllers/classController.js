@@ -451,4 +451,17 @@ exports.handleExtensionRequest = async (req, res) => {
     }
 };
 
+exports.getTeacherClassesForDashboard = async (req, res) => {
+    try {
+        const teacherId = req.user.id; // Use authenticated user ID
+        const classes = await Class.find({ teacherId, isActive: true })
+            .select('subject monthlyFee description')
+            .sort('subject');
+        res.status(200).json(classes);
+    } catch (error) {
+        console.error("Error fetching teacher's classes for dashboard:", error);
+        res.status(500).json({ message: 'Server error fetching classes for dashboard' });
+    }
+};
+
 module.exports = exports;
