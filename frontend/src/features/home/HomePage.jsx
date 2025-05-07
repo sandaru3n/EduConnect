@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useSpring, useTransform, useMotionValue } from 'framer-motion';
 
+import FAQSection from "./FAQ"
 // Import assets (update paths as needed)
 import logo from './assets/educonnetlogo.png';
 import logowhite from './assets/educonnetlogowhite.png';
@@ -468,6 +469,9 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      <section>
+      <FAQSection/>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-primary">
@@ -506,6 +510,7 @@ const HomePage = () => {
             </div>
           </motion.div>
         </div>
+        
       </section>
       <Footer />
     </div>
