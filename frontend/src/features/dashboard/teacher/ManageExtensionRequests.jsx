@@ -143,43 +143,43 @@ const ManageExtensionRequests = () => {
         isMobile={isMobile}
       />
 
-      <div className="flex flex-1">
-        <div
-          className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
-            isSidebarCollapsed ? "w-[60px]" : "w-[250px]"
-          }`}
-        >
-          <TeacherSidebar
-            isCollapsed={isSidebarCollapsed}
-            toggleSidebar={toggleSidebar}
-          />
-        </div>
-
-        <div
-          className={`flex-1 transition-all duration-300 ${
-            isSidebarCollapsed ? "ml-[60px]" : "ml-[250px]"
-          }`}
-        >
-          <div
-            className={`mt-[50px] py-2 px-6 bg-gray-100 border-b fixed top-0 z-30 transition-all duration-300 ${
-              isSidebarCollapsed
-                ? "ml-[60px] w-[calc(100%-60px)]"
-                : "ml-[250px] w-[calc(100%-250px)]"
-            }`}
-          >
-            <Breadcrumbs aria-label="breadcrumb">
-              <MuiLink
-                component={Link}
-                to="/teacher"
-                underline="hover"
-                color="inherit"
-              >
-                Teacher
-              </MuiLink>
-              {breadcrumbItems}
-            </Breadcrumbs>
-          </div>
-
+      <div className="flex min-h-screen">
+                          <div
+                            className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+                              isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+                            }`}
+                          >
+                            <TeacherSidebar 
+                              isCollapsed={isSidebarCollapsed} 
+                              toggleSidebar={toggleSidebar} 
+                            />
+                          </div>
+                  
+                          <div
+                            className={`flex-1 transition-all duration-300 ${
+                              isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+                            }`}
+                          >
+                            <div
+                              className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+                                isSidebarCollapsed 
+                                  ? "ml-[60px] w-[calc(100%-60px)]" 
+                                  : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                              }`}
+                            >
+                              {/* Breadcrumbs */}
+                          <div
+                            className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
+                              isSidebarCollapsed
+                                ? "ml-[60px] w-[calc(100%-60px)]"
+                                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                            }`}
+                          >
+                            <Breadcrumbs aria-label="breadcrumb">
+                              
+                              {breadcrumbItems}
+                            </Breadcrumbs>
+                            </div></div>
           <Box sx={{ maxWidth: 1200, mx: "auto", p: 3, mt: 8 }}>
             <Typography variant="h4" gutterBottom>
               Manage Extension Requests
