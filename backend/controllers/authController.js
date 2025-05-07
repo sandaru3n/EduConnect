@@ -56,6 +56,11 @@ exports.register = async (req, res) => {
     }
     else if (role === "teacher") {
     userData.age = age;
+    userData.contactNumber = contactNumber; // New field
+    userData.addressLine1 = addressLine1; // New field
+    userData.addressLine2 = addressLine2; // New field
+    userData.district = district; // New field
+    userData.zipCode = zipCode; // New field
     if (!subscriptionId) return res.status(400).json({ message: "Subscription plan is required for teachers" });
     userData.subscriptionId = subscriptionId;
     } else if (role === "institute") {
