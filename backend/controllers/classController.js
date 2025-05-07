@@ -71,6 +71,61 @@ exports.createClass = async (req, res) => {
     }
 };
 
+// Delete a class (for teachers)
+exports.deleteClass = async (req, res) => {
+    try {
+        const { classId } = req.params;
+        const teacherId = req.user.id;
+
+        // Validate class ID
+        if (!mongoose.Types.ObjectId.isValid(classId)) {
+            return res.status(400).json({ message: "Invalid class ID" });
+        }
+
+        // Find the class and ensure it belongs to the teacher
+        const classItem = await Class.findById(classId);
+        if (!classItem) {
+            return res.status(404).json({ message: "Class not found" });
+        }
+        if (classItem.teacherId.toString() !== teacherId) {
+            return res.status(403).json({ message: "Not authorized to delete this class" });
+        }
+
+        // Validate teacher role
+        const user = await User.findById(teacherId);
+        if (!user || user.role !== "teacher") {
+            return res.status(403).json({ message: "Only teachers can delete classes" });
+        }
+
+        // Delete the cover photo if it exists
+        if (classItem.coverPhoto) {
+            const photoPath = path.join(__dirname, '../src/public', classItem.coverPhoto);
+            if (fs.existsSync(photoPath)) {
+                fs.unlinkSync(photoPath);
+            }
+        }
+
+        // Delete the class
+        await Class.deleteOne({ _id: classId });
+
+        // Send email notification to the teacher
+        const subjectLine = "Class Deleted Successfully";
+        const text = `Hello ${user.name},\n\nYour class "${classItem.subject}" has been deleted successfully.\n\nEduConnect Team`;
+        const html = `
+            <h2>Class Deleted</h2>
+            <p>Hello ${user.name},</p>
+            <p>Your class "<strong>${classItem.subject}</strong>" has been deleted successfully.</p>
+            <p>EduConnect Team</p>
+        `;
+        await sendEmail(user.email, subjectLine, text, html);
+
+        res.status(200).json({ message: "Class deleted successfully" });
+    } catch (error) {
+        console.error("Delete class error:", error);
+        res.status(500).json({ message: "Error deleting class", error: error.message });
+    }
+};
+
 // Update an existing class (for teachers)
 exports.updateClass = async (req, res) => {
     try {
