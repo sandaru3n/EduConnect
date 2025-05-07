@@ -5,6 +5,7 @@ import { motion, useScroll, useSpring, useTransform, useMotionValue } from 'fram
 
 // Import assets (update paths as needed)
 import logo from './assets/educonnetlogo.png';
+import logowhite from './assets/educonnetlogowhite.png';
 import heroBg from './assets/Homepage02.jpg';
 import studentImg from './assets/student.jpg';
 import feature1 from './assets/learning.png';
@@ -43,8 +44,8 @@ const Footer = () => {
           {/* About Section */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="EduConnect" className="h-10" />
-              <span className="text-xl font-bold text-white">EduConnect</span>
+              <img src={logowhite} alt="EduConnect" className="h-10" />
+              <span className="text-xl font-bold text-white"></span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Transforming education through innovative technology and collaborative learning experiences.
@@ -201,8 +202,8 @@ const HomePage = () => {
         className="fixed w-full py-4 px-6 lg:px-16 bg-white/80 backdrop-blur-md z-40 shadow-sm"
       >
         <div className="flex items-center justify-between">
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <img src={logo} alt="EduConnect" className="h-12" />
+          <motion.div whileHover={{ scale: 1.25 }}>
+            <img src={logo} alt="EduConnect" className="h-14" />
           </motion.div>
 
           <div className="hidden lg:flex items-center gap-8">
