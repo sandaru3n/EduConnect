@@ -59,7 +59,9 @@ import ManageFAQs from "./features/dashboard/admin/ManageFAQs";
 
 
 import Knowledgebase from "../src/features/home/Knowledgebase";
+
 import ManageKnowledgebase from "./features/dashboard/admin/ManageKnowledgebase";
+import KnowledgebaseCategoryPage from "./features/home/KnowledgebaseCategoryPage";
 import ContactMessages from "./features/dashboard/admin/ContactMessages";
 
 import ManageExtensionRequests from "./features/dashboard/teacher/ManageExtensionRequests";
@@ -153,6 +155,7 @@ function App() {
                 <Route path="/contact-us" element={<PageView />} />
                 <Route path="/about-us" element={<PageView />} />
                 <Route path="/knowledgebase" element={<Knowledgebase />} />
+                <Route path="/knowledgebase/:category" element={<KnowledgebaseCategoryPage />} />
 
 
 
