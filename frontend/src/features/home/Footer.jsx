@@ -1,5 +1,6 @@
 
-import logo from './assets/educonnetlogo.png';
+
+import logowhite from './assets/educonnetlogowhite.png';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -24,8 +25,8 @@ const Footer = () => {
           {/* About Section */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="EduConnect" className="h-10" />
-              <span className="text-xl font-bold text-white">EduConnect</span>
+              <img src={logowhite} alt="EduConnect" className="h-10" />
+              <span className="text-xl font-bold text-white"></span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Transforming education through innovative technology and collaborative learning experiences.
