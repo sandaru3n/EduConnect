@@ -221,15 +221,12 @@ const handleDelete = async (noticeId) => {
           }`}
         >
           <Breadcrumbs aria-label="breadcrumb">
-            <MuiLink component={Link} to="/student" underline="hover" color="inherit">
-              Student
-            </MuiLink>
             {breadcrumbItems}
           </Breadcrumbs>
           </div></div>
         
           
-          <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+          <div className=" p-4 md:p-6 overflow-y-auto ">
           <Box sx={{ maxWidth: 800, mx: "auto", p: 3, mt: "50px" }}>
             <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                 <Typography variant="h4" gutterBottom>Notices & Announcements</Typography>

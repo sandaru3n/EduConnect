@@ -163,9 +163,6 @@ const UploadStudyPack = () => {
           }`}
         >
           <Breadcrumbs aria-label="breadcrumb">
-            <MuiLink component={Link} to="/student" underline="hover" color="inherit">
-              Student
-            </MuiLink>
             {breadcrumbItems}
           </Breadcrumbs>
           </div></div>
