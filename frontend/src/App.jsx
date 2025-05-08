@@ -123,7 +123,7 @@ function App() {
         <Router>
             <Routes>
 
-            <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><Analytics /></ProtectedRoute>} />
+            <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><Analytics/></ProtectedRoute>} />
 
             <Route path="/student/leaderboard" element={<StudentLeaderboard />} />
             <Route path="/institute/add-teacher" element={<ProtectedRoute role="institute"><AddTeacherPage /></ProtectedRoute>} />
@@ -149,10 +149,10 @@ function App() {
 
 
 
-            <Route path="/admin/support/tickets"  element={ <ProtectedRoute role="admin"><AdminSupportTickets /></ProtectedRoute>} />
+            <Route path="/admin/support/ticket"  element={ <ProtectedRoute role="admin"><AdminSupportTickets /></ProtectedRoute>} />
             <Route path="/admin/support/ticket/:ticketId" element={ <ProtectedRoute role="admin"><AdminSupportTicketDetails /></ProtectedRoute>} />
             <Route path="/admin/support/categories" element={<ProtectedRoute role="admin"><AdminSupportCategories /></ProtectedRoute>} />
-            <Route path="/teacher/support-tickets" element={<ProtectedRoute role="teacher"><TeacherSupportTickets /></ProtectedRoute> } />
+            <Route path="/teacher/support-ticket" element={<ProtectedRoute role="teacher"><TeacherSupportTickets /></ProtectedRoute> } />
             <Route  path="/teacher/support/ticket/:ticketId" element={<ProtectedRoute role="teacher"><TeacherSupportTicketDetails /> </ProtectedRoute>} />
             <Route path="/teacher/support-form" element={<ProtectedRoute role="teacher"><TeacherSupportForm /></ProtectedRoute>} />
                     
