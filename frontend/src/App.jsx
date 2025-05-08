@@ -21,7 +21,7 @@ import PageView from "./features/home/PageView";
 import AdminPages from "./features/dashboard/admin/AdminPages";
 import AdminEditPage from "./features/dashboard/admin/AdminEditPage";
 import EditProfile from "./features/dashboard/admin/AdminEditProfile";
-import StudentEditProfile from "./features/dashboard/admin/AdminEditProfile";
+import StudentEditProfile from "./features/dashboard/student/StudentEditProfile";
 import ManageLibrary from "./features/dashboard/admin/EBookUpload";
 
 
