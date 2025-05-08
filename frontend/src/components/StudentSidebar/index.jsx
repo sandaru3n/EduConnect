@@ -7,7 +7,7 @@ import { MdSpaceDashboard } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 import { Collapse } from "react-collapse";
 import { MdClass } from "react-icons/md";
-import { BiSolidReport } from "react-icons/bi";
+import { MdLeaderboard } from "react-icons/md";
 import { MdPayments } from "react-icons/md";
 import { IoLibrary } from "react-icons/io5";
 import { TbMessageFilled } from "react-icons/tb";
@@ -387,17 +387,17 @@ const AdminSidebar = ({ isCollapsed}) => {
         <li>
           <Button
             component={Link}
-            to="/logout"
+            to="/student/leaderboard"
             className={`${
               isCollapsed
                 ? "!w-[40px] !h-[40px] !min-w-[40px] !p-0 !flex !justify-center"
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <BiSolidReport
+            <MdLeaderboard
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Reports</span>}
+            {!isCollapsed && <span>Leaderboard</span>}
           </Button>
         </li>
 

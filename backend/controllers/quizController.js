@@ -637,4 +637,110 @@ exports.getTeacherQuizAttempts = async (req, res) => {
     }
 };
 
+// Endpoint: Get leaderboard for logged-in student
+exports.getStudentLeaderboard = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        // Find active subscriptions for the student
+        const subscriptions = await StudentSubscription.find({
+            userId: studentId,
+            status: "Active"
+        });
+        const classIds = subscriptions.map(sub => sub.classId);
+
+        // Find quizzes for those classes
+        const quizzes = await Quiz.find({ classId: { $in: classIds } });
+        const quizIds = quizzes.map(quiz => quiz._id);
+
+        // Find all quiz attempts for those quizzes (for all students)
+        const allAttempts = await QuizAttempt.find({ quizId: { $in: quizIds } })
+            .populate("studentId", "name")
+            .populate("quizId", "lessonName")
+            .populate({
+                path: "quizId",
+                populate: { path: "classId", select: "subject" }
+            });
+
+        // Find the logged-in student's attempts
+        const studentAttempts = allAttempts.filter(attempt => attempt.studentId._id.toString() === studentId);
+
+        if (!studentAttempts || studentAttempts.length === 0) {
+            return res.status(404).json({ message: "No quiz attempts found for this student" });
+        }
+
+        // Calculate total marks for each attempt and group by lessonName
+        const attemptsWithTotal = await Promise.all(allAttempts.map(async (attempt) => {
+            const quiz = await Quiz.findById(attempt.quizId._id);
+            //console.log("Attempt createdAt:", attempt.attemptedAt); // Debug: Log createdAt value
+            return {
+                ...attempt.toObject(),
+                totalMarks: quiz.questions.length,
+                attemptDate: attempt.attemptedAt ? new Date(attempt.attemptedAt).toISOString() : null // Ensure date is in ISO format
+            };
+        }));
+
+        // Group all attempts by lessonName and calculate rankings
+        const leaderboardByLesson = {};
+        attemptsWithTotal.forEach(attempt => {
+            const lessonName = attempt.quizId.lessonName;
+            if (!leaderboardByLesson[lessonName]) {
+                leaderboardByLesson[lessonName] = [];
+            }
+            leaderboardByLesson[lessonName].push({
+                studentId: attempt.studentId._id.toString(),
+                studentName: attempt.studentId.name,
+                marks: attempt.marks,
+                totalMarks: attempt.totalMarks,
+                percentage: (attempt.marks / attempt.totalMarks) * 100,
+                attemptDate: attempt.attemptDate
+            });
+        });
+
+        // Sort attempts within each lesson by marks (descending) and assign ranks
+        const finalLeaderboard = await Promise.all(studentAttempts.map(async (attempt) => {
+            const lessonName = attempt.quizId.lessonName;
+            const lessonAttempts = leaderboardByLesson[lessonName] || [];
+
+            // Sort by marks (descending), then by attempt date (earlier attempts rank higher if marks are tied)
+            lessonAttempts.sort((a, b) => {
+                if (b.marks !== a.marks) return b.marks - a.marks;
+                return new Date(a.attemptDate) - new Date(b.attemptDate);
+            });
+
+            // Find the student's rank
+            const studentRank = lessonAttempts.findIndex(a => a.studentId === studentId) + 1;
+
+            // Get top 3 students for this lesson
+            const topStudents = lessonAttempts.slice(0, 3).map((a, index) => ({
+                rank: index + 1,
+                studentName: a.studentName,
+                marks: a.marks,
+                totalMarks: a.totalMarks,
+                percentage: a.percentage.toFixed(2),
+                attemptDate: a.attemptDate
+            }));
+
+            // Calculate total marks for the student's attempt
+            const quiz = await Quiz.findById(attempt.quizId._id);
+            const totalMarks = quiz.questions.length;
+
+            return {
+                lessonName,
+                studentRank,
+                studentMarks: attempt.marks,
+                studentTotalMarks: totalMarks,
+                studentPercentage: ((attempt.marks / totalMarks) * 100).toFixed(2),
+                topStudents
+            };
+        }));
+
+        res.status(200).json(finalLeaderboard);
+    } catch (error) {
+        console.error("Get student leaderboard error:", error);
+        res.status(500).json({ message: "Error retrieving student leaderboard", error: error.message });
+    }
+};
+
+
 module.exports = exports;
