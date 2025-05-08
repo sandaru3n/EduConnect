@@ -26,6 +26,7 @@
     "@stripe/react-stripe-js": "^3.3.0",
     "@stripe/stripe-js": "^5.10.0",
     "@tailwindcss/postcss": "^4.0.9",
+    "@tawk.to/tawk-messenger-react": "^2.0.2",
     "@tinymce/tinymce-react": "^6.0.0",
     "@tiptap/extension-color": "^2.11.5",
     "@tiptap/extension-text-align": "^2.11.5",

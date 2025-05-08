@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
+
+import TawkMessengerReact from '@tawk.to/tawk-messenger-react';
 import StudentSidebar from "../../../components/TeacherSidebar/index";
 import StudentHeader from "../../../components/TeacherHeader/index";
 import { useNavigate } from "react-router-dom";
@@ -262,6 +264,12 @@ const handleSubmit = async (e) => {
                 </form>
             </Paper>
         </Box>
+
+        <div className="App">
+            <TawkMessengerReact
+                propertyId="681cb6ba504921190cbdc663"
+                widgetId="1iqo2jif0"/>
+        </div>
             
           </div>
         </div>
