@@ -12,7 +12,7 @@ import { FaChalkboardTeacher } from "react-icons/fa";
 import { BsFillBuildingsFill } from "react-icons/bs";
 import { MdPayments } from "react-icons/md";
 import { BiSolidReport } from "react-icons/bi";
-import { MdDiscount } from "react-icons/md";
+import { TbPresentationAnalyticsFilled } from "react-icons/tb";
 import { TbHelpSquareRoundedFilled } from "react-icons/tb";
 import { IoLibrary } from "react-icons/io5";
 import { TfiAnnouncement } from "react-icons/tfi";
@@ -261,7 +261,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 : "w-full !justify-start !px-3"
             } !capitalize flex gap-3 !text-[16px] !text-[rgba(0,0,0,0.8)] font-[500] items-center !py-2 hover:!bg-[#fafafa]`}
           >
-            <BiSolidReport
+            <TbPresentationAnalyticsFilled
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
             {!isCollapsed && <span>Analytics</span>}
