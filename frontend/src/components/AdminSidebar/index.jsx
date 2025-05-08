@@ -323,7 +323,7 @@ const AdminSidebar = ({ isCollapsed}) => {
                 <li>
                   <Button
                     component={Link}
-                    to="/admin/support/tickets"
+                    to="/admin/support/ticket"
                     className="!text-[rgba(0,0,0,0.7)] !capitalize !justify-start !w-full !text-[13px] !font-[500] !pl-9 flex gap-3 !py-1 hover:!bg-[#fafafa]"
                   >
                     <span className="block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]"></span>
