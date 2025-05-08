@@ -859,6 +859,65 @@ exports.getTeachersByInstitute = async (req, res) => {
     }
 };
 
+// Get the 5 most recent users (teachers or institutes)
+exports.getRecentUsers = async (req, res) => {
+    try {
+        // Validate admin role
+        const adminId = req.user.id;
+        const user = await User.findById(adminId);
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can view recent users" });
+        }
+
+        // Fetch the 5 most recent users who are teachers or institutes
+        const recentUsers = await User.find({
+            role: { $in: ["teacher", "institute"] }
+        })
+            .sort({ createdAt: -1 }) // Sort by creation date, newest first
+            .limit(5) // Limit to 5 users
+            .select("name role createdAt"); // Select only needed fields
+
+        // Format the response to match the frontend requirements
+        const formattedActivities = recentUsers.map((user, index) => {
+            const timeAgo = getTimeAgo(user.createdAt); // Helper function to calculate time ago
+            return {
+                id: index + 1,
+                user: user.name,
+                action: "joined as",
+                target: user.role === "teacher" ? "New Teacher" : "New Institute",
+                time: timeAgo,
+                avatar: user.name.charAt(0).toUpperCase() + (user.name.split(" ")[1]?.charAt(0).toUpperCase() || ""), // Generate avatar initials
+                targetType: "user"
+            };
+        });
+
+        res.status(200).json(formattedActivities);
+    } catch (error) {
+        console.error("Get recent users error:", error);
+        res.status(500).json({ message: "Error retrieving recent users", error: error.message });
+    }
+};
+
+// Helper function to calculate "time ago" (e.g., "2 hours ago")
+const getTimeAgo = (date) => {
+    const now = new Date();
+    const createdAt = new Date(date);
+    const diffInMs = now - createdAt;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 60) {
+        return `${diffInMinutes} minutes ago`;
+    } else if (diffInHours < 24) {
+        return `${diffInHours} hours ago`;
+    } else if (diffInDays === 1) {
+        return "Yesterday";
+    } else {
+        return `${diffInDays} days ago`;
+    }
+};
+
 
 
 module.exports = exports;

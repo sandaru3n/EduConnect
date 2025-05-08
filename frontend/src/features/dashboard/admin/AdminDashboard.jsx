@@ -31,54 +31,7 @@ const hexToRGBA = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const recentActivities = [
-  {
-    id: 1,
-    user: "Jacob Wilson",
-    action: "enrolled in",
-    target: "Advanced Physics Course",
-    time: "2 hours ago",
-    avatar: "JW",
-    targetType: "course"
-  },
-  {
-    id: 2,
-    user: "Emily Davis",
-    action: "purchased",
-    target: "Premium Subscription",
-    time: "5 hours ago",
-    avatar: "ED",
-    targetType: "subscription"
-  },
-  {
-    id: 3,
-    user: "Michael Brown",
-    action: "submitted",
-    target: "Final Assignment",
-    time: "Yesterday",
-    avatar: "MB",
-    targetType: "assignment"
-  },
-  {
-    id: 4,
-    user: "Sophia Martinez",
-    action: "joined as",
-    target: "New Teacher",
-    time: "2 days ago",
-    avatar: "SM",
-    targetType: "user"
-  },
-  {
-    id: 5,
-    user: "William Johnson",
-    action: "created",
-    target: "Introduction to Chemistry",
-    time: "3 days ago",
-    avatar: "WJ",
-    targetType: "course"
-  }
-];
-
+// Define quickLinks array
 const quickLinks = [
   { title: "Edit Pages", icon: <MenuBookIcon />, path: "/admin/pages" },
   { title: "Create Subscription", icon: <AssignmentIcon />, path: "/admin/subscription" },
@@ -92,6 +45,8 @@ const AdminDashboard = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statsData, setStatsData] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]); // State for recent activities
+  const [activityLoading, setActivityLoading] = useState(true); // Separate loading state for activities
 
   // Fetch dashboard metrics from the backend
   useEffect(() => {
@@ -110,6 +65,26 @@ const AdminDashboard = () => {
     fetchMetrics();
   }, []);
 
+  // Fetch recent users (teachers or institutes)
+  useEffect(() => {
+    const fetchRecentUsers = async () => {
+      setActivityLoading(true);
+      try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
+        const { data } = await axios.get("http://localhost:5000/api/auth/admin/recent-users", config);
+        setRecentActivities(data);
+      } catch (err) {
+        console.error("Error fetching recent users:", err);
+        setRecentActivities([]); // Fallback to empty array on error
+      } finally {
+        setActivityLoading(false);
+      }
+    };
+
+    fetchRecentUsers();
+  }, []);
+
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
@@ -124,15 +99,6 @@ const AdminDashboard = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Simulate data loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
   }, []);
 
   const pathnames = location.pathname.split("/").filter((x) => x);
@@ -275,6 +241,7 @@ const AdminDashboard = () => {
                   <IconButton
                     size="small"
                     sx={{ bgcolor: 'background.paper', boxShadow: 1 }}
+                    onClick={() => window.location.reload()} // Refresh the page to reload data
                   >
                     <RefreshIcon />
                   </IconButton>
@@ -300,7 +267,7 @@ const AdminDashboard = () => {
                         sx={{
                           p: 3,
                           borderRadius: 2,
-                          bgcolor: hexToRGBA(stat.color, 0.2), // Fixed: Use RGBA with 80% opacity
+                          bgcolor: hexToRGBA(stat.color, 0.2),
                           height: '100%',
                           transition: 'transform 0.3s, box-shadow 0.3s',
                           '&:hover': {
@@ -384,53 +351,68 @@ const AdminDashboard = () => {
                         </Button>
                       </Box>
                       <Box sx={{ maxHeight: 420, overflow: 'auto' }}>
-                        {recentActivities.map((activity, index) => (
-                          <Box key={activity.id}>
-                            <Box sx={{
-                              display: 'flex',
-                              p: 2.5,
-                              '&:hover': { bgcolor: '#f9fafb' }
-                            }}>
-                              <Avatar
-                                sx={{
-                                  mr: 2,
-                                  bgcolor: getAvatarColor(activity.avatar),
-                                  width: 40,
-                                  height: 40,
-                                  fontSize: '0.9rem'
-                                }}
-                              >
-                                {activity.avatar}
-                              </Avatar>
-                              <Box sx={{ flex: 1 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                  <Typography variant="body2">
-                                    <Box component="span" fontWeight="bold">
-                                      {activity.user}
-                                    </Box>{' '}
-                                    {activity.action}{' '}
-                                    <Box
-                                      component="span"
-                                      sx={{
-                                        color: '#4f46e5',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: 0.5
-                                      }}
-                                    >
-                                      {getActivityIcon(activity.targetType)}
-                                      {activity.target}
-                                    </Box>
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {activity.time}
-                                  </Typography>
+                        {activityLoading ? (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                            <CircularProgress size={30} />
+                            <Typography sx={{ ml: 2 }} color="text.secondary">
+                              Loading recent activities...
+                            </Typography>
+                          </Box>
+                        ) : recentActivities.length === 0 ? (
+                          <Box sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography color="text.secondary">
+                              No recent activities found.
+                            </Typography>
+                          </Box>
+                        ) : (
+                          recentActivities.map((activity, index) => (
+                            <Box key={activity.id}>
+                              <Box sx={{
+                                display: 'flex',
+                                p: 2.5,
+                                '&:hover': { bgcolor: '#f9fafb' }
+                              }}>
+                                <Avatar
+                                  sx={{
+                                    mr: 2,
+                                    bgcolor: getAvatarColor(activity.user),
+                                    width: 40,
+                                    height: 40,
+                                    fontSize: '0.9rem'
+                                  }}
+                                >
+                                  {activity.avatar}
+                                </Avatar>
+                                <Box sx={{ flex: 1 }}>
+                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="body2">
+                                      <Box component="span" fontWeight="bold">
+                                        {activity.user}
+                                      </Box>{' '}
+                                      {activity.action}{' '}
+                                      <Box
+                                        component="span"
+                                        sx={{
+                                          color: '#4f46e5',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: 0.5
+                                        }}
+                                      >
+                                        {getActivityIcon(activity.targetType)}
+                                        {activity.target}
+                                      </Box>
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {activity.time}
+                                    </Typography>
+                                  </Box>
                                 </Box>
                               </Box>
+                              {index < recentActivities.length - 1 && <Divider />}
                             </Box>
-                            {index < recentActivities.length - 1 && <Divider />}
-                          </Box>
-                        ))}
+                          ))
+                        )}
                       </Box>
                     </Paper>
                   </Grid>
