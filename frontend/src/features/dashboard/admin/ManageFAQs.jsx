@@ -190,9 +190,6 @@ const ManageFAQs = () => {
             }`}
           >
             <Breadcrumbs aria-label="breadcrumb">
-              <MuiLink component={Link} to="/admin" underline="hover" color="inherit">
-                Admin
-              </MuiLink>
               {breadcrumbItems}
             </Breadcrumbs>
           </div>
