@@ -8,7 +8,8 @@ const refundRequestSchema = new mongoose.Schema({
     reason: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
     classFee: { type: Number, required: true },
-    requestDate: { type: Date, default: Date.now }
+    requestDate: { type: Date, default: Date.now },
+    proof: { type: String } // New field for storing the proof file path
 });
 
 module.exports = mongoose.model('RefundRequest', refundRequestSchema);
