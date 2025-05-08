@@ -11,7 +11,7 @@ const {
     getTeacherQuizHistory,
     updateQuizTimer,
     deleteQuiz,getTeacherQuizHistorynew,getTeacherQuizAttempts,
-    generatePersonalizedLearningPath
+    generatePersonalizedLearningPath,getStudentLeaderboard
 } = require("../controllers/quizController");
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
@@ -86,6 +86,7 @@ router.get('/teacher/history2', authMiddleware, getTeacherQuizHistorynew);
 // Get teacher quiz attempts (Teacher)
 router.get("/teacherquizattempts", authMiddleware, getTeacherQuizAttempts);
 
-
+// New endpoint for student leaderboard
+router.get("/leaderboard/student", authMiddleware, getStudentLeaderboard);
 
 module.exports = router;
