@@ -149,8 +149,8 @@ router.post("/support/ticket/:ticketId/message", authMiddleware, sendMessage);
 // Admin Support Ticket Routes
 router.post("/admin/support/category", authMiddleware, createSupportCategory);
 router.post("/admin/support/subcategory", authMiddleware, createSupportSubcategory);
-router.delete("/admin/support/category/:categoryId", authMiddleware, deleteSupportCategory);
-router.delete("/admin/support/subcategory/:subcategoryId", authMiddleware, deleteSupportSubcategory);
+router.delete("/admin/support/category/:categoryId",deleteSupportCategory);
+router.delete("/admin/support/subcategory/:subcategoryId",deleteSupportSubcategory);
 router.get("/admin/support/tickets", authMiddleware, getAllSupportTickets);
 router.get("/admin/support/ticket/:ticketId", authMiddleware, getSupportTicketById);
 router.put("/admin/support/ticket/:ticketId/status", authMiddleware, updateSupportTicketStatus);
