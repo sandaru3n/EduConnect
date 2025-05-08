@@ -284,35 +284,44 @@ const PaymentHistoryDash = () => {
       />
       
       <div className="flex min-h-screen">
-        <div
-          className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
-            isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
-          }`}
-        >
-          <StudentSidebar 
-            isCollapsed={isSidebarCollapsed} 
-            toggleSidebar={toggleSidebar} 
-          />
-        </div>
-
-        <div
-          className={`flex-1 transition-all duration-300 ${
-            isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
-          }`}
-        >
-          <div
-            className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
-              isSidebarCollapsed 
-                ? "ml-[60px] w-[calc(100%-60px)]" 
-                : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
-            }`}
-          >
-            <Breadcrumbs aria-label="breadcrumb">
-              {breadcrumbItems}
-            </Breadcrumbs>
-          </div>
-          
-          <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
+              <div
+                className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+                  isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+                }`}
+              >
+                <StudentSidebar 
+                  isCollapsed={isSidebarCollapsed} 
+                  toggleSidebar={toggleSidebar} 
+                />
+              </div>
+      
+              <div
+                className={`flex-1 transition-all duration-300 ${
+                  isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+                }`}
+              >
+                <div
+                  className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
+                    isSidebarCollapsed 
+                      ? "ml-[60px] w-[calc(100%-60px)]" 
+                      : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                  }`}
+                >
+                  {/* Breadcrumbs */}
+              <div
+                className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
+                  isSidebarCollapsed
+                    ? "ml-[60px] w-[calc(100%-60px)]"
+                    : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
+                }`}
+              >
+                <Breadcrumbs aria-label="breadcrumb">
+                  {breadcrumbItems}
+                </Breadcrumbs>
+                </div></div>
+              
+                
+                <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
             <Typography variant="h5" gutterBottom className="font-bold text-gray-900">
               Payment History
             </Typography>
