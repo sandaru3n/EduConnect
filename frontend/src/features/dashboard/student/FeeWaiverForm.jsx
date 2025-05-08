@@ -6,9 +6,10 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 
+
 import axios from "axios";
 import { Document, Page, pdfjs } from "react-pdf";
-import { HiDocumentText, HiCheckCircle, HiXCircle, HiClock, HiPaperClip} from "react-icons/hi";
+import { HiCheckCircle, HiXCircle, HiClock, HiPaperClip} from "react-icons/hi";
 import ClearIcon from '@mui/icons-material/Clear';
 import useAuth from "../../../hooks/useAuth";
 
@@ -281,13 +282,13 @@ const FeeWaiverForm = () => {
                           
                             
                             <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
-                    <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+                    <div className="max-w-7xl mx-auto p-6 bg-white-50 min-h-screen">
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Apply for Fee Waiver - Sticky Left Side */}
                 <div className="lg:w-3/5 ">
                     <div className="sticky top-6 bg-white rounded-xl shadow-md border border-blue-100 p-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <HiDocumentText className="w-10 h-10 text-blue-900" />
+                            
                             <h2 className="text-4xl font-bold text-blue-900">Apply for Fee Waiver</h2>
                         </div>
                         {error && (
@@ -443,7 +444,7 @@ const FeeWaiverForm = () => {
                 <div className="lg:w-2/5">
                     <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-6">
                         <div className="flex items-center gap-2 mb-4">
-                            <HiDocumentText className="w-6 h-6 text-blue-900" />
+                            
                             <h2 className="text-2xl font-bold text-blue-900">Fee Waiver History</h2>
                         </div>
                         {historyLoading ? (
