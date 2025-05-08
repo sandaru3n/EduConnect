@@ -43,7 +43,7 @@ exports.getAdminDashboardMetrics = async (req, res) => {
             },
             {
                 id: 3,
-                title: "Active Courses",
+                title: "Active Classes",
                 value: activeCourses,
                 change: "+5", // Placeholder
                 trend: "up",

@@ -264,7 +264,7 @@ const AdminSidebar = ({ isCollapsed}) => {
             <BiSolidReport
               className={`${isCollapsed ? "text-[20px]" : "text-[18px]"} flex-shrink-0`}
             />
-            {!isCollapsed && <span>Reports</span>}
+            {!isCollapsed && <span>Analytics</span>}
           </Button>
         </li>
 

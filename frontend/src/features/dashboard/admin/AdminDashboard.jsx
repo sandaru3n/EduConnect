@@ -16,7 +16,6 @@ import {
   Person as PersonIcon,
   Notifications as NotificationsIcon,
   KeyboardArrowRight as ArrowRightIcon,
-  Add as AddIcon,
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
 
@@ -80,46 +79,11 @@ const recentActivities = [
   }
 ];
 
-const taskData = [
-  {
-    id: 1,
-    title: "Review new course submissions",
-    status: "pending",
-    progress: 0,
-    priority: "high",
-    due: "Today"
-  },
-  {
-    id: 2,
-    title: "Update subscription pricing",
-    status: "in-progress",
-    progress: 60,
-    priority: "medium",
-    due: "Tomorrow"
-  },
-  {
-    id: 3,
-    title: "Respond to support tickets",
-    status: "in-progress",
-    progress: 35,
-    priority: "high",
-    due: "Today"
-  },
-  {
-    id: 4,
-    title: "Prepare monthly financial report",
-    status: "pending",
-    progress: 0,
-    priority: "medium",
-    due: "Next week"
-  },
-];
-
 const quickLinks = [
-  { title: "Add New Course", icon: <MenuBookIcon />, path: "/admin/courses/new" },
-  { title: "Create Subscription", icon: <AssignmentIcon />, path: "/admin/subscription/new" },
-  { title: "Add New User", icon: <PersonIcon />, path: "/admin/users/new" },
-  { title: "View Reports", icon: <TrendingUpIcon />, path: "/admin/reports" },
+  { title: "Edit Pages", icon: <MenuBookIcon />, path: "/admin/pages" },
+  { title: "Create Subscription", icon: <AssignmentIcon />, path: "/admin/subscription" },
+  { title: "Manage Teachers", icon: <PersonIcon />, path: "/admin/teachers" },
+  { title: "View Analytics", icon: <TrendingUpIcon />, path: "/admin/analytics" },
 ];
 
 const AdminDashboard = () => {
@@ -247,20 +211,6 @@ const AdminDashboard = () => {
         return <PersonIcon fontSize="small" />;
       default:
         return <NotificationsIcon fontSize="small" />;
-    }
-  };
-
-  // Get priority color
-  const getPriorityColor = (priority) => {
-    switch(priority) {
-      case 'high':
-        return '#ef4444'; // Red
-      case 'medium':
-        return '#f59e0b'; // Amber
-      case 'low':
-        return '#10b981'; // Green
-      default:
-        return '#6b7280'; // Gray
     }
   };
 
@@ -559,100 +509,6 @@ const AdminDashboard = () => {
                             overflow: 'hidden'
                           }}
                         >
-                          <Box sx={{
-                            p: 2.5,
-                            bgcolor: '#f9fafb',
-                            borderBottom: '1px solid',
-                            borderColor: 'divider',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                              Pending Tasks
-                            </Typography>
-                            <Button
-                              startIcon={<AddIcon fontSize="small" />}
-                              size="small"
-                              sx={{ color: '#4f46e5' }}
-                            >
-                              Add
-                            </Button>
-                          </Box>
-                          <Box sx={{ maxHeight: 240, overflow: 'auto' }}>
-                            {taskData.map((task, index) => (
-                              <Box key={task.id}>
-                                <Box sx={{
-                                  p: 2,
-                                  '&:hover': { bgcolor: '#f9fafb' }
-                                }}>
-                                  <Box sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    mb: 1
-                                  }}>
-                                    <Typography variant="body2" fontWeight="medium">
-                                      {task.title}
-                                    </Typography>
-                                    <Tooltip title={`Priority: ${task.priority}`}>
-                                      <Box
-                                        sx={{
-                                          width: 10,
-                                          height: 10,
-                                          borderRadius: '50%',
-                                          bgcolor: getPriorityColor(task.priority)
-                                        }}
-                                      />
-                                    </Tooltip>
-                                  </Box>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <LinearProgress
-                                      variant="determinate"
-                                      value={task.progress}
-                                      sx={{
-                                        flex: 1,
-                                        height: 6,
-                                        borderRadius: 1,
-                                        bgcolor: '#e5e7eb',
-                                        '& .MuiLinearProgress-bar': {
-                                          bgcolor: '#4f46e5'
-                                        }
-                                      }}
-                                    />
-                                    <Typography variant="caption" color="text.secondary">
-                                      {task.progress}%
-                                    </Typography>
-                                  </Box>
-                                  <Box sx={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                  }}>
-                                    <Typography variant="caption" color="text.secondary">
-                                      Due: {task.due}
-                                    </Typography>
-                                    <Button
-                                      size="small"
-                                      variant={task.status === 'pending' ? 'outlined' : 'contained'}
-                                      color={task.status === 'pending' ? 'primary' : 'secondary'}
-                                      sx={{
-                                        py: 0.5,
-                                        px: 1.5,
-                                        borderRadius: 4,
-                                        textTransform: 'capitalize',
-                                        fontSize: '0.7rem',
-                                        minWidth: 'unset'
-                                      }}
-                                    >
-                                      {task.status}
-                                    </Button>
-                                  </Box>
-                                </Box>
-                                {index < taskData.length - 1 && <Divider />}
-                              </Box>
-                            ))}
-                          </Box>
                         </Paper>
                       </Grid>
                     </Grid>
