@@ -118,6 +118,8 @@ import StudentLeaderboard from "./features/dashboard/student/StudentLeaderboard"
 
 import Analytics from "./features/dashboard/admin/Analytics";
 
+import TeacherEditProfile from "./features/dashboard/teacher/TeacherEditProfile";
+
 function App() {
     return (
         <Router>
@@ -207,6 +209,7 @@ function App() {
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
                 <Route path="/student/edit-profile" element={<StudentEditProfile />} />
+                <Route path="/teacher/edit-profile" element={<TeacherEditProfile />} />
 
                 <Route path="/admin/refund-management" element={<ProtectedRoute role="admin"><RefundManagement /></ProtectedRoute>} />
 
