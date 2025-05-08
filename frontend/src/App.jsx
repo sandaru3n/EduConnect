@@ -116,10 +116,14 @@ import AddTeacherPage from "./features/dashboard/institute/AddTeacherPage";
 
 import StudentLeaderboard from "./features/dashboard/student/StudentLeaderboard";
 
+import Analytics from "./features/dashboard/admin/Analytics";
+
 function App() {
     return (
         <Router>
             <Routes>
+
+            <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><Analytics /></ProtectedRoute>} />
 
             <Route path="/student/leaderboard" element={<StudentLeaderboard />} />
             <Route path="/institute/add-teacher" element={<ProtectedRoute role="institute"><AddTeacherPage /></ProtectedRoute>} />
