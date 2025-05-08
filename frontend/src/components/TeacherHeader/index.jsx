@@ -58,7 +58,7 @@ const TeacherHeader = ({ isSidebarCollapsed, toggleSidebar, isMobile }) => {
 
     const handleProfile = () => {
         handleCloseMyacc();
-        navigate("/admin/edit-profile");
+        navigate("/teacher/edit-profile");
     };
 
     const handleLogoutClick = () => {
