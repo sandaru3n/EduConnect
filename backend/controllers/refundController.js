@@ -19,12 +19,19 @@ exports.requestRefund = async (req, res) => {
             return res.status(404).json({ message: 'Class not found' });
         }
 
+        // Check if a proof file was uploaded
+        let proofPath = null;
+        if (req.file) {
+            proofPath = `/uploads/refunds/${req.file.filename}`;
+        }
+
         const refundRequest = new RefundRequest({
             studentId,
             classId,
             subscriptionId: subscription._id,
             reason,
             classFee: subscription.feePaid,
+            proof: proofPath // Store the proof file path
         });
 
         await refundRequest.save();

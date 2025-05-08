@@ -50,6 +50,7 @@ app.use('/api/faqs', faqRoutes);
 // Serve static files
 app.use('/uploads/ebooks', express.static(path.join(__dirname, 'src/public/uploads/ebooks')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'src/public/uploads/covers')));
+app.use('/uploads/refunds', express.static(path.join(__dirname, 'uploads/refunds')));
 
 app.use('/uploads/documents', express.static(path.join(__dirname, 'src/public/uploads/documents')));
 
