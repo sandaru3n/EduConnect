@@ -15,7 +15,7 @@ const { register, login, updateProfile, getProfile,requestPasswordReset,verifyRe
     getAdminNoticesForUser,
     markAdminNoticeAsRead,
     TeacherInstitutegetNoticeById,
-    addTeacher,
+    addTeacher,getRecentUsers,
     getTeachersByInstitute} = require("../controllers/authController");
     const {getTeacherQuizAttempts} = require("../controllers/quizController");
 const { getSubscribedStudents } = require("../controllers/teacherReportController");
@@ -185,5 +185,8 @@ router.post('/add-teacher', authMiddleware, addTeacher);
 router.get('/teachers', authMiddleware, getTeachersByInstitute);
 
 
+
+// Admin Recent Users Route
+router.get("/admin/recent-users", authMiddleware,getRecentUsers);
 
 module.exports = router;
