@@ -142,12 +142,6 @@ exports.createSupportSubcategory = async (req, res) => {
 exports.deleteSupportCategory = async (req, res) => {
     try {
         const { categoryId } = req.params;
-        const userRole = req.user.role;
-
-        // Ensure user is admin
-        if (userRole !== "admin") {
-            return res.status(403).json({ message: "Only admins can delete support categories" });
-        }
 
         // Delete category and associated subcategories
         await SupportCategory.deleteOne({ _id: categoryId });
@@ -164,12 +158,6 @@ exports.deleteSupportCategory = async (req, res) => {
 exports.deleteSupportSubcategory = async (req, res) => {
     try {
         const { subcategoryId } = req.params;
-        const userRole = req.user.role;
-
-        // Ensure user is admin
-        if (userRole !== "admin") {
-            return res.status(403).json({ message: "Only admins can delete support subcategories" });
-        }
 
         // Delete subcategory
         await SupportSubcategory.deleteOne({ _id: subcategoryId });
