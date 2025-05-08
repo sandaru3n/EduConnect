@@ -33,6 +33,8 @@ import {
 import AdminSidebar from "../../../components/AdminSidebar/index";
 import AdminHeader from "../../../components/AdminHeader/index";
 import { FilterList as FilterListIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from '@mui/icons-material';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -280,37 +282,50 @@ const TeacherList = () => {
     link.click();
   };
 
-  // Export to PDF (LaTeX content)
+  // Export to PDF using jsPDF and jspdf-autotable
   const exportToPDF = () => {
-    const latexContent = `
-\\documentclass{article}
-\\usepackage{booktabs}
-\\usepackage[utf8]{inputenc}
-\\usepackage{geometry}
-\\geometry{a4paper, margin=1in}
-\\title{Teachers List}
-\\author{EduConnect Admin}
-\\date{${new Date().toLocaleDateString()}}
-\\begin{document}
-\\maketitle
-\\section*{Teachers List}
-\\begin{tabular}{l l c l l l}
-\\toprule
-\\textbf{Name} & \\textbf{Email} & \\textbf{Age} & \\textbf{Contact Number} & \\textbf{Status} & \\textbf{Created At} \\\\
-\\midrule
-${filteredTeachers.map(teacher => (
-  `${teacher.name.replace('&', '\\&')} & ${teacher.email.replace('&', '\\&')} & ${teacher.age || 'N/A'} & ${teacher.contactNumber || 'N/A'} & ${teacher.subscriptionStatus.charAt(0).toUpperCase() + teacher.subscriptionStatus.slice(1)} & ${new Date(teacher.createdAt).toLocaleDateString()} \\\\`
-)).join('\n')}
-\\bottomrule
-\\end{tabular}
-\\end{document}
-`;
+    const doc = new jsPDF();
+    
+    // Set document properties
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Teachers List", 14, 20);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Admin: ${JSON.parse(localStorage.getItem('userInfo'))?.name || 'EduConnect Admin'}`, 14, 40);
 
-    const blob = new Blob([latexContent], { type: 'text/plain;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'teachers_list.tex';
-    link.click();
+    // Prepare table data
+    const tableData = filteredTeachers.map(teacher => [
+      teacher.name,
+      teacher.email,
+      teacher.age || 'N/A',
+      teacher.contactNumber || 'N/A',
+      teacher.subscriptionStatus.charAt(0).toUpperCase() + teacher.subscriptionStatus.slice(1),
+      new Date(teacher.createdAt).toLocaleDateString()
+    ]);
+
+    // Generate table using jspdf-autotable
+    doc.autoTable({
+      startY: 50,
+      head: [['Name', 'Email', 'Age', 'Contact Number', 'Status', 'Created At']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [59, 130, 246] }, // Blue header (RGB equivalent of #3b82f6)
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 30 }, // Name
+        1: { cellWidth: 40 }, // Email
+        2: { cellWidth: 15 }, // Age
+        3: { cellWidth: 30 }, // Contact Number
+        4: { cellWidth: 20 }, // Status
+        5: { cellWidth: 25 }, // Created At
+      },
+      margin: { top: 50 },
+    });
+
+    // Save the PDF
+    doc.save(`Teachers_List_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -422,7 +437,7 @@ ${filteredTeachers.map(teacher => (
                   color="primary"
                   size="small"
                   onClick={exportToCSV}
-                  sx={{ textTransform: 'none', borderRadius: 1 }}
+                  sx={{ textTransform: 'none', borderRadius: 1, bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
                 >
                   Export CSV
                 </Button>
@@ -431,7 +446,7 @@ ${filteredTeachers.map(teacher => (
                   color="primary"
                   size="small"
                   onClick={exportToPDF}
-                  sx={{ textTransform: 'none', borderRadius: 1 }}
+                  sx={{ textTransform: 'none', borderRadius: 1, bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
                 >
                   Export PDF
                 </Button>
