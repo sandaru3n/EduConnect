@@ -33,25 +33,27 @@ import {
 import AdminSidebar from "../../../components/AdminSidebar/index";
 import AdminHeader from "../../../components/AdminHeader/index";
 import { FilterList as FilterListIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from '@mui/icons-material';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const BASE_URL = 'http://localhost:5000';
 
 const InstituteList = () => {
-    const location = useLocation();
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [institutes, setInstitutes] = useState([]);
-    const [filteredTeachers, setFilteredTeachers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-    const [confirmAction, setConfirmAction] = useState(null);
-    const [confirmMessage, setConfirmMessage] = useState('');
-    const [selectedInstituteId, setSelectedInstituteId] = useState(null);
-    const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-    const [selectedInstitute, setSelectedInstitute] = useState(null);
-    const [editFormData, setEditFormData] = useState({
+  const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [institutes, setInstitutes] = useState([]);
+  const [filteredInstitutes, setFilteredInstitutes] = useState([]); // Changed from filteredTeachers to filteredInstitutes
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [selectedInstituteId, setSelectedInstituteId] = useState(null);
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [selectedInstitute, setSelectedInstitute] = useState(null);
+  const [editFormData, setEditFormData] = useState({
     name: '',
     email: '',
     contactNumber: ''
@@ -60,8 +62,6 @@ const InstituteList = () => {
   const [filter, setFilter] = useState({
     name: '',
     email: '',
-    ageMin: '',
-    ageMax: '',
     status: 'all'
   });
   const [page, setPage] = useState(0);
@@ -82,20 +82,20 @@ const InstituteList = () => {
   }, []);
 
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchInstitutes = async () => { // Updated function name from fetchTeachers to fetchInstitutes
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
         const { data } = await axios.get(`${BASE_URL}/api/admin/institutes`, config);
         setInstitutes(data);
-        setFilteredTeachers(data);
+        setFilteredInstitutes(data); // Updated from setFilteredTeachers to setFilteredInstitutes
         setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch teachers. Please try again later.');
+        setError(err.response?.data?.message || 'Failed to fetch institutes. Please try again later.');
         setLoading(false);
       }
     };
-    fetchTeachers();
+    fetchInstitutes();
   }, []);
 
   useEffect(() => {
@@ -103,23 +103,22 @@ const InstituteList = () => {
       let filtered = [...institutes];
 
       if (filter.name) {
-        filtered = filtered.filter(teacher =>
-          teacher.name.toLowerCase().includes(filter.name.toLowerCase())
+        filtered = filtered.filter(institute =>
+          institute.name.toLowerCase().includes(filter.name.toLowerCase())
         );
       }
 
       if (filter.email) {
-        filtered = filtered.filter(teacher =>
-          teacher.email.toLowerCase().includes(filter.email.toLowerCase())
+        filtered = filtered.filter(institute =>
+          institute.email.toLowerCase().includes(filter.email.toLowerCase())
         );
       }
 
-      
       if (filter.status !== 'all') {
-        filtered = filtered.filter(teacher => teacher.subscriptionStatus === filter.status);
+        filtered = filtered.filter(institute => institute.subscriptionStatus === filter.status);
       }
 
-      setFilteredTeachers(filtered);
+      setFilteredInstitutes(filtered); // Updated from setFilteredTeachers to setFilteredInstitutes
       setPage(0); // Reset to first page when filters change
     };
 
@@ -151,7 +150,6 @@ const InstituteList = () => {
     setConfirmModalOpen(true);
   };
 
-
   const handleUnbanInstitute = async (instituteId) => {
     setSelectedInstituteId(instituteId);
     setConfirmMessage('Are you sure you want to unban this institute?');
@@ -171,7 +169,6 @@ const InstituteList = () => {
     });
     setConfirmModalOpen(true);
   };
-
 
   const handleRemoveInstitute = async (instituteId) => {
     setSelectedInstituteId(instituteId);
@@ -249,14 +246,13 @@ const InstituteList = () => {
 
   // Export to CSV
   const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Age', 'Contact Number', 'Status', 'Created At'];
-    const rows = filteredTeachers.map(teacher => [
-      `"${teacher.name}"`,
-      `"${teacher.email}"`,
-      teacher.age || 'N/A',
-      teacher.contactNumber || 'N/A',
-      teacher.subscriptionStatus,
-      new Date(teacher.createdAt).toLocaleDateString()
+    const headers = ['Name', 'Email', 'Contact Number', 'Status', 'Created At'];
+    const rows = filteredInstitutes.map(institute => [
+      `"${institute.name}"`,
+      `"${institute.email}"`,
+      institute.contactNumber || 'N/A',
+      institute.subscriptionStatus,
+      new Date(institute.createdAt).toLocaleDateString()
     ]);
 
     const csvContent = [
@@ -267,41 +263,52 @@ const InstituteList = () => {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'teachers_list.csv';
+    link.download = 'institutes_list.csv';
     link.click();
   };
 
-  // Export to PDF (LaTeX content)
+  // Export to PDF using jsPDF and jspdf-autotable
   const exportToPDF = () => {
-    const latexContent = `
-\\documentclass{article}
-\\usepackage{booktabs}
-\\usepackage[utf8]{inputenc}
-\\usepackage{geometry}
-\\geometry{a4paper, margin=1in}
-\\title{Teachers List}
-\\author{EduConnect Admin}
-\\date{${new Date().toLocaleDateString()}}
-\\begin{document}
-\\maketitle
-\\section*{Teachers List}
-\\begin{tabular}{l l c l l l}
-\\toprule
-\\textbf{Name} & \\textbf{Email} & \\textbf{Age} & \\textbf{Contact Number} & \\textbf{Status} & \\textbf{Created At} \\\\
-\\midrule
-${filteredTeachers.map(teacher => (
-  `${teacher.name.replace('&', '\\&')} & ${teacher.email.replace('&', '\\&')} & ${teacher.age || 'N/A'} & ${teacher.contactNumber || 'N/A'} & ${teacher.subscriptionStatus.charAt(0).toUpperCase() + teacher.subscriptionStatus.slice(1)} & ${new Date(teacher.createdAt).toLocaleDateString()} \\\\`
-)).join('\n')}
-\\bottomrule
-\\end{tabular}
-\\end{document}
-`;
+    const doc = new jsPDF();
+    
+    // Set document properties
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Institutes List", 14, 20);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Admin: ${JSON.parse(localStorage.getItem('userInfo'))?.name || 'EduConnect Admin'}`, 14, 40);
 
-    const blob = new Blob([latexContent], { type: 'text/plain;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'teachers_list.tex';
-    link.click();
+    // Prepare table data
+    const tableData = filteredInstitutes.map(institute => [
+      institute.name,
+      institute.email,
+      institute.contactNumber || 'N/A',
+      institute.subscriptionStatus.charAt(0).toUpperCase() + institute.subscriptionStatus.slice(1),
+      new Date(institute.createdAt).toLocaleDateString()
+    ]);
+
+    // Generate table using jspdf-autotable
+    doc.autoTable({
+      startY: 50,
+      head: [['Name', 'Email', 'Contact Number', 'Status', 'Created At']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [59, 130, 246] }, // Blue header (RGB equivalent of #3b82f6)
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 40 }, // Name
+        1: { cellWidth: 50 }, // Email
+        2: { cellWidth: 30 }, // Contact Number
+        3: { cellWidth: 20 }, // Status
+        4: { cellWidth: 25 }, // Created At
+      },
+      margin: { top: 50 },
+    });
+
+    // Save the PDF
+    doc.save(`Institutes_List_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -413,7 +420,7 @@ ${filteredTeachers.map(teacher => (
                   color="primary"
                   size="small"
                   onClick={exportToCSV}
-                  sx={{ textTransform: 'none', borderRadius: 1 }}
+                  sx={{ textTransform: 'none', borderRadius: 1, bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
                 >
                   Export CSV
                 </Button>
@@ -422,7 +429,7 @@ ${filteredTeachers.map(teacher => (
                   color="primary"
                   size="small"
                   onClick={exportToPDF}
-                  sx={{ textTransform: 'none', borderRadius: 1 }}
+                  sx={{ textTransform: 'none', borderRadius: 1, bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
                 >
                   Export PDF
                 </Button>
@@ -476,8 +483,6 @@ ${filteredTeachers.map(teacher => (
                         }}
                       />
                     </Grid>
-                    
-                    
                     <Grid item xs={12} sm={6} md={2}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Status</InputLabel>
@@ -508,7 +513,6 @@ ${filteredTeachers.map(teacher => (
                   <TableRow sx={{ bgcolor: '#f0f4f8' }}>
                     <TableCell sx={{ fontWeight: 600, color: '#111827' }}>Name</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#111827' }}>Email</TableCell>
-                    
                     <TableCell sx={{ fontWeight: 600, color: '#111827' }}>Contact Number</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#111827' }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#111827' }}>Created At</TableCell>
@@ -516,25 +520,24 @@ ${filteredTeachers.map(teacher => (
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredTeachers
+                  {filteredInstitutes
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((teacher) => (
-                      <TableRow key={teacher._id} sx={{ '&:hover': { bgcolor: '#f9fafb' } }}>
-                        <TableCell>{teacher.name}</TableCell>
-                        <TableCell>{teacher.email}</TableCell>
-                        
-                        <TableCell>{teacher.contactNumber || 'N/A'}</TableCell>
-                        <TableCell sx={{ color: teacher.subscriptionStatus === 'active' ? '#16a34a' : '#ef4444' }}>
-                          {teacher.subscriptionStatus.charAt(0).toUpperCase() + teacher.subscriptionStatus.slice(1)}
+                    .map((institute) => (
+                      <TableRow key={institute._id} sx={{ '&:hover': { bgcolor: '#f9fafb' } }}>
+                        <TableCell>{institute.name}</TableCell>
+                        <TableCell>{institute.email}</TableCell>
+                        <TableCell>{institute.contactNumber || 'N/A'}</TableCell>
+                        <TableCell sx={{ color: institute.subscriptionStatus === 'active' ? '#16a34a' : '#ef4444' }}>
+                          {institute.subscriptionStatus.charAt(0).toUpperCase() + institute.subscriptionStatus.slice(1)}
                         </TableCell>
-                        <TableCell>{new Date(teacher.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(institute.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell sx={{ display: 'flex', gap: 1 }}>
-                          {teacher.subscriptionStatus === 'active' ? (
+                          {institute.subscriptionStatus === 'active' ? (
                             <Button
                               variant="contained"
                               color="error"
                               size="small"
-                              onClick={() => handleBanInstitute(teacher._id)}
+                              onClick={() => handleBanInstitute(institute._id)}
                               sx={{ textTransform: 'none', borderRadius: 1 }}
                             >
                               Ban
@@ -544,7 +547,7 @@ ${filteredTeachers.map(teacher => (
                               variant="contained"
                               color="success"
                               size="small"
-                              onClick={() => handleUnbanInstitute(teacher._id)}
+                              onClick={() => handleUnbanInstitute(institute._id)}
                               sx={{ textTransform: 'none', borderRadius: 1 }}
                             >
                               Unban
@@ -554,7 +557,7 @@ ${filteredTeachers.map(teacher => (
                             variant="contained"
                             color="primary"
                             size="small"
-                            onClick={() => handleOpenEditModal(teacher)}
+                            onClick={() => handleOpenEditModal(institute)}
                             sx={{ textTransform: 'none', borderRadius: 1 }}
                           >
                             Edit
@@ -563,7 +566,7 @@ ${filteredTeachers.map(teacher => (
                             variant="contained"
                             color="secondary"
                             size="small"
-                            onClick={() => handleRemoveInstitute(teacher._id)}
+                            onClick={() => handleRemoveInstitute(institute._id)}
                             sx={{ textTransform: 'none', borderRadius: 1 }}
                           >
                             Remove
@@ -577,7 +580,7 @@ ${filteredTeachers.map(teacher => (
             <TablePagination
               rowsPerPageOptions={[8]}
               component="div"
-              count={filteredTeachers.length}
+              count={filteredInstitutes.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -605,7 +608,7 @@ ${filteredTeachers.map(teacher => (
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#111827', mb: 3 }}>
-              Edit Teacher
+              Edit Institute
             </Typography>
             <form onSubmit={handleEditSubmit}>
               <TextField
