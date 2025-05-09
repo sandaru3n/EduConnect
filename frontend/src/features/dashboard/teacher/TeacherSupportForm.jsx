@@ -90,7 +90,7 @@ const handleSubmit = async (e) => {
         setCategoryId("");
         setSubcategoryId("");
         setMessage("");
-        setTimeout(() => navigate(`/${user.role}/support-tickets`), 2000);
+        setTimeout(() => navigate(`/${user.role}/support-ticket`), 2000);
     } catch (err) {
         setError(err.response?.data?.message || "Error submitting support ticket");
     } finally {
