@@ -12,6 +12,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // Icon for Expand/
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'; // Icon for Expand/Collapse
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Icon for Export PDF
 import RefreshIcon from '@mui/icons-material/Refresh'; // Icon for Reset Filters
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const RefundManagement = () => {
     const [refunds, setRefunds] = useState([]);
@@ -27,6 +29,7 @@ const RefundManagement = () => {
     const location = useLocation();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Filter states
     const [filterTeacherName, setFilterTeacherName] = useState("");
@@ -163,6 +166,14 @@ const RefundManagement = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     const pathnames = location.pathname.split("/").filter((x) => x);
     const breadcrumbItems = pathnames.map((value, index) => {
         const last = index === pathnames.length - 1;
@@ -200,6 +211,58 @@ const RefundManagement = () => {
             default:
                 return "bg-gray-50 text-gray-600 border border-gray-200 rounded-full px-2 py-0.5 text-xs font-medium";
         }
+    };
+
+    // Function to export filtered refunds as PDF
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Refund Requests Report", 14, 22);
+
+        // Define table columns
+        const columns = [
+            { header: "Refund ID", dataKey: "_id" },
+            { header: "Class Name", dataKey: "className" },
+            { header: "Teacher Name", dataKey: "teacherName" },
+            { header: "Class Fee", dataKey: "classFee" },
+            { header: "Student Name", dataKey: "studentName" },
+            { header: "Status", dataKey: "status" },
+            { header: "Request Date", dataKey: "requestDate" }
+        ];
+
+        // Prepare table data
+        const tableData = filteredRefunds.map(refund => ({
+            _id: refund._id,
+            className: refund.classId.subject,
+            teacherName: refund.classId.teacherId.name,
+            classFee: `$${refund.classFee}`,
+            studentName: refund.studentId.name,
+            status: refund.status,
+            requestDate: new Date(refund.requestDate).toLocaleDateString()
+        }));
+
+        // Generate table using jsPDF-autoTable
+        doc.autoTable({
+            columns: columns,
+            body: tableData,
+            startY: 30,
+            theme: 'striped',
+            headStyles: { fillColor: [100, 116, 139] }, // Slate-600 color
+            styles: { fontSize: 8, cellPadding: 2 },
+            margin: { top: 30 }
+        });
+
+        // Add footer with timestamp
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.text(`Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, doc.internal.pageSize.width - 70, doc.internal.pageSize.height - 10);
+        }
+
+        // Download the PDF
+        doc.save("refund_requests_report.pdf");
     };
 
     return (
@@ -244,9 +307,7 @@ const RefundManagement = () => {
                                 </Typography>
                                 <div className="flex items-center gap-2">
                                     <Button
-                                        onClick={() => {
-                                            alert("PDF export functionality is currently disabled.");
-                                        }}
+                                        onClick={exportToPDF}
                                         startIcon={<PictureAsPdfIcon />}
                                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm"
                                     >
