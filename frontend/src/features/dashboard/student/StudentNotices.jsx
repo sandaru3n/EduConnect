@@ -19,6 +19,8 @@ import StudentHeader from "../../../components/StudentHeader/index";
 import { Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const StudentNotices = () => {
     const { user } = useAuth();
     const { noticeId } = useParams();
@@ -55,16 +57,16 @@ const StudentNotices = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
-                const { data } = await axios.get("http://localhost:5000/api/auth/notices/student", config);
+                const { data } = await axios.get(`${API_BASE}/api/auth/notices/student`, config);
                 setNotices(data || []); // Ensure notices is always an array
 
                 if (noticeId) {
-                    const { data: noticeData } = await axios.get(`http://localhost:5000/api/auth/notices/${noticeId}`, config);
+                    const { data: noticeData } = await axios.get(`${API_BASE}/api/auth/notices/${noticeId}`, config);
                     setSelectedNotice(noticeData);
                     setTabValue(1);
 
                     // Mark the notice as read
-                    await axios.post(`http://localhost:5000/api/auth/notices/${noticeId}/read`, {}, config);
+                    await axios.post(`${API_BASE}/api/auth/notices/${noticeId}/read`, {}, config);
                     setNotices(prevNotices => 
                         prevNotices.map(notice => 
                             notice._id === noticeId ? { ...notice, unread: false } : notice

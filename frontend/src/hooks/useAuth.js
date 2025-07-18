@@ -18,7 +18,8 @@ const useAuth = () => {
                     const config = {
                         headers: { Authorization: `Bearer ${user.token}` }
                     };
-                    const { data } = await axios.get("http://localhost:5000/api/auth/profile", config);
+                    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                    const { data } = await axios.get(`${API_BASE}/api/auth/profile`, config);
                     const updatedUser = { ...user, ...data, token: user.token };
                     localStorage.setItem("userInfo", JSON.stringify(updatedUser));
                     setUser(updatedUser);

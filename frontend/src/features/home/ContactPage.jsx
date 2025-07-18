@@ -22,7 +22,8 @@ const ContactPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/contact/submit', formData);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await axios.post(`${API_BASE}/api/contact/submit`, formData);
       setSuccess('Message sent successfully!');
       setFormData({ name: '', email: '', message: '' });
       setError(null);

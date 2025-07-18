@@ -18,11 +18,13 @@ const RefundRequest = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchClasses = async () => {
             const userInfo = JSON.parse(localStorage.getItem("userInfo"));
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.get("http://localhost:5000/api/subscriptions/my-classes", config);
+            const { data } = await axios.get(`${API_BASE}/api/subscriptions/my-classes`, config);
             setClasses(data);
         };
         fetchClasses();
@@ -46,7 +48,7 @@ const RefundRequest = () => {
                 formData.append('proof', proof);
             }
 
-            await axios.post("http://localhost:5000/api/refunds/request", formData, config);
+            await axios.post(`${API_BASE}/api/refunds/request`, formData, config);
             setSuccessMessage("Refund request submitted successfully!");
             setSuccessOpen(true);
             setTimeout(() => {

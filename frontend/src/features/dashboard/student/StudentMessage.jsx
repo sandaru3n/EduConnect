@@ -23,19 +23,21 @@ const StudentMessaging = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     const fetchData = useCallback(async () => {
         try {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
             const [convResponse, receivedResponse] = await Promise.all([
-                axios.get('http://localhost:5000/api/messages/conversations', config),
-                axios.get('http://localhost:5000/api/messages/received', config),
+                axios.get(`${API_BASE}/api/messages/conversations`, config),
+                axios.get(`${API_BASE}/api/messages/received`, config),
             ]);
             setConversations(convResponse.data);
             setReceivedMessages(receivedResponse.data);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-    }, [userInfo.token]);
+    }, [userInfo.token, API_BASE]);
 
     useEffect(() => {
         fetchData();
@@ -49,7 +51,7 @@ const StudentMessaging = () => {
                 try {
                     const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
                     const { data } = await axios.get(
-                        `http://localhost:5000/api/messages/conversation/${selectedUser._id}`,
+                        `${API_BASE}/api/messages/conversation/${selectedUser._id}`,
                         config
                     );
                     setMessages(data);
@@ -59,7 +61,7 @@ const StudentMessaging = () => {
             };
             fetchMessages();
         }
-    }, [selectedUser, userInfo.token]);
+    }, [selectedUser, userInfo.token, API_BASE]);
 
     const handleSearch = useCallback(
         debounce(async (query) => {
@@ -70,7 +72,7 @@ const StudentMessaging = () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
                 const { data } = await axios.get(
-                    `http://localhost:5000/api/messages/search/teachers?name=${query}`,
+                    `${API_BASE}/api/messages/search/teachers?name=${query}`,
                     config
                 );
                 setSearchResults(data);
@@ -78,7 +80,7 @@ const StudentMessaging = () => {
                 console.error('Error searching teachers:', error);
             }
         }, 300),
-        [userInfo.token]
+        [userInfo.token, API_BASE]
     );
 
     useEffect(() => {
@@ -90,7 +92,7 @@ const StudentMessaging = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
             const { data } = await axios.post(
-                'http://localhost:5000/api/messages',
+                `${API_BASE}/api/messages`,
                 { recipientId: selectedUser._id, content: newMessage },
                 config
             );

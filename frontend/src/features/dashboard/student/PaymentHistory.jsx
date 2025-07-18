@@ -49,12 +49,14 @@ const PaymentHistoryDash = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage] = useState(5); // Limit to 5 rows per page
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchPaymentHistory = async () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        const { data } = await axios.get("http://localhost:5000/api/auth/subscriptions/payment-history", config);
+        const { data } = await axios.get(`${API_BASE}/api/auth/subscriptions/payment-history`, config);
         setPayments(data);
         setFilteredPayments(data);
       } catch (error) {
@@ -134,7 +136,7 @@ const PaymentHistoryDash = () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get(`http://localhost:5000/api/auth/subscriptions/receipt/${subscriptionId}`, config);
+      const { data } = await axios.get(`${API_BASE}/api/auth/subscriptions/receipt/${subscriptionId}`, config);
       setSelectedReceipt(data);
       setOpenReceiptDialog(true);
     } catch (error) {

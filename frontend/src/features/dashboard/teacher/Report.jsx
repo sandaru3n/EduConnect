@@ -79,9 +79,11 @@ const TeacherDashboard = () => {
           headers: { Authorization: `Bearer ${user.token}` },
         };
 
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
         // Fetch subscribed students
         const { data: subscriptionData } = await axios.get(
-          "http://localhost:5000/api/auth/teacher/subscribed-students",
+          `${API_BASE}/api/auth/teacher/subscribed-students`,
           config
         );
         setSubscriptions(subscriptionData);
@@ -89,7 +91,7 @@ const TeacherDashboard = () => {
 
         // Fetch quiz attempts
         const { data: quizData } = await axios.get(
-          "http://localhost:5000/api/auth/teacher/quiz-attempts",
+          `${API_BASE}/api/auth/teacher/quiz-attempts`,
           config
         );
         setQuizAttempts(quizData);

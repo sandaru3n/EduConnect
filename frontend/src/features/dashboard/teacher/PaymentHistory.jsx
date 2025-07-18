@@ -38,7 +38,8 @@ const PaymentHistory = () => {
           throw new Error("User not authenticated");
         }
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        const { data } = await axios.get("http://localhost:5000/api/auth/dashboard/teacher-payment-history", config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data } = await axios.get(`${API_BASE}/api/auth/dashboard/teacher-payment-history`, config);
         setPaymentHistory(data);
       } catch (err) {
         if (err.message === "User not authenticated") {

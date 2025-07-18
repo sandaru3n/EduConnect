@@ -68,7 +68,8 @@ const AdminNotices = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user.token}` }
             };
-            const { data } = await axios.get("http://localhost:5000/api/auth/admin/notices", config);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const { data } = await axios.get(`${API_BASE}/api/auth/admin/notices`, config);
             setNotices(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading notices");
@@ -88,10 +89,11 @@ const handleSubmit = async (e) => {
         const config = {
             headers: { Authorization: `Bearer ${user.token}` }
         };
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         if (editNoticeId) {
             // Update existing notice
             const { data } = await axios.put(
-                "http://localhost:5000/api/auth/admin/notices",
+                `${API_BASE}/api/auth/admin/notices`,
                 { noticeId: editNoticeId, title, description, date, recipients },
                 config
             );
@@ -100,7 +102,7 @@ const handleSubmit = async (e) => {
         } else {
             // Create new notice
             const { data } = await axios.post(
-                "http://localhost:5000/api/auth/admin/notices",
+                `${API_BASE}/api/auth/admin/notices`,
                 { title, description, date, recipients },
                 config
             );
@@ -131,7 +133,8 @@ const handleDelete = async (noticeId) => {
         const config = {
             headers: { Authorization: `Bearer ${user.token}` }
         };
-        await axios.delete(`http://localhost:5000/api/auth/admin/notices/${noticeId}`, config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        await axios.delete(`${API_BASE}/api/auth/admin/notices/${noticeId}`, config);
         setNotices(notices.filter(n => n._id !== noticeId));
     } catch (err) {
         setError(err.response?.data?.message || "Error deleting notice");

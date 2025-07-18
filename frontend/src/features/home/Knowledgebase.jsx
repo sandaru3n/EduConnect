@@ -14,7 +14,8 @@ const Knowledgebase = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/knowledgebase');
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data } = await axios.get(`${API_BASE}/api/knowledgebase`);
         setArticles(data);
       } catch (error) {
         console.error('Error fetching knowledgebase articles:', error);
@@ -26,7 +27,8 @@ const Knowledgebase = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/knowledgebase/search?query=${searchQuery}`);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const { data } = await axios.get(`${API_BASE}/api/knowledgebase/search?query=${searchQuery}`);
       setArticles(data);
     } catch (error) {
       console.error('Error searching articles:', error);

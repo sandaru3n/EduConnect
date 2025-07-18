@@ -53,7 +53,8 @@ const TeacherSupportTicketDetails = () => {
       setLoading(true);
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get(`http://localhost:5000/api/auth/support/ticket/${ticketId}`, config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data } = await axios.get(`${API_BASE}/api/auth/support/ticket/${ticketId}`, config);
         setTicket(data);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading support ticket");
@@ -69,8 +70,9 @@ const TeacherSupportTicketDetails = () => {
     setSuccess(null);
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
       const { data } = await axios.post(
-        `http://localhost:5000/api/auth/support/ticket/${ticketId}/message`,
+        `${API_BASE}/api/auth/support/ticket/${ticketId}/message`,
         { content: newMessage },
         config
       );

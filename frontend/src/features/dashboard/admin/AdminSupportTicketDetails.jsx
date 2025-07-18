@@ -129,7 +129,8 @@ const AdminSupportTicketDetails = () => {
             setLoading(true);
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`http://localhost:5000/api/auth/admin/support/ticket/${ticketId}`, config);
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                const { data } = await axios.get(`${API_BASE}/api/auth/admin/support/ticket/${ticketId}`, config);
                 setTicket(data);
                 setStatus(data.status);
             } catch (err) {
@@ -146,8 +147,9 @@ const AdminSupportTicketDetails = () => {
         setSuccess(null);
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
             const { data } = await axios.put(
-                `http://localhost:5000/api/auth/admin/support/ticket/${ticketId}/status`,
+                `${API_BASE}/api/auth/admin/support/ticket/${ticketId}/status`,
                 { status },
                 config
             );
@@ -163,8 +165,9 @@ const AdminSupportTicketDetails = () => {
         setSuccess(null);
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
             const { data } = await axios.post(
-                `http://localhost:5000/api/auth/admin/support/ticket/${ticketId}/message`,
+                `${API_BASE}/api/auth/admin/support/ticket/${ticketId}/message`,
                 { content: newMessage },
                 config
             );

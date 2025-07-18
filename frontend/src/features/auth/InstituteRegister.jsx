@@ -27,10 +27,12 @@ const InstituteRegister = () => {
     const [notification, setNotification] = useState({ message: "", type: "" });
     const navigate = useNavigate();
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchSubscriptions = async () => {
             try {
-                const { data } = await axios.get("http://localhost:5000/api/subscriptions");
+                const { data } = await axios.get(`${API_BASE}/api/subscriptions`);
                 const activeSubscriptions = data.filter(sub => sub.status === "Active");
                 setSubscriptions(activeSubscriptions);
             } catch (error) {
@@ -107,7 +109,7 @@ const InstituteRegister = () => {
         setNotification({ message: "", type: "" });
 
         try {
-            const { data } = await axios.post("http://localhost:5000/api/auth/register", {
+            const { data } = await axios.post(`${API_BASE}/api/auth/register`, {
                 name: formData.name,
                 contactNumber: formData.contactNumber, // New field
                 addressLine1: formData.addressLine1, // New field
@@ -121,7 +123,7 @@ const InstituteRegister = () => {
             });
 
             await axios.post(
-                "http://localhost:5000/api/payments/subscribe-plan",
+                `${API_BASE}/api/payments/subscribe-plan`,
                 {
                     userId: data._id,
                     subscriptionId: formData.subscriptionId,

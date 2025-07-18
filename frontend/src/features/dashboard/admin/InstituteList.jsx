@@ -36,7 +36,7 @@ import { FilterList as FilterListIcon, ExpandMore as ExpandMoreIcon, ExpandLess 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const BASE_URL = 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const InstituteList = () => {
   const location = useLocation();
@@ -86,7 +86,7 @@ const InstituteList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        const { data } = await axios.get(`${BASE_URL}/api/admin/institutes`, config);
+        const { data } = await axios.get(`${API_BASE}/api/admin/institutes`, config);
         setInstitutes(data);
         setFilteredInstitutes(data); // Updated from setFilteredTeachers to setFilteredInstitutes
         setLoading(false);
@@ -137,7 +137,7 @@ const InstituteList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        await axios.put(`${BASE_URL}/api/admin/institutes/${instituteId}/ban`, {}, config);
+        await axios.put(`${API_BASE}/api/admin/institutes/${instituteId}/ban`, {}, config);
         setInstitutes(institutes.map(institute =>
           institute._id === instituteId ? { ...institute, subscriptionStatus: 'inactive' } : institute
         ));
@@ -157,7 +157,7 @@ const InstituteList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        await axios.put(`${BASE_URL}/api/admin/institutes/${instituteId}/unban`, {}, config);
+        await axios.put(`${API_BASE}/api/admin/institutes/${instituteId}/unban`, {}, config);
         setInstitutes(institutes.map(institute =>
           institute._id === instituteId ? { ...institute, subscriptionStatus: 'active' } : institute
         ));
@@ -177,7 +177,7 @@ const InstituteList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        await axios.delete(`${BASE_URL}/api/admin/institutes/${instituteId}`, config);
+        await axios.delete(`${API_BASE}/api/admin/institutes/${instituteId}`, config);
         setInstitutes(institutes.filter(institute => institute._id !== instituteId));
         setConfirmModalOpen(false);
       } catch (err) {
@@ -231,7 +231,7 @@ const InstituteList = () => {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
       const response = await axios.put(
-        `${BASE_URL}/api/admin/institutes/${selectedInstitute._id}`,
+        `${API_BASE}/api/admin/institutes/${selectedInstitute._id}`,
         editFormData,
         config
       );

@@ -10,10 +10,12 @@ const Register = () => {
     const [role, setRole] = useState("student"); // Default role as student
     const navigate = useNavigate();
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const { data } = await axios.post("http://localhost:5000/api/auth/register", {
+            const { data } = await axios.post(`${API_BASE}/api/auth/register`, {
                 name,
                 email,
                 password,

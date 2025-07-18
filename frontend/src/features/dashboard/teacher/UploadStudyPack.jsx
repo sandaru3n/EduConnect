@@ -10,6 +10,8 @@ import { Box, TextField, Button, Alert, Select, MenuItem, IconButton, FormContro
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const UploadStudyPack = () => {
 
   const [formData, setFormData] = useState({ title: '', subject: '', price: '' });
@@ -67,7 +69,7 @@ const UploadStudyPack = () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const config = { headers: { Authorization: `Bearer ${userInfo.token}`, 'Content-Type': 'multipart/form-data' } };
-      await axios.post('http://localhost:5000/api/studypacks/upload', data, config);
+      await axios.post(`${API_BASE}/api/studypacks/upload`, data, config);
       setSuccess('Study pack uploaded successfully!');
       setFormData({ title: '', subject: '', price: '' });
       setCoverPhoto(null);

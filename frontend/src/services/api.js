@@ -1,7 +1,5 @@
 //frontend/src/services/api.js
-const API_BASE = window.location.hostname === 'localhost' 
-  ? 'http://localhost:5000' // Development
-  : ''; // Production
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export const API_URL = `${API_BASE}/api/subscriptions`;
 

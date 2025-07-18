@@ -43,7 +43,8 @@ const TeacherSupportTickets = () => {
         setLoading(true);
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get("http://localhost:5000/api/auth/support/tickets", config);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const { data } = await axios.get(`${API_BASE}/api/auth/support/tickets`, config);
             setTickets(data);
             setFilteredTickets(data.filter(ticket => ticket.status === "Open"));
         } catch (err) {

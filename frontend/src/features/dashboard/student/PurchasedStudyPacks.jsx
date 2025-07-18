@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import axios from 'axios';
 import { Box, Card, CardContent, CardMedia, Button, Grid, CircularProgress, Alert } from '@mui/material';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const PurchasedStudyPacks = () => {
     const location = useLocation();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -31,7 +33,7 @@ const PurchasedStudyPacks = () => {
             try {
                 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get('http://localhost:5000/api/studypacks/purchased', config);
+                const { data } = await axios.get(`${API_BASE}/api/studypacks/purchased`, config);
                 setStudyPacks(data);
                 setLoading(false);
             } catch (err) {

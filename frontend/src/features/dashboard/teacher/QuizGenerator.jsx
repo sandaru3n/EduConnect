@@ -106,7 +106,8 @@ const QuizGenerator = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user.token}` }
             };
-            const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/classes", config);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const { data } = await axios.get(`${API_BASE}/api/quiz/teacher/classes`, config);
             setClasses(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading classes");
@@ -119,7 +120,8 @@ const QuizGenerator = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user.token}` }
             };
-            const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/history", config);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const { data } = await axios.get(`${API_BASE}/api/quiz/teacher/history`, config);
             setQuizzes(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading quiz history");
@@ -145,15 +147,17 @@ const handleSubmit = async (e) => {
                 "Content-Type": "application/json"
             }
         };
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         const { data } = await axios.post(
-            "http://localhost:5000/api/quiz/generate",
+            `${API_BASE}/api/quiz/generate`,
             { lessonName, classId, numberOfQuestions, timer },
             config
         );
 
         setQuiz(data.quiz);
         // Refresh quiz history
-        const { data: updatedQuizzes } = await axios.get("http://localhost:5000/api/quiz/teacher/history", config);
+        const API_BASE_2 = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data: updatedQuizzes } = await axios.get(`${API_BASE_2}/api/quiz/teacher/history`, config);
         setQuizzes(updatedQuizzes);
         setLessonName("");
         setClassId("");
@@ -177,8 +181,9 @@ const handleSaveTimer = async () => {
         const config = {
             headers: { Authorization: `Bearer ${user.token}` }
         };
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         const { data } = await axios.put(
-            "http://localhost:5000/api/quiz/update-timer",
+            `${API_BASE}/api/quiz/update-timer`,
             { quizId: editQuizId, timer: parseInt(editTimer) },
             config
         );
@@ -196,7 +201,8 @@ const handleDeleteQuiz = async () => {
         const config = {
             headers: { Authorization: `Bearer ${user.token}` }
         };
-        await axios.delete(`http://localhost:5000/api/quiz/${deleteQuizId}`, config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        await axios.delete(`${API_BASE}/api/quiz/${deleteQuizId}`, config);
         setQuizzes(quizzes.filter(q => q._id !== deleteQuizId));
         setOpenDeleteConfirm(false);
         setDeleteQuizId(null);

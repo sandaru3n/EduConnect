@@ -26,7 +26,8 @@ const RefundHistory = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        const { data } = await axios.get("http://localhost:5000/api/refunds/my-requests", config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data } = await axios.get(`${API_BASE}/api/refunds/my-requests`, config);
         setRefunds(data);
       } catch (error) {
         console.error("Error fetching refund history:", error);

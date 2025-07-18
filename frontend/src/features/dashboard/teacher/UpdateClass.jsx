@@ -25,6 +25,8 @@ const EditClass = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
     };
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     // Fetch existing class data
     useEffect(() => {
         const fetchClass = async () => {
@@ -33,7 +35,7 @@ const EditClass = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${userInfo.token}` }
                 };
-                const { data } = await axios.get(`http://localhost:5000/api/classes/teacher/${userInfo._id}`, config);
+                const { data } = await axios.get(`${API_BASE}/api/classes/teacher/${userInfo._id}`, config);
                 const classData = data.find(cls => cls._id === classId);
                 if (!classData) {
                     throw new Error("Class not found");
@@ -116,7 +118,7 @@ const EditClass = () => {
             }
 
             await axios.put(
-                `http://localhost:5000/api/classes/${classId}`,
+                `${API_BASE}/api/classes/${classId}`,
                 formData,
                 config
             );
@@ -365,7 +367,7 @@ const EditClass = () => {
                                             >
                                                 <p className="text-sm font-medium text-gray-700 mb-1">Cover Photo Preview:</p>
                                                 <img
-                                                    src={coverPhoto ? URL.createObjectURL(coverPhoto) : `http://localhost:5000${existingCoverPhoto}`}
+                                                    src={coverPhoto ? URL.createObjectURL(coverPhoto) : `${API_BASE}${existingCoverPhoto}`}
                                                     alt="Cover Photo Preview"
                                                     className="w-full h-40 object-cover rounded-lg shadow-sm"
                                                 />

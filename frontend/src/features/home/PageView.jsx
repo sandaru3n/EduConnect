@@ -18,7 +18,8 @@ const PageView = () => {
   const fetchPage = async () => {
     try {
       const slug = location.pathname.substring(1);
-      const response = await fetch(`http://localhost:5000/api/pages/${slug}`);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_BASE}/api/pages/${slug}`);
       if (!response.ok) throw new Error("Page not found");
       const data = await response.json();
       setPage(data);

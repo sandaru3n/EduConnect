@@ -30,7 +30,8 @@ const ManageFAQs = () => {
   const fetchFAQs = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/faqs', config);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const { data } = await axios.get(`${API_BASE}/api/faqs`, config);
       setFaqs(data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch FAQs');
@@ -41,7 +42,8 @@ const ManageFAQs = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/faqs', newFAQ, config);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const { data } = await axios.post(`${API_BASE}/api/faqs`, newFAQ, config);
       setFaqs([data.faq, ...faqs]);
       setNewFAQ({ question: '', answer: '' });
     } catch (err) {
@@ -63,7 +65,8 @@ const ManageFAQs = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.put(`http://localhost:5000/api/faqs/${editFAQ._id}`, editFAQ, config);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const { data } = await axios.put(`${API_BASE}/api/faqs/${editFAQ._id}`, editFAQ, config);
       setFaqs(faqs.map(f => f._id === editFAQ._id ? data.faq : f));
       handleEditClose();
     } catch (err) {
@@ -75,7 +78,8 @@ const ManageFAQs = () => {
     if (window.confirm('Are you sure you want to delete this FAQ?')) {
       try {
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        await axios.delete(`http://localhost:5000/api/faqs/${id}`, config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        await axios.delete(`${API_BASE}/api/faqs/${id}`, config);
         setFaqs(faqs.filter(f => f._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete FAQ');

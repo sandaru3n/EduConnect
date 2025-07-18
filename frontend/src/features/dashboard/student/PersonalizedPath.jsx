@@ -66,12 +66,14 @@ const StudentDashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchLearningPath = async () => {
             setLoading(true);
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/quiz/student/learning-path", config);
+                const { data } = await axios.get(`${API_BASE}/api/quiz/student/learning-path`, config);
                 setLearningPath(data.learningPath);
             } catch (err) {
                 setError(err.response?.data?.message || "Error loading personalized learning path");

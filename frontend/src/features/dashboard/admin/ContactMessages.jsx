@@ -31,10 +31,12 @@ const ContactMessages = () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
   const location = useLocation();
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   const fetchMessages = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/contact', config);
+      const { data } = await axios.get(`${API_BASE}/api/contact`, config);
       setMessages(data);
       setLoading(false);
     } catch (err) {
@@ -47,7 +49,7 @@ const ContactMessages = () => {
     if (window.confirm('Are you sure you want to delete this message?')) {
       try {
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        await axios.delete(`http://localhost:5000/api/contact/${id}`, config);
+        await axios.delete(`${API_BASE}/api/contact/${id}`, config);
         setMessages(messages.filter((msg) => msg._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete message');

@@ -77,7 +77,8 @@ const StudentLeaderboard = () => {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
 
-                const { data } = await axios.get("http://localhost:5000/api/quiz/leaderboard/student", config);
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                const { data } = await axios.get(`${API_BASE}/api/quiz/leaderboard/student`, config);
                 console.log("Leaderboard Data:", data); // Debug: Log the raw data
                 setLeaderboardData(data);
             } catch (error) {

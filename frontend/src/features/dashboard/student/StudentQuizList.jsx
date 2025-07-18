@@ -20,6 +20,8 @@ import StudentHeader from "../../../components/StudentHeader/index";
 import { Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const StudentQuizList = () => {
     const { user } = useAuth();
     const location = useLocation();
@@ -54,7 +56,7 @@ const StudentQuizList = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
-                const { data } = await axios.get("http://localhost:5000/api/quiz/student/available", config);
+                const { data } = await axios.get(`${API_BASE}/api/quiz/student/available`, config);
                 setQuizzes(data);
             } catch (err) {
                 setError(err.response?.data?.message || "Error loading quizzes");
@@ -68,7 +70,7 @@ const StudentQuizList = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
-                const { data } = await axios.get("http://localhost:5000/api/quiz/student/history", config);
+                const { data } = await axios.get(`${API_BASE}/api/quiz/student/history`, config);
                 setHistory(data);
             } catch (err) {
                 setError(err.response?.data?.message || "Error loading quiz history");

@@ -109,13 +109,15 @@ const AdminSupportCategories = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data: catData } = await axios.get("http://localhost:5000/api/auth/support/categories", config);
+                const { data: catData } = await axios.get(`${API_BASE}/api/auth/support/categories`, config);
                 setCategories(catData);
-                const { data: subData } = await axios.get("http://localhost:5000/api/auth/support/subcategories/all", config);
+                const { data: subData } = await axios.get(`${API_BASE}/api/auth/support/subcategories/all`, config);
                 setSubcategories(subData);
             } catch (err) {
                 console.error("Error fetching support subcategories:", err.response || err);
@@ -131,7 +133,7 @@ const AdminSupportCategories = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const { data } = await axios.post(
-                "http://localhost:5000/api/auth/admin/support/category",
+                `${API_BASE}/api/auth/admin/support/category`,
                 { name: newCategory },
                 config
             );
@@ -149,7 +151,7 @@ const AdminSupportCategories = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const { data } = await axios.post(
-                "http://localhost:5000/api/auth/admin/support/subcategory",
+                `${API_BASE}/api/auth/admin/support/subcategory`,
                 { name: newSubcategory, categoryId: selectedCategoryId },
                 config
             );
@@ -167,7 +169,7 @@ const AdminSupportCategories = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const { data } = await axios.delete(
-                `http://localhost:5000/api/auth/admin/support/subcategory/${categoryId}`,
+                `${API_BASE}/api/auth/admin/support/subcategory/${categoryId}`,
                 config
             );
             setCategories(categories.filter(cat => cat._id !== categoryId));
@@ -183,7 +185,7 @@ const AdminSupportCategories = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const { data } = await axios.delete(
-                `http://localhost:5000/api/auth/admin/support/subcategory/${subcategoryId}`,
+                `${API_BASE}/api/auth/admin/support/subcategory/${subcategoryId}`,
                 config
             );
             setSubcategories(subcategories.filter(sub => sub._id !== subcategoryId));

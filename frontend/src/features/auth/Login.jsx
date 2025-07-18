@@ -36,6 +36,8 @@ const Login = () => {
     const [forgotPasswordError, setForgotPasswordError] = useState("");
     const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         document.title = "Login - EduConnect";
     }, []);
@@ -58,7 +60,7 @@ const Login = () => {
         setNotification({ message: "", type: "" });
 
         try {
-            const { data } = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+            const { data } = await axios.post(`${API_BASE}/api/auth/login`, { email, password });
             localStorage.setItem("userInfo", JSON.stringify(data));
             if (stayLoggedIn) {
                 localStorage.setItem("stayLoggedIn", "true");
@@ -120,7 +122,7 @@ const Login = () => {
         }
 
         try {
-            await axios.post("http://localhost:5000/api/auth/forgot-password", { email: forgotEmail });
+            await axios.post(`${API_BASE}/api/auth/forgot-password`, { email: forgotEmail });
             setForgotPasswordStep(2);
         } catch (error) {
             setForgotPasswordError(error.response?.data?.message || "Error sending reset code");
@@ -140,7 +142,7 @@ const Login = () => {
         }
 
         try {
-            await axios.post("http://localhost:5000/api/auth/verify-reset-code", { email: forgotEmail, code: resetCode });
+            await axios.post(`${API_BASE}/api/auth/verify-reset-code`, { email: forgotEmail, code: resetCode });
             setForgotPasswordStep(3);
         } catch (error) {
             setForgotPasswordError(error.response?.data?.message || "Error verifying code");
@@ -166,7 +168,7 @@ const Login = () => {
         }
 
         try {
-            await axios.post("http://localhost:5000/api/auth/reset-password", { email: forgotEmail, code: resetCode, newPassword });
+            await axios.post(`${API_BASE}/api/auth/reset-password`, { email: forgotEmail, code: resetCode, newPassword });
             setNotification({ message: "Password reset successfully. Please log in with your new password.", type: "success" });
             setIsForgotPassword(false);
         } catch (error) {

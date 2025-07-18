@@ -79,7 +79,8 @@ const StudentRegister = () => {
     setNotification({ message: "", type: "" });
 
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/register", {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const { data } = await axios.post(`${API_BASE}/api/auth/register`, {
         ...formData,
         role: "student",
       });

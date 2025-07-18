@@ -89,7 +89,7 @@ const ClassMaterials = () => {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
             const { data } = await axios.get(
-                `http://localhost:5000/api/classes/${classId}/materials`,
+                `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/classes/${classId}/materials`,
                 config
             );
 
@@ -161,7 +161,7 @@ const ClassMaterials = () => {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
             const { data } = await axios.post(
-                `http://localhost:5000/api/classes/${classId}/materials/${materialToWatch._id}/start`,
+                `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/classes/${classId}/materials/${materialToWatch._id}/start`,
                 {},
                 config
             );
@@ -189,7 +189,7 @@ const ClassMaterials = () => {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
             await axios.post(
-                `http://localhost:5000/api/classes/${classId}/materials/${selectedMaterial._id}/extend`,
+                `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/classes/${classId}/materials/${selectedMaterial._id}/extend`,
                 { reason: extendReason },
                 config
             );
@@ -364,7 +364,7 @@ const ClassMaterials = () => {
                                                                                 </Typography>
                                                                                 <Box sx={{ position: 'relative', mt: 1 }}>
                                                                                     <ReactPlayer
-                                                                                        url={`http://localhost:5000${material.content}`}
+                                                                                        url={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${material.content}`}
                                                                                         playing={playing[material._id] || false}
                                                                                         playbackRate={playbackSpeed}
                                                                                         volume={isMuted ? 0 : volume}
@@ -454,7 +454,7 @@ const ClassMaterials = () => {
                                                                     <Button
                                                                         variant="outlined"
                                                                         color="primary"
-                                                                        href={`http://localhost:5000${material.content}`}
+                                                                        href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${material.content}`}
                                                                         target="_blank"
                                                                         startIcon={<Visibility />}
                                                                         sx={{ fontWeight: 500 }}

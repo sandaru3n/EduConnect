@@ -24,6 +24,8 @@ import {
 } from "@mui/material";
 import useAuth from "../../../hooks/useAuth";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const TeacherNotices = () => {
   const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -62,7 +64,7 @@ const TeacherNotices = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user.token}` }
             };
-            const { data } = await axios.get("http://localhost:5000/api/quiz/teacher/classes", config);
+            const { data } = await axios.get(`${API_BASE}/api/quiz/teacher/classes`, config);
             setClasses(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading classes");
@@ -75,7 +77,7 @@ const TeacherNotices = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user.token}` }
             };
-            const { data } = await axios.get("http://localhost:5000/api/auth/notices/teacher", config);
+            const { data } = await axios.get(`${API_BASE}/api/auth/notices/teacher`, config);
             setNotices(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading notices");
@@ -100,7 +102,7 @@ const handleSubmit = async (e) => {
         if (editNoticeId) {
             // Update existing notice
             const { data } = await axios.put(
-                "http://localhost:5000/api/auth/notices",
+                `${API_BASE}/api/auth/notices`,
                 { noticeId: editNoticeId, title, description, date, classId },
                 config
             );
@@ -109,7 +111,7 @@ const handleSubmit = async (e) => {
         } else {
             // Create new notice
             const { data } = await axios.post(
-                "http://localhost:5000/api/auth/notices",
+                `${API_BASE}/api/auth/notices`,
                 { title, description, date, classId },
                 config
             );
@@ -140,7 +142,7 @@ const handleDelete = async (noticeId) => {
         const config = {
             headers: { Authorization: `Bearer ${user.token}` }
         };
-        await axios.delete(`http://localhost:5000/api/auth/notices/${noticeId}`, config);
+        await axios.delete(`${API_BASE}/api/auth/notices/${noticeId}`, config);
         setNotices(notices.filter(n => n._id !== noticeId));
     } catch (err) {
         setError(err.response?.data?.message || "Error deleting notice");

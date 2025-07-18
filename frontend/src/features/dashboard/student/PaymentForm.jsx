@@ -19,7 +19,7 @@ import { CreditCard, CalendarToday, Lock, ArrowBack, CheckCircle } from '@mui/ic
 import Confetti from 'react-confetti';
 
 // Define the base URL for the backend (can be moved to a config file)
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const PaymentForm = () => {
     const [cardNumber, setCardNumber] = useState('');

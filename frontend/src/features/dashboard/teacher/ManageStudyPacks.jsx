@@ -48,11 +48,13 @@ const ManageStudyPacks = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   const fetchTeacherStudyPacks = async () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/studypacks/teacher', config);
+      const { data } = await axios.get(`${API_BASE}/api/studypacks/teacher`, config);
       setStudyPacks(data);
       setLoading(false);
     } catch (err) {
@@ -70,7 +72,7 @@ const ManageStudyPacks = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        await axios.delete(`http://localhost:5000/api/studypacks/${id}`, config);
+        await axios.delete(`${API_BASE}/api/studypacks/${id}`, config);
         setStudyPacks(studyPacks.filter(pack => pack._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete study pack');
@@ -138,7 +140,7 @@ const ManageStudyPacks = () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const config = { headers: { Authorization: `Bearer ${userInfo.token}`, 'Content-Type': 'multipart/form-data' } };
-      const { data: updatedPack } = await axios.put(`http://localhost:5000/api/studypacks/${selectedPack._id}`, data, config);
+      const { data: updatedPack } = await axios.put(`${API_BASE}/api/studypacks/${selectedPack._id}`, data, config);
       setStudyPacks(studyPacks.map(pack => (pack._id === selectedPack._id ? updatedPack.studyPack : pack)));
       handleEditClose();
     } catch (err) {

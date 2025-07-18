@@ -8,7 +8,7 @@ import StudentHeader from "../../../components/StudentHeader/index";
 import { motion } from "framer-motion";
 
 // Define the base URL for the backend
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 // Create a custom MUI theme to apply the Roboto font globally
 const theme = createTheme({

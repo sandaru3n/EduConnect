@@ -38,12 +38,14 @@ const RefundManagement = () => {
     const [filterStatus, setFilterStatus] = useState("");
     const [filterRequestDate, setFilterRequestDate] = useState("");
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchRefunds = async () => {
             try {
                 const userInfo = JSON.parse(localStorage.getItem("userInfo"));
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/refunds/all", config);
+                const { data } = await axios.get(`${API_BASE}/api/refunds/all`, config);
                 setRefunds(data);
                 setFilteredRefunds(data);
             } catch (error) {
@@ -104,7 +106,7 @@ const RefundManagement = () => {
         try {
             const userInfo = JSON.parse(localStorage.getItem("userInfo"));
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            await axios.put("http://localhost:5000/api/refunds/status", { refundId: confirmRefundId, status: confirmAction }, config);
+            await axios.put(`${API_BASE}/api/refunds/status`, { refundId: confirmRefundId, status: confirmAction }, config);
             setSuccessMessage(`Refund request ${confirmAction.toLowerCase()} successfully!`);
             setSuccessOpen(true);
             setRefunds(refunds.map(r => r._id === confirmRefundId ? { ...r, status: confirmAction } : r));
@@ -489,7 +491,7 @@ const RefundManagement = () => {
                                                         <strong>Proof:</strong>
                                                     </Typography>
                                                     <img
-                                                        src={`http://localhost:5000${selectedRefund.proof}`}
+                                                        src={`${API_BASE}${selectedRefund.proof}`}
                                                         alt="Refund Proof"
                                                         className="max-w-full h-auto rounded-lg border border-gray-200"
                                                         style={{ maxHeight: '300px' }}

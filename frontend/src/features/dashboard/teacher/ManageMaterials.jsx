@@ -6,6 +6,8 @@ import TeacherHeader from "../../../components/TeacherHeader/index";
 import axios from "axios";
 import { Edit, Delete, Visibility, ClassOutlined, InsertDriveFile, VideoLibrary, Link as LinkIcon, CalendarToday } from "@mui/icons-material";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const ClassMaterials = () => {
     const location = useLocation();
     const { classId } = useParams();
@@ -54,15 +56,15 @@ const ClassMaterials = () => {
                 };
 
                 // Fetch teacher's classes (for the edit modal)
-                const { data: classesData } = await axios.get("http://localhost:5000/api/teacher/classes", config);
+                const { data: classesData } = await axios.get(`${API_BASE}/api/teacher/classes`, config);
                 setClasses(classesData);
 
                 // Fetch the selected class
-                const { data: classData } = await axios.get(`http://localhost:5000/api/teacher/classes/${classId}`, config);
+                const { data: classData } = await axios.get(`${API_BASE}/api/teacher/classes/${classId}`, config);
                 setClassData(classData);
 
                 // Fetch materials for the selected class
-                const { data: materialsData } = await axios.get("http://localhost:5000/api/teacher/materials", config);
+                const { data: materialsData } = await axios.get(`${API_BASE}/api/teacher/materials`, config);
                 const classMaterials = materialsData.filter(mat => mat.classId._id.toString() === classId);
                 setMaterials(classMaterials);
             } catch (err) {
@@ -115,7 +117,7 @@ const ClassMaterials = () => {
 
         try {
             const { data } = await axios.put(
-                `http://localhost:5000/api/teacher/materials/${selectedMaterial._id}`,
+                `${API_BASE}/api/teacher/materials/${selectedMaterial._id}`,
                 formData,
                 config
             );
@@ -136,7 +138,7 @@ const ClassMaterials = () => {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
 
-            await axios.delete(`http://localhost:5000/api/teacher/materials/${materialIdToDelete}`, config);
+            await axios.delete(`${API_BASE}/api/teacher/materials/${materialIdToDelete}`, config);
             setSuccess("Material deleted successfully!");
 
             // Update the materials list
@@ -312,7 +314,7 @@ const ClassMaterials = () => {
                             <Box sx={{ mb: 4 }}>
                                 <img
                                     src={classData && classData.coverPhoto 
-                                        ? `http://localhost:5000${classData.coverPhoto}` 
+                                        ? `${API_BASE}${classData.coverPhoto}` 
                                         : "https://via.placeholder.com/1200x300?text=Class+Cover+Photo"}
                                     alt={classData ? `${classData.subject} Cover Photo` : "Class Cover Photo"}
                                     style={{
@@ -373,7 +375,7 @@ const ClassMaterials = () => {
                                                             variant="outlined"
                                                             size="small"
                                                             startIcon={<Visibility />}
-                                                            href={`http://localhost:5000${material.content}`}
+                                                            href={`${API_BASE}${material.content}`}
                                                             target="_blank"
                                                             sx={{ mt: 1, mr: 1 }}
                                                         >

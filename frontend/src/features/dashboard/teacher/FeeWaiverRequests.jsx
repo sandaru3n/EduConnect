@@ -34,6 +34,8 @@ const FeeWaiverRequests = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -44,7 +46,7 @@ const FeeWaiverRequests = () => {
                 throw new Error("User not authenticated");
             }
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.get("http://localhost:5000/api/auth/teacher/fee-waiver-requests", config);
+            const { data } = await axios.get(`${API_BASE}/api/auth/teacher/fee-waiver-requests`, config);
             setRequests(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading fee waiver requests");
@@ -73,7 +75,7 @@ const handleSubmit = async () => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
         const { data } = await axios.put(
-            `http://localhost:5000/api/auth/teacher/fee-waiver/${selectedRequest._id}/status`,
+            `${API_BASE}/api/auth/teacher/fee-waiver/${selectedRequest._id}/status`,
             { status, teacherComments, discountPercentage },
             config
         );
@@ -86,7 +88,7 @@ const handleSubmit = async () => {
 };
 
 const handleOpenDocumentDialog = (documentPath) => {
-    console.log("Opening document:", `http://localhost:5000${documentPath}`);
+    console.log("Opening document:", `${API_BASE}${documentPath}`);
     setSelectedDocument(documentPath);
     setPageNumber(1);
     setNumPages(null);
@@ -374,7 +376,7 @@ const getFileType = (filePath) => {
                                     {getFileType(selectedDocument) === "pdf" ? (
                                         <div>
                                             <Document
-                                                file={`http://localhost:5000${selectedDocument}`}
+                                                file={`${API_BASE}${selectedDocument}`}
                                                 onLoadSuccess={onDocumentLoadSuccess}
                                                 onLoadError={(error) => setError("Error loading PDF: " + error.message)}
                                             >
@@ -408,7 +410,7 @@ const getFileType = (filePath) => {
                                                 <p className="text-red-600">{imageError}</p>
                                             ) : (
                                                 <img
-                                                    src={`http://localhost:5000${selectedDocument}`}
+                                                    src={`${API_BASE}${selectedDocument}`}
                                                     alt="Fee Waiver Document"
                                                     className="max-w-full h-auto rounded-md mx-auto"
                                                     style={{ maxHeight: "500px" }}

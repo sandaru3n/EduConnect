@@ -10,7 +10,8 @@ const FAQSection = () => {
   useEffect(() => {
     const fetchFAQs = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/faqs');
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data } = await axios.get(`${API_BASE}/api/faqs`);
         setFaqs(data);
       } catch (error) {
         console.error('Error fetching FAQs:', error);

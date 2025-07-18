@@ -37,7 +37,8 @@ const SelectClassForMaterials = () => {
                     headers: { Authorization: `Bearer ${userInfo.token}` }
                 };
 
-                const { data } = await axios.get("http://localhost:5000/api/teacher/classes", config);
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                const { data } = await axios.get(`${API_BASE}/api/teacher/classes`, config);
                 setClasses(data);
             } catch (err) {
                 setError(err.response?.data?.message || "Failed to fetch classes");

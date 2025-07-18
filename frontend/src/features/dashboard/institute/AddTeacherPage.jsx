@@ -25,7 +25,7 @@ import InstituteSidebar from "../../../components/InstituteSidebar/index";
 import InstituteHeader from "../../../components/InstituteHeader/index";
 import { Link as MuiLink } from '@mui/material';
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const AddTeacherPage = () => {
   const location = useLocation();

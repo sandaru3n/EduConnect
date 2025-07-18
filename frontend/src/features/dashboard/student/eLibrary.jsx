@@ -180,7 +180,8 @@ const EBookDashboard = () => {
   const fetchEBooks = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/ebooks');
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const response = await axios.get(`${API_BASE}/api/ebooks`);
       setEBooks(response.data);
 
       // Extract unique categories and authors for filters
@@ -210,7 +211,8 @@ const EBookDashboard = () => {
   const handleDownload = async (id) => {
     try {
       setDownloading(id);
-      window.open(`http://localhost:5000/api/ebooks/download/${id}`, '_blank');
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      window.open(`${API_BASE}/api/ebooks/download/${id}`, '_blank');
 
       // Update download count after a brief delay
       setTimeout(async () => {
@@ -318,7 +320,7 @@ const EBookDashboard = () => {
                   Back to Library
                 </Button>
                 <iframe
-                  src={`http://localhost:5000/uploads/ebooks/${eBooks.find(eBook => eBook._id === viewingEBookId).filePath.split('/').pop()}`}
+                  src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/uploads/ebooks/${eBooks.find(eBook => eBook._id === viewingEBookId).filePath.split('/').pop()}`}
                   width="100%"
                   height="600px"
                   title={eBooks.find(eBook => eBook._id === viewingEBookId).title}

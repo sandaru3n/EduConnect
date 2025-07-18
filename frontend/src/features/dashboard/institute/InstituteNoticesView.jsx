@@ -42,6 +42,8 @@ const InstituteNoticesView = () => {
         ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1)
         : "Dashboard"; // Default title if no pathnames
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchNotices = async () => {
             setLoading(true);
@@ -49,16 +51,16 @@ const InstituteNoticesView = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
-                const { data } = await axios.get("http://localhost:5000/api/auth/admin/notices/user", config);
+                const { data } = await axios.get(`${API_BASE}/api/auth/admin/notices/user`, config);
                 setNotices(data || []);
 
                 if (noticeId) {
-                    const { data: noticeData } = await axios.get(`http://localhost:5000/api/auth/admin/notices/teacher-institute/${noticeId}`, config);
+                    const { data: noticeData } = await axios.get(`${API_BASE}/api/auth/admin/notices/teacher-institute/${noticeId}`, config);
                     setSelectedNotice(noticeData);
                     setTabValue(1);
 
                     // Mark the notice as read
-                    await axios.post(`http://localhost:5000/api/auth/notices/${noticeId}/read`, {}, config);
+                    await axios.post(`${API_BASE}/api/auth/notices/${noticeId}/read`, {}, config);
                     setNotices(prevNotices => 
                         prevNotices.map(notice => 
                             notice._id === noticeId ? { ...notice, unread: false } : notice

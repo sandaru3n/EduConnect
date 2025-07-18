@@ -78,8 +78,9 @@ const ManageExtensionRequests = () => {
       const config = {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       };
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
       const { data } = await axios.get(
-        "http://localhost:5000/api/classes/extension/requests",
+        `${API_BASE}/api/classes/extension/requests`,
         config
       );
       setRequests(data);
@@ -94,8 +95,9 @@ const ManageExtensionRequests = () => {
       const config = {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       };
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
       await axios.post(
-        "http://localhost:5000/api/classes/extension/handle",
+        `${API_BASE}/api/classes/extension/handle`,
         { materialId, requestId, status },
         config
       );

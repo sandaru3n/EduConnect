@@ -47,6 +47,8 @@ const ManageKnowledgebase = () => {
     'Self Service Best Practices',
   ];
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   useEffect(() => {
     fetchArticles();
   }, []);
@@ -54,7 +56,7 @@ const ManageKnowledgebase = () => {
   const fetchArticles = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/knowledgebase', config);
+      const { data } = await axios.get(`${API_BASE}/api/knowledgebase`, config);
       setArticles(data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch articles');
@@ -65,7 +67,7 @@ const ManageKnowledgebase = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/knowledgebase', newArticle, config);
+      const { data } = await axios.post(`${API_BASE}/api/knowledgebase`, newArticle, config);
       setArticles([data.article, ...articles]);
       setNewArticle({ title: '', content: '', category: '' });
     } catch (err) {
@@ -87,7 +89,7 @@ const ManageKnowledgebase = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.put(`http://localhost:5000/api/knowledgebase/${editArticle._id}`, editArticle, config);
+      const { data } = await axios.put(`${API_BASE}/api/knowledgebase/${editArticle._id}`, editArticle, config);
       setArticles(articles.map(a => a._id === editArticle._id ? data.article : a));
       handleEditClose();
     } catch (err) {
@@ -99,7 +101,7 @@ const ManageKnowledgebase = () => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       try {
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        await axios.delete(`http://localhost:5000/api/knowledgebase/${id}`, config);
+        await axios.delete(`${API_BASE}/api/knowledgebase/${id}`, config);
         setArticles(articles.filter(a => a._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete article');

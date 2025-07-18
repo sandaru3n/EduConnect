@@ -42,6 +42,8 @@ const Analytics = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     const fetchAnalyticsData = async () => {
         try {
             const params = {
@@ -50,12 +52,12 @@ const Analytics = () => {
             };
 
             const [teacherRes, instituteRes, distributionRes, trendsRes, topSubsRes, growthRes] = await Promise.all([
-                axios.get("http://localhost:5000/api/subscriptions/analytics/teacher-revenue", { params }),
-                axios.get("http://localhost:5000/api/subscriptions/analytics/institute-revenue", { params }),
-                axios.get("http://localhost:5000/api/subscriptions/analytics/user-distribution"),
-                axios.get("http://localhost:5000/api/subscriptions/analytics/subscription-trends", { params }),
-                axios.get("http://localhost:5000/api/subscriptions/analytics/top-subscriptions"),
-                axios.get("http://localhost:5000/api/subscriptions/analytics/user-growth", { params })
+                axios.get(`${API_BASE}/api/subscriptions/analytics/teacher-revenue`, { params }),
+                axios.get(`${API_BASE}/api/subscriptions/analytics/institute-revenue`, { params }),
+                axios.get(`${API_BASE}/api/subscriptions/analytics/user-distribution`),
+                axios.get(`${API_BASE}/api/subscriptions/analytics/subscription-trends`, { params }),
+                axios.get(`${API_BASE}/api/subscriptions/analytics/top-subscriptions`),
+                axios.get(`${API_BASE}/api/subscriptions/analytics/user-growth`, { params })
             ]);
 
             setTeacherRevenue(teacherRes.data);

@@ -44,7 +44,8 @@ const InstiruteSupportForm = () => {
     const fetchCategories = async () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get("http://localhost:5000/api/auth/support/categories", config);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const { data } = await axios.get(`${API_BASE}/api/auth/support/categories`, config);
             setCategories(data);
         } catch (err) {
             setError(err.response?.data?.message || "Error loading categories");
@@ -58,7 +59,8 @@ useEffect(() => {
         if (categoryId) {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`http://localhost:5000/api/auth/support/subcategories/${categoryId}`, config);
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                const { data } = await axios.get(`${API_BASE}/api/auth/support/subcategories/${categoryId}`, config);
                 setSubcategories(data);
                 setSubcategoryId(""); // Reset subcategory when category changes
             } catch (err) {
@@ -80,8 +82,9 @@ const handleSubmit = async (e) => {
 
     try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         const { data } = await axios.post(
-            "http://localhost:5000/api/auth/support/submit",
+            `${API_BASE}/api/auth/support/submit`,
             { categoryId, subcategoryId, message },
             config
         );

@@ -25,6 +25,8 @@ import StudentHeader from "../../../components/StudentHeader/index";
 import { Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { Link, useLocation, useParams } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const StudentQuiz = () => {
     const { user } = useAuth();
     const { quizId } = useParams();
@@ -64,12 +66,12 @@ const StudentQuiz = () => {
         };
 
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/quiz/results/${quizId}`, config);
+            const { data } = await axios.get(`${API_BASE}/api/quiz/results/${quizId}`, config);
             setResults(data);
         } catch (err) {
             if (err.response?.status === 404) {
                 try {
-                    const { data } = await axios.get(`http://localhost:5000/api/quiz/${quizId}`, config);
+                    const { data } = await axios.get(`${API_BASE}/api/quiz/${quizId}`, config);
                     setQuiz(data);
                     // Check for existing attempt start time in local storage
                     const savedStartTime = localStorage.getItem(`quizStartTime_${quizId}`);
@@ -147,7 +149,7 @@ const StudentQuiz = () => {
             }));
             console.log("Submitting Quiz:", { quizId, answers: answersArray, startTime }); // Debug log
             const { data } = await axios.post(
-                "http://localhost:5000/api/quiz/attempt",
+                `${API_BASE}/api/quiz/attempt`,
                 { quizId, answers: answersArray, startTime },
                 config
             );

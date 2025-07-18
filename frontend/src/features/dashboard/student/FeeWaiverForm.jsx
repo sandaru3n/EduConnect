@@ -37,6 +37,8 @@ const FeeWaiverForm = () => {
     const [openDocumentDialog, setOpenDocumentDialog] = useState(false);
     const [selectedDocument, setSelectedDocument] = useState(null);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     // Fetch all classes on mount
     useEffect(() => {
         const fetchClasses = async () => {
@@ -47,7 +49,7 @@ const FeeWaiverForm = () => {
                     throw new Error("User not authenticated");
                 }
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/auth/support/student-classes", config);
+                const { data } = await axios.get(`${API_BASE}/api/auth/support/student-classes`, config);
                 setClasses(data);
                 setClassesLoading(false);
             } catch (err) {
@@ -68,7 +70,7 @@ const FeeWaiverForm = () => {
                     throw new Error("User not authenticated");
                 }
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/auth/support/fee-waiver/history", config);
+                const { data } = await axios.get(`${API_BASE}/api/auth/support/fee-waiver/history`, config);
                 setFeeWaivers(data);
                 setHistoryLoading(false);
             } catch (err) {
@@ -95,7 +97,7 @@ const FeeWaiverForm = () => {
 
             const config = { headers: { Authorization: `Bearer ${user.token}`, "Content-Type": "multipart/form-data" } };
             const { data } = await axios.post(
-                "http://localhost:5000/api/auth/support/fee-waiver",
+                `${API_BASE}/api/auth/support/fee-waiver`,
                 formData,
                 config
             );
@@ -109,7 +111,7 @@ const FeeWaiverForm = () => {
             setPageNumber(1);
             setImageError(null);
             // Refresh fee waiver history
-            const { data: updatedHistory } = await axios.get("http://localhost:5000/api/auth/support/fee-waiver/history", config);
+            const { data: updatedHistory } = await axios.get(`${API_BASE}/api/auth/support/fee-waiver/history`, config);
             setFeeWaivers(updatedHistory);
         } catch (err) {
             setError(err.response?.data?.message || "Error submitting fee waiver application");
@@ -182,7 +184,7 @@ const FeeWaiverForm = () => {
     };
 
     const handleOpenDocumentDialog = (documentPath) => {
-        console.log("Opening document:", `http://localhost:5000${documentPath}`);
+        console.log("Opening document:", `${API_BASE}${documentPath}`);
         setSelectedDocument(documentPath);
         setPageNumber(1);
         setNumPages(null);
@@ -541,7 +543,7 @@ const FeeWaiverForm = () => {
                                     {getFileType(selectedDocument) === "pdf" ? (
                                         <div>
                                             <Document
-                                                file={`http://localhost:5000${selectedDocument}`}
+                                                file={`${API_BASE}${selectedDocument}`}
                                                 onLoadSuccess={onDocumentLoadSuccess}
                                                 onLoadError={(error) => setError("Error loading PDF: " + error.message)}
                                             >
@@ -575,7 +577,7 @@ const FeeWaiverForm = () => {
                                                 <p className="text-red-600">{imageError}</p>
                                             ) : (
                                                 <img
-                                                    src={`http://localhost:5000${selectedDocument}`}
+                                                    src={`${API_BASE}${selectedDocument}`}
                                                     alt="Fee Waiver Document"
                                                     className="max-w-full h-auto rounded-md mx-auto"
                                                     style={{ maxHeight: "500px" }}

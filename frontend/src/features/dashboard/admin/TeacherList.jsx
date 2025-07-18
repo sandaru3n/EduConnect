@@ -36,7 +36,7 @@ import { FilterList as FilterListIcon, ExpandMore as ExpandMoreIcon, ExpandLess 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const BASE_URL = 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const TeacherList = () => {
   const location = useLocation();
@@ -89,7 +89,7 @@ const TeacherList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        const { data } = await axios.get(`${BASE_URL}/api/admin/teachers`, config);
+        const { data } = await axios.get(`${API_BASE}/api/admin/teachers`, config);
         setTeachers(data);
         setFilteredTeachers(data);
         setLoading(false);
@@ -149,7 +149,7 @@ const TeacherList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        await axios.put(`${BASE_URL}/api/admin/teachers/${teacherId}/ban`, {}, config);
+        await axios.put(`${API_BASE}/api/admin/teachers/${teacherId}/ban`, {}, config);
         setTeachers(teachers.map(teacher =>
           teacher._id === teacherId ? { ...teacher, subscriptionStatus: 'inactive' } : teacher
         ));
@@ -169,7 +169,7 @@ const TeacherList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        await axios.put(`${BASE_URL}/api/admin/teachers/${teacherId}/unban`, {}, config);
+        await axios.put(`${API_BASE}/api/admin/teachers/${teacherId}/unban`, {}, config);
         setTeachers(teachers.map(teacher =>
           teacher._id === teacherId ? { ...teacher, subscriptionStatus: 'active' } : teacher
         ));
@@ -189,7 +189,7 @@ const TeacherList = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        await axios.delete(`${BASE_URL}/api/admin/teachers/${teacherId}`, config);
+        await axios.delete(`${API_BASE}/api/admin/teachers/${teacherId}`, config);
         setTeachers(teachers.filter(teacher => teacher._id !== teacherId));
         setConfirmModalOpen(false);
       } catch (err) {
@@ -245,7 +245,7 @@ const TeacherList = () => {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
       const response = await axios.put(
-        `${BASE_URL}/api/admin/teachers/${selectedTeacher._id}`,
+        `${API_BASE}/api/admin/teachers/${selectedTeacher._id}`,
         editFormData,
         config
       );

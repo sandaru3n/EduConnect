@@ -33,7 +33,8 @@ const StudyPacks = () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const config = { headers: { Authorization: `Bearer ${userInfo?.token}` } };
-        const { data } = await axios.get('http://localhost:5000/api/studypacks', config);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const { data } = await axios.get(`${API_BASE}/api/studypacks`, config);
         setStudyPacks(data);
         setLoading(false);
       } catch (err) {

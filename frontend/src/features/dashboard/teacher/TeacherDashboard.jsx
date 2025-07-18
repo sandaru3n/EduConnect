@@ -118,12 +118,14 @@ const TeacherDashboard = () => {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
 
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
                 // Fetch number of students subscribed
-                const { data: subscriptionData } = await axios.get("http://localhost:5000/api/auth/teacher/subscribed-students", config);
+                const { data: subscriptionData } = await axios.get(`${API_BASE}/api/auth/teacher/subscribed-students`, config);
                 setStudentsSubscribed(subscriptionData.length || 0);
 
                 // Fetch total classes using the updated endpoint
-                const { data: classesData } = await axios.get("http://localhost:5000/api/classes/teacher-classes-dashboard", config);
+                const { data: classesData } = await axios.get(`${API_BASE}/api/classes/teacher-classes-dashboard`, config);
                 setTotalClasses(classesData.length || 0);
 
                 // Calculate total revenue
@@ -131,7 +133,7 @@ const TeacherDashboard = () => {
                 setTotalRevenue(totalRev);
 
                 // Fetch total quizzes
-                const { data: quizzesData } = await axios.get("http://localhost:5000/api/quiz/teacher/history2", config);
+                const { data: quizzesData } = await axios.get(`${API_BASE}/api/quiz/teacher/history2`, config);
                 setTotalQuizzes(quizzesData.length || 0);
 
                 // Students per class (Pie Chart)

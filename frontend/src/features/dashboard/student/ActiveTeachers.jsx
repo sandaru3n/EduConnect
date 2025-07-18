@@ -38,7 +38,8 @@ const ActiveTeachers = () => {
                     throw new Error("User not authenticated");
                 }
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/student/teachers", config);
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                const { data } = await axios.get(`${API_BASE}/api/student/teachers`, config);
                 setTeachers(data);
                 setLoading(false);
             } catch (err) {
@@ -54,7 +55,8 @@ const ActiveTeachers = () => {
         setClassesLoading(true);
         setClassesError(null);
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/classes/teacher/${teacherId}`);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            const { data } = await axios.get(`${API_BASE}/api/classes/teacher/${teacherId}`);
             setClasses(data);
             setSelectedTeacher(teacherId);
         } catch (err) {
@@ -85,8 +87,9 @@ const ActiveTeachers = () => {
         try {
             const userInfo = JSON.parse(localStorage.getItem("userInfo"));
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
             await axios.post(
-                "http://localhost:5000/api/payments/subscribe",
+                `${API_BASE}/api/payments/subscribe`,
                 {
                     classId: paymentData.classId,
                     cardNumber: paymentData.cardNumber,

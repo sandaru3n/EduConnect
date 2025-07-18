@@ -12,6 +12,8 @@ import {
 } from '@mui/material';
 import debounce from 'lodash/debounce';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const TeacherMessaging = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,8 +39,8 @@ const TeacherMessaging = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
       const [convResponse, receivedResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/messages/conversations', config),
-        axios.get('http://localhost:5000/api/messages/received', config),
+        axios.get(`${API_BASE}/api/messages/conversations`, config),
+        axios.get(`${API_BASE}/api/messages/received`, config),
       ]);
       setConversations(convResponse.data);
       setReceivedMessages(receivedResponse.data);
@@ -61,7 +63,7 @@ const TeacherMessaging = () => {
         try {
           const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
           const { data } = await axios.get(
-            `http://localhost:5000/api/messages/conversation/${selectedUser._id}`,
+            `${API_BASE}/api/messages/conversation/${selectedUser._id}`,
             config
           );
           setMessages(data);
@@ -83,7 +85,7 @@ const TeacherMessaging = () => {
       try {
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
         const { data } = await axios.get(
-          `http://localhost:5000/api/messages/search/my-students?name=${query}`,
+          `${API_BASE}/api/messages/search/my-students?name=${query}`,
           config
         );
         setSearchResults(data);
@@ -104,7 +106,7 @@ const TeacherMessaging = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
       const { data } = await axios.post(
-        'http://localhost:5000/api/messages',
+        `${API_BASE}/api/messages`,
         { recipientId: selectedUser._id, content: newMessage },
         config
       );

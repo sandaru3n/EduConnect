@@ -124,7 +124,7 @@ const EditProfile = () => {
                 username: user.username || "",
                 age: user.age || ""
             });
-            setPreview(user.profilePicture ? `http://localhost:5000${user.profilePicture}` : null);
+            setPreview(user.profilePicture ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}` : null);
         }
     }, [user]);
 
@@ -169,7 +169,7 @@ const EditProfile = () => {
                 }
             };
             const { data: response } = await axios.put(
-                "http://localhost:5000/api/auth/profile",
+                `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/auth/profile`,
                 data,
                 config
             );
@@ -265,7 +265,7 @@ const EditProfile = () => {
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
                                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                             <Avatar
-                                                src={preview || (user.profilePicture ? `http://localhost:5000${user.profilePicture}` : undefined)}
+                                                src={preview || (user.profilePicture ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}` : undefined)}
                                                 sx={{ width: 120, height: 120 }}
                                             />
                                         </motion.div>

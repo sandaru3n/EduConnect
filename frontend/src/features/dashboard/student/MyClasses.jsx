@@ -9,7 +9,7 @@ import StudentHeader from "../../../components/StudentHeader/index";
 import { motion } from "framer-motion";
 
 // Define the base URL for the backend (consistent with PaymentForm.jsx)
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const MyClasses = () => {
     const [classes, setClasses] = useState([]);

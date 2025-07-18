@@ -7,11 +7,13 @@ const ClassList = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchClasses = async () => {
             setLoading(true);
             try {
-                const { data } = await axios.get("http://localhost:5000/api/classes/active");
+                const { data } = await axios.get(`${API_BASE}/api/classes/active`);
                 setClasses(data);
             } catch (err) {
                 setError(err.response?.data?.message || "Error loading classes");
@@ -43,7 +45,7 @@ const ClassList = () => {
                             <img
                                 src={
                                     classItem.coverPhoto
-                                        ? `http://localhost:5000${classItem.coverPhoto}`
+                                        ? `${API_BASE}${classItem.coverPhoto}`
                                         : "https://via.placeholder.com/300x140?text=No+Cover+Photo"
                                 }
                                 alt={`${classItem.subject} cover`}

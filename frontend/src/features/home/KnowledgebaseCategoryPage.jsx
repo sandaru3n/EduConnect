@@ -12,10 +12,12 @@ const KnowledgebaseCategoryPage = () => {
   const [expandedArticle, setExpandedArticle] = useState(null);
   const navigate = useNavigate();
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/knowledgebase/category/${category}`);
+        const { data } = await axios.get(`${API_BASE}/api/knowledgebase/category/${category}`);
         setArticles(data);
       } catch (error) {
         console.error("Error fetching articles for category:", error);

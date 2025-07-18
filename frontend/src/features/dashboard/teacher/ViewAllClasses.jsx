@@ -46,7 +46,7 @@ const ViewAllClasses = () => {
                 };
 
                 const { data } = await axios.get(
-                    "http://localhost:5000/api/teacher/classes",
+                    `${import.meta.env.VITE_API_BASE_URL}/api/teacher/classes`,
                     config
                 );
 
@@ -81,7 +81,7 @@ const ViewAllClasses = () => {
                 },
             };
 
-            await axios.delete(`http://localhost:5000/api/classes/${classToDelete}`, config);
+            await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/classes/${classToDelete}`, config);
             setClasses(classes.filter((classItem) => classItem._id !== classToDelete));
             setNotification({ message: "Class deleted successfully!", type: "success" });
         } catch (error) {
@@ -281,7 +281,7 @@ const ViewAllClasses = () => {
                                             <div className="relative mb-4">
                                                 {classItem.coverPhoto ? (
                                                     <img
-                                                        src={`http://localhost:5000${classItem.coverPhoto}`}
+                                                        src={`${import.meta.env.VITE_API_BASE_URL}${classItem.coverPhoto}`}
                                                         alt={classItem.subject}
                                                         className="w-full h-40 object-cover rounded-lg"
                                                     />

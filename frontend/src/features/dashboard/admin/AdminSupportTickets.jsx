@@ -111,7 +111,8 @@ const AdminSupportTickets = () => {
             setLoading(true);
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get("http://localhost:5000/api/auth/admin/support/tickets", config);
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+                const { data } = await axios.get(`${API_BASE}/api/auth/admin/support/tickets`, config);
                 setTickets(data);
                 setFilteredTickets(data.filter(ticket => ticket.status === "Open"));
             } catch (err) {
@@ -137,7 +138,8 @@ const AdminSupportTickets = () => {
     const handleDelete = async (ticketId) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`http://localhost:5000/api/auth/admin/support/ticket/${ticketId}`, config);
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+            await axios.delete(`${API_BASE}/api/auth/admin/support/ticket/${ticketId}`, config);
             setTickets(tickets.filter(ticket => ticket._id !== ticketId));
             setFilteredTickets(filteredTickets.filter(ticket => ticket._id !== ticketId));
         } catch (err) {

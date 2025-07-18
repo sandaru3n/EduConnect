@@ -19,7 +19,7 @@ import { CreditCard, ArrowBack, CheckCircle } from '@mui/icons-material';
 import Confetti from 'react-confetti';
 
 // Define the base URL for the backend
-const BASE_URL = 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const StudyPackPaymentForm = () => {
     const [cardNumber, setCardNumber] = useState('');
@@ -46,7 +46,7 @@ const StudyPackPaymentForm = () => {
             try {
                 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                const { data } = await axios.get(`${BASE_URL}/api/payments/studypack-details/${studyPackId}`, config);
+                const { data } = await axios.get(`${API_BASE}/api/payments/studypack-details/${studyPackId}`, config);
                 setStudyPackDetails(data);
             } catch (error) {
                 console.error('Error fetching study pack details:', error);
@@ -125,7 +125,7 @@ const StudyPackPaymentForm = () => {
             const config = {
                 headers: { Authorization: `Bearer ${userInfo.token}` }
             };
-            const response = await axios.post(`${BASE_URL}/api/payments/subscribe-studypack`, {
+            const response = await axios.post(`${API_BASE}/api/payments/subscribe-studypack`, {
                 studyPackId,
                 cardNumber,
                 expiryDate,
