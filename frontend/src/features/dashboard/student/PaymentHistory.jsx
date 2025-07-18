@@ -16,7 +16,6 @@ import {
   Grid,
   Button,
   Box,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,8 +26,7 @@ import {
 } from "@mui/material";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable';
+
 import StudentSidebar from "../../../components/StudentSidebar/index";
 import StudentHeader from "../../../components/StudentHeader/index";
 import { Search, Person, CalendarToday } from '@mui/icons-material';
@@ -195,63 +193,6 @@ const PaymentHistoryDash = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Receipt");
     XLSX.writeFile(wb, `receipt-${selectedReceipt.invoiceNumber}.xlsx`);
-  };
-
-  // Download receipt as PDF
-  const handleDownloadPDF = () => {
-    if (!selectedReceipt) return;
-
-    try {
-      const doc = new jsPDF();
-      if (!doc || typeof doc.setFontSize !== "function") {
-        throw new Error("jsPDF instance is not properly initialized");
-      }
-
-      // Add site logo
-      doc.addImage("/educonnetlogo.png", "PNG", 19, 17, 35, 30, undefined, 'FAST');
-
-      // Add "RECEIPT" title
-      doc.setFontSize(24);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(31, 58, 138); // #1e3a8a
-      doc.text("RECEIPT", 105, 20, { align: "center" });
-
-      // Add receipt details
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Invoice Number: ${selectedReceipt.invoiceNumber}`, 20, 50);
-      doc.text(`Student Name: ${selectedReceipt.studentName}`, 20, 60);
-      doc.text(`Student Email: ${selectedReceipt.studentEmail}`, 20, 70);
-      doc.text(`Class Name: ${selectedReceipt.className}`, 20, 80);
-      doc.text(`Teacher Name: ${selectedReceipt.teacherName}`, 20, 90);
-      doc.text(`Payment Date: ${new Date(selectedReceipt.paymentDate).toLocaleDateString()}`, 20, 100);
-      doc.text(`Payment Method: ${selectedReceipt.paymentMethod}`, 20, 110);
-      doc.text(`Status: ${selectedReceipt.status}`, 20, 120);
-
-      // Add billing details table
-      doc.setFontSize(14);
-      doc.text("Receipt Details", 20, 140);
-      doc.setFontSize(12);
-      autoTable(doc, {
-        startY: 150,
-        head: [["Description", "Price"]],
-        body: [
-          [`Original Fee`, `$${selectedReceipt.originalFee}`],
-          [`Discount (${selectedReceipt.discountPercentage}%)`, `-${(selectedReceipt.originalFee - selectedReceipt.finalFee).toFixed(2)}`],
-          ["Final Fee", `$${selectedReceipt.finalFee}`]
-        ],
-        theme: "grid",
-        headStyles: { fillColor: [31, 58, 138], textColor: [255, 255, 255] },
-        bodyStyles: { textColor: [0, 0, 0] },
-        alternateRowStyles: { fillColor: [245, 245, 245] }
-      });
-
-      // Save the PDF
-      doc.save(`receipt-${selectedReceipt.invoiceNumber}.pdf`);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
-    }
   };
 
   const pathnames = location.pathname.split("/").filter((x) => x);
@@ -716,9 +657,6 @@ const PaymentHistoryDash = () => {
           </Button>
           <Button onClick={handleDownloadXLSX} color="primary" variant="outlined">
             Download XLSX
-          </Button>
-          <Button onClick={handleDownloadPDF} color="primary" variant="contained">
-            Export PDF
           </Button>
           <Button onClick={handleCloseReceiptDialog} color="primary">
             Close
