@@ -44,8 +44,6 @@ import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import CategoryIcon from '@mui/icons-material/Category';
 import AdminSidebar from "../../../components/AdminSidebar/index";
 import AdminHeader from "../../../components/AdminHeader/index";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
@@ -183,11 +181,11 @@ const EBookUpload = () => {
       };
 
       if (formData.eBookId) {
-        const response = await axios.put(`${BASE_URL}/api/ebooks/edit/${formData.eBookId}`, data, config);
+        await axios.put(`${BASE_URL}/api/ebooks/edit/${formData.eBookId}`, data, config);
         setSuccessMessage(true);
         setError({ type: 'success', message: 'eBook updated successfully!' });
       } else {
-        const response = await axios.post(`${BASE_URL}/api/ebooks/upload`, data, config);
+        await axios.post(`${BASE_URL}/api/ebooks/upload`, data, config);
         setSuccessMessage(true);
         setError({ type: 'success', message: 'eBook uploaded successfully!' });
       }
@@ -261,43 +259,6 @@ const EBookUpload = () => {
     link.href = URL.createObjectURL(blob);
     link.download = 'ebooks_list.csv';
     link.click();
-  };
-
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text('eBooks List', 14, 22);
-    doc.setFontSize(12);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-
-    const tableColumn = ['Title', 'Author', 'Category', 'Status', 'Downloads', 'Created At'];
-    const tableRows = filteredEBooks.map(eBook => [
-      eBook.title,
-      eBook.author,
-      eBook.category,
-      eBook.status.charAt(0).toUpperCase() + eBook.status.slice(1),
-      eBook.downloadCount || 0,
-      new Date(eBook.uploadDate).toLocaleDateString()
-    ]);
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 40,
-      theme: 'grid',
-      headStyles: { fillColor: [79, 70, 229] },
-      styles: { fontSize: 10, cellPadding: 2 },
-      columnStyles: {
-        0: { cellWidth: 40 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 30 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 20 },
-        5: { cellWidth: 30 },
-      },
-    });
-
-    doc.save('ebooks_list.pdf');
   };
 
   // Calculate metrics for dashboard cards
@@ -833,22 +794,6 @@ const EBookUpload = () => {
                         }}
                       >
                         Export CSV
-                      </Button>
-                      <Button
-                        variant="contained"
-                        startIcon={<PictureAsPdfIcon />}
-                        onClick={exportToPDF}
-                        sx={{
-                          textTransform: 'none',
-                          bgcolor: '#4f46e5',
-                          '&:hover': { bgcolor: '#4338ca' },
-                          borderRadius: 1,
-                          px: 2,
-                          py: 0.5,
-                          fontSize: '0.875rem'
-                        }}
-                      >
-                        Export PDF
                       </Button>
                     </Box>
 
