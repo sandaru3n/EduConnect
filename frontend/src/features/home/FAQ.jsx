@@ -45,51 +45,57 @@ const FAQSection = () => {
 
         {/* FAQ Items */}
         <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <motion.div 
-              key={faq._id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px 0px -100px 0px" }}
-              transition={{ delay: index * 0.1 }}
-              className="group"
-            >
-              <div
-                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary/30 cursor-pointer"
-                onClick={() => toggleFAQ(index)} // Toggle on click
+          {Array.isArray(faqs) && faqs.length > 0 ? (
+            faqs.map((faq, index) => (
+              <motion.div 
+                key={faq._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "0px 0px -100px 0px" }}
+                transition={{ delay: index * 0.1 }}
+                className="group"
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <span className="bg-primary/10 text-primary p-2 rounded-lg">
-                        <QuestionMarkCircleIcon className="w-5 h-5" />
-                      </span>
-                      {faq.question}
-                    </h3>
+                <div
+                  className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary/30 cursor-pointer"
+                  onClick={() => toggleFAQ(index)} // Toggle on click
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span className="bg-primary/10 text-primary p-2 rounded-lg">
+                          <QuestionMarkCircleIcon className="w-5 h-5" />
+                        </span>
+                        {faq.question}
+                      </h3>
+                      <motion.div
+                        initial={false}
+                        animate={{
+                          height: expandedIndex === index ? 'auto' : 0,
+                          opacity: expandedIndex === index ? 1 : 0,
+                        }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="mt-4 text-gray-600 pl-10 border-l-2 border-primary/20">
+                          {faq.answer}
+                        </p>
+                      </motion.div>
+                    </div>
                     <motion.div
-                      initial={false}
-                      animate={{
-                        height: expandedIndex === index ? 'auto' : 0,
-                        opacity: expandedIndex === index ? 1 : 0,
-                      }}
+                      animate={{ rotate: expandedIndex === index ? 180 : 0 }}
                       transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
                     >
-                      <p className="mt-4 text-gray-600 pl-10 border-l-2 border-primary/20">
-                        {faq.answer}
-                      </p>
+                      <ChevronDownIcon className="w-6 h-6 text-gray-500 group-hover:text-primary transition-colors" />
                     </motion.div>
                   </div>
-                  <motion.div
-                    animate={{ rotate: expandedIndex === index ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ChevronDownIcon className="w-6 h-6 text-gray-500 group-hover:text-primary transition-colors" />
-                  </motion.div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              {Array.isArray(faqs) ? 'No FAQs available.' : 'Unable to load FAQs at this time.'}
+            </div>
+          )}
         </div>
 
         {/* Decorative Background Elements */}
