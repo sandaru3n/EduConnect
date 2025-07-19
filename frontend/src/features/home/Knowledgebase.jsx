@@ -14,7 +14,7 @@ const Knowledgebase = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL;
         const { data } = await axios.get(`${API_BASE}/api/knowledgebase`);
         setArticles(data);
       } catch (error) {
@@ -27,7 +27,7 @@ const Knowledgebase = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const API_BASE = import.meta.env.VITE_API_BASE_URL;
       const { data } = await axios.get(`${API_BASE}/api/knowledgebase/search?query=${searchQuery}`);
       setArticles(data);
     } catch (error) {

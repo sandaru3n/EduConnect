@@ -36,7 +36,7 @@ const Login = () => {
     const [forgotPasswordError, setForgotPasswordError] = useState("");
     const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
         document.title = "Login - EduConnect";
