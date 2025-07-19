@@ -16,7 +16,7 @@ import {
   Grid,
   Button,
   Box,
-  Alert,
+
   Dialog,
   DialogTitle,
   DialogContent,
@@ -28,7 +28,7 @@ import {
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable';
+import "jspdf-autotable";
 import StudentSidebar from "../../../components/StudentSidebar/index";
 import StudentHeader from "../../../components/StudentHeader/index";
 import { Search, Person, CalendarToday } from '@mui/icons-material';
@@ -232,7 +232,7 @@ const PaymentHistoryDash = () => {
       doc.setFontSize(14);
       doc.text("Receipt Details", 20, 140);
       doc.setFontSize(12);
-      autoTable(doc, {
+      doc.autoTable({
         startY: 150,
         head: [["Description", "Price"]],
         body: [

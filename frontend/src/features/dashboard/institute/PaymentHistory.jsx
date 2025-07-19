@@ -11,7 +11,7 @@ import axios from "axios";
 import { Box, Paper,Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from "@mui/material";
 import { HiDocumentText } from "react-icons/hi";
 import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable';
+import "jspdf-autotable";
 
 const PaymentHistory  = () => {
 
@@ -22,22 +22,12 @@ const PaymentHistory  = () => {
     const [error, setError] = useState(null);
     const [openInvoiceDialog, setOpenInvoiceDialog] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
-    const [userRole, setUserRole] = useState(null); 
-
-  
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
-
-  useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-    if (userInfo && userInfo.role) {
-      setUserRole(userInfo.role);
-    }
-  }, []);
 
   useEffect(() => {
     const fetchPaymentHistory = async () => {
@@ -109,7 +99,7 @@ const PaymentHistory  = () => {
       doc.setFontSize(14);
       doc.text("Invoice Details", 20, 90);
       doc.setFontSize(12);
-      autoTable(doc, {
+      doc.autoTable({
         startY: 100,
         head: [["Description", "Price"]],
         body: [

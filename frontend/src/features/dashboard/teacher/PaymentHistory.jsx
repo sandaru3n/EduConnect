@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from "@mui/material";
 import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable';
+import "jspdf-autotable";
 
 const PaymentHistory = () => {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ const PaymentHistory = () => {
       doc.setFontSize(14);
       doc.text("Invoice Details", 20, 90);
       doc.setFontSize(12);
-      autoTable(doc, {
+      doc.autoTable({
         startY: 100,
         head: [["Description", "Price"]],
         body: [
